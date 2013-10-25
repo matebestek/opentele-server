@@ -1,0 +1,107 @@
+<%@ page import="org.opentele.server.model.types.PermissionName; org.opentele.server.model.PatientNote" %>
+<!doctype html>
+<html>
+<head>
+    <meta name="layout" content="main">
+    <g:set var="title" value="${message(code: 'patientNote.show.title', args: [patientNoteInstance.patient.name])}"/>
+    <title>${title}</title>
+</head>
+
+<body>
+
+<div id="show-patientNote" class="content scaffold-show" role="main">
+    <h1>${title}</h1>
+    <g:if test="${flash.message}">
+        <div class="message" role="status">${flash.message}</div>
+    </g:if>
+        <ol class="property-list patientNote">
+
+            <g:if test="${patientNoteInstance?.note}">
+                <li class="fieldcontain">
+                    <span id="note-label" class="property-label">
+                        <g:message code="patientNote.note.label" default="Note"/>
+                    </span>
+
+                    <span class="property-value" aria-labelledby="note-label">
+                        <g:fieldValue bean="${patientNoteInstance}" field="note"/>
+                    </span>
+                </li>
+            </g:if>
+
+            <g:if test="${patientNoteInstance?.type}">
+                <li class="fieldcontain">
+                    <span id="type-label" class="property-label">
+                        <g:message code="patientNote.type.label" default="Type"/>
+                    </span>
+
+                    <span class="property-value" aria-labelledby="type-label">
+                        <g:fieldValue bean="${patientNoteInstance}" field="type"/>
+                    </span>
+                </li>
+            </g:if>
+            <g:if test="${patientNoteInstance?.createdDate}">
+                <li class="fieldcontain">
+                    <span id="created-label" class="property-label">
+                        <g:message code="patientNote.created.label" default="Oprettet"/>
+                    </span>
+
+                    <span class="property-value" aria-labelledby="type-label">
+                        <g:formatDate date="${patientNoteInstance.createdDate}" />
+                    </span>
+                </li>
+            </g:if>
+            <g:if test="${patientNoteInstance.modifiedDate}">
+                <li class="fieldcontain">
+                    <span id="modified-label" class="property-label">
+                        <g:message code="patientNote.modified.label" default="Redigeret"/>
+                    </span>
+
+                    <span class="property-value" aria-labelledby="type-label">
+                        <g:formatDate date="${patientNoteInstance.modifiedDate}" />
+                    </span>
+                </li>
+            </g:if>
+            <g:if test="${patientNoteInstance?.createdBy}">
+                <li class="fieldcontain">
+                    <span id="createdBy-label" class="property-label">
+                        <g:message code="patientNote.createdBy.label" default="Oprettet af"/>
+                    </span>
+
+                    <span class="property-value" aria-labelledby="type-label">
+                        <g:fieldValue bean="${patientNoteInstance}" field="createdBy"/>
+                    </span>
+                </li>
+            </g:if>
+            <g:if test="${patientNoteInstance?.reminderDate}">
+                <li class="fieldcontain">
+                    <span id="reminder-label" class="property-label">
+                        <g:message code="patientNote.reminder.label" default="Reminder"/>
+                    </span>
+
+                    <span class="property-value" aria-labelledby="type-label">
+                        <g:formatDate format="dd-MM-yyyy HH:mm" date="${patientNoteInstance.reminderDate}"></g:formatDate>
+                    </span>
+                </li>
+            </g:if>
+        </ol>
+    <g:form>
+        <fieldset class="buttons">
+            <g:hiddenField name="id" value="${patientNoteInstance?.id}"/>
+            <g:hiddenField name="comingFrom" value="${comingFrom}"/>
+            <g:link class="edit" action="edit" id="${patientNoteInstance?.id}">
+                <g:message code="default.button.edit.label" default="Edit"/>
+            </g:link>
+            <sec:ifAnyGranted roles="${PermissionName.PATIENT_NOTE_DELETE}">
+                <g:actionSubmit
+                        class="delete"
+                        action="delete"
+                        value="${message(code: 'default.button.delete.label')}"
+                        onclick="return confirm('${message(code: 'default.button.delete.confirm.message')}');"
+                />
+            </sec:ifAnyGranted>
+            <cq:patientNoteMarkSeenButton id="${patientNoteInstance?.id}" note="${patientNoteInstance}" />
+        </fieldset>
+    </g:form>
+</div>
+</body>
+</html>
