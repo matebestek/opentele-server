@@ -1,4 +1,4 @@
-<td>Lungefunktionstest</td>
+<td>Spirometri</td>
 <td>
     <span>
         <div>

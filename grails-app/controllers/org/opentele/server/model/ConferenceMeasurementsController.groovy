@@ -93,10 +93,23 @@ class ConferenceMeasurementsController {
         checkPermissionToConference(conference)
 
         if (measurement.waiting) {
-            response.status = 304
             render ''
         } else {
-            def result = [fev1: formatNumber(number: measurement.fev1, format:'0.00', locale: 'DA')]
+            def result
+            switch (measurement.type) {
+                case ConferenceMeasurementDraftType.BLOOD_PRESSURE:
+                    result = [
+                        systolic: formatNumber(number: measurement.systolic, format:'0'),
+                        diastolic: formatNumber(number: measurement.diastolic, format: '0'),
+                        pulse: formatNumber(number: measurement.pulse, format: '0')
+                    ]
+                    break;
+                case ConferenceMeasurementDraftType.LUNG_FUNCTION:
+                    result = [fev1: formatNumber(number: measurement.fev1, format:'0.00', locale: 'DA')]
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown measurement type: '${measurement.type}'")
+            }
             render result as JSON
         }
     }
@@ -165,7 +178,7 @@ class ConferenceMeasurementsController {
     private String templateForMeasurementType(ConferenceMeasurementDraftType type, boolean automatic) {
         switch (type) {
             case ConferenceMeasurementDraftType.BLOOD_PRESSURE:
-                return 'manualBloodPressure'
+                return automatic ? 'automaticBloodPressure' : 'manualBloodPressure'
             case ConferenceMeasurementDraftType.LUNG_FUNCTION:
                 return automatic ? 'automaticLungFunction' : 'manualLungFunction'
             case ConferenceMeasurementDraftType.WEIGHT:
@@ -183,7 +196,8 @@ class ConferenceMeasurementsController {
         switch (type) {
             case ConferenceMeasurementDraftType.BLOOD_PRESSURE:
                 if (draft.systolic != null && draft.diastolic != null) {
-                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.BLOOD_PRESSURE), systolic: draft.systolic, diastolic: draft.diastolic, unit: Unit.MMHG)
+                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.BLOOD_PRESSURE),
+                            systolic: draft.systolic, diastolic: draft.diastolic, meanArterialPressure: draft.meanArterialPressure, unit: Unit.MMHG)
                 }
                 if (draft.pulse) {
                     result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.PULSE), value: draft.pulse, unit: Unit.BPM)

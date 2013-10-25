@@ -28,7 +28,7 @@
 				<li class="fieldcontain">
 					<span id="windowSizeMinutes-label" class="property-label"><g:message code="scheduleWindow.windowSizeMinutes.label" default="Window Size Minutes" /></span>
 					
-						<span class="property-value" aria-labelledby="windowSizeMinutes-label"><g:fieldValue bean="${scheduleWindowInstance}" field="windowSizeMinutes"/></span>
+						<span class="property-value" aria-labelledby="windowSizeMinutes-label"><scheduleWindow:prettyformat scheduleType="${scheduleWindowInstance.scheduleType}"/></span>
 					
 				</li>
 				</g:if>

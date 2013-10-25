@@ -9,7 +9,7 @@ import spock.lang.Specification
 import grails.test.mixin.*
 
 @TestFor(ConferenceController)
-@Build([PendingConference, Patient, Clinician, Conference, ConferenceLungFunctionMeasurementDraft])
+@Build([PendingConference, Patient, Clinician, Conference, ConferenceLungFunctionMeasurementDraft, ConferenceBloodPressureMeasurementDraft])
 class ConferenceControllerSpec extends Specification {
     // Interface of VideoConferenceService (since we don't necessarily have access to VideoConferenceService
     // when testing
@@ -197,7 +197,7 @@ class ConferenceControllerSpec extends Specification {
         videoConferenceService.userIsAlreadyPresentInOwnRoom('user', 'pass') >> false
 
         when:
-        def model = controller.conferenceJoined()
+        controller.conferenceJoined()
 
         then:
         !response.json.joined
@@ -337,7 +337,8 @@ class ConferenceControllerSpec extends Specification {
 
         when:
         request.JSON = [
-            type:'LUNG_FUNCTION',
+            type: 'LUNG_FUNCTION',
+            deviceId: '123987abc',
             measurement: [
                 fev1: 3.6,
                 fev6: 5.7,
@@ -353,12 +354,45 @@ class ConferenceControllerSpec extends Specification {
         response.status == 200
         pendingLungFunctionMeasurement.automatic
         !pendingLungFunctionMeasurement.waiting
+        pendingLungFunctionMeasurement.deviceId == '123987abc'
         pendingLungFunctionMeasurement.fev1 == 3.6
         pendingLungFunctionMeasurement.fev6 == 5.7
         pendingLungFunctionMeasurement.fev1Fev6Ratio == 0.632
         pendingLungFunctionMeasurement.fef2575 == 2.4
         pendingLungFunctionMeasurement.goodTest
         pendingLungFunctionMeasurement.softwareVersion == 935
+    }
+
+    def 'can receive blood pressure measurement'() {
+        setup:
+        setPatientAsUser()
+        def conference = Conference.build(clinician: clinician, patient: patient)
+        def pendingBloodPressureMeasurement = ConferenceBloodPressureMeasurementDraft.build(automatic: true, waiting: true)
+        conference.addToMeasurementDrafts(pendingBloodPressureMeasurement)
+        conference.addToMeasurementDrafts(ConferenceBloodPressureMeasurementDraft.build(automatic: false))
+
+        when:
+        request.JSON = [
+            type: 'BLOOD_PRESSURE',
+            deviceId: '456123cba',
+            measurement: [
+                systolic: 123,
+                diastolic: 57,
+                pulse: 45,
+                meanArterialPressure: 100
+            ]
+        ]
+        controller.measurementFromPatient()
+
+        then:
+        response.status == 200
+        pendingBloodPressureMeasurement.automatic
+        !pendingBloodPressureMeasurement.waiting
+        pendingBloodPressureMeasurement.deviceId == '456123cba'
+        pendingBloodPressureMeasurement.systolic == 123
+        pendingBloodPressureMeasurement.diastolic == 57
+        pendingBloodPressureMeasurement.pulse == 45
+        pendingBloodPressureMeasurement.meanArterialPressure == 100
     }
 
     def 'complains when receiving measurement for which no pending measurements exist'() {

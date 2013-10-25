@@ -1,5 +1,6 @@
 package org.opentele.server.model.patientquestionnaire
 
+import org.opentele.server.TimeFilter
 import org.opentele.server.model.AbstractObject
 import org.opentele.server.model.Clinician
 import org.opentele.server.model.Patient
@@ -11,8 +12,12 @@ class CompletedQuestionnaire extends AbstractObject {
 
     static hasMany = [completedQuestions: NodeResult]
 
+    // Date received from client, ie. can be offset from server-time
     Date uploadDate
-    
+
+    // Date questionnaire was received on server
+    Date receivedDate
+
     Patient patient
     
     Clinician acknowledgedBy 
@@ -31,6 +36,7 @@ class CompletedQuestionnaire extends AbstractObject {
         questionnaireHeader(nullable: false)
         patient(nullable: false)
         uploadDate(nullable: false)
+        receivedDate(nullable: false)
         acknowledgedBy(nullable: true)
         acknowledgedDate(nullable: true)
         acknowledgedNote(nullable: true)
@@ -50,11 +56,14 @@ class CompletedQuestionnaire extends AbstractObject {
             eq('severity', Severity.GREEN)
 
         }
-        unacknowledgedGreenQuestionnairesByPatient  { Patient patient ->
+        unacknowledgedGreenQuestionnairesByPatient { Patient patient, TimeFilter timeFilter ->
             isNull('acknowledgedBy')
             eq('patient', patient)
             eq('severity', Severity.GREEN)
 
+            if (timeFilter && timeFilter.isLimited) {
+                between('receivedDate', timeFilter.start, timeFilter.end)
+            }
         }
     }
 }

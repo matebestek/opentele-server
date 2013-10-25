@@ -56,12 +56,12 @@ class FormattingTagLib {
 			b.append(" ")
 		}
 	
-		out << b.toString()
+		out << b.toString().encodeAsHTML()
 	}
 	
 	def formatCPR = {attrs, body ->
 		if (attrs.cpr) {
-			out << attrs.cpr[0..5]+'-'+attrs.cpr[6..9]
+			out << attrs.cpr[0..5].encodeAsHTML()+'-'+attrs.cpr[6..9].encodeAsHTML()
 		}
 	}
 	

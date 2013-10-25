@@ -1,4 +1,4 @@
-.container {
+ .container {
     margin-left: 10px;
     margin-right: 10px;
 }
@@ -62,7 +62,7 @@ textarea {
 }
 
 .twoCharacterInput {
-    width: 25px !important;
+    width: 34px !important;
 }
 
 a.disabled-link,
@@ -75,21 +75,10 @@ a.disabled-link:hover {
     background: inherit;
 }
 
-.ui-datepicker-opentele-knockout {
-    position: relative;
-}
-
-.ui-datepicker-opentele-knockout input.hasDatepicker {
-    width: 120px;
-}
-
-.ui-datepicker-opentele-knockout .ui-datepicker-trigger {
-    top: -10px;
-    right: 1px;
-    position: absolute;
-    border-radius: 2px;
-    border: 1px solid transparent;
-}
+.ui-datepicker-opentele div.ui-datepicker-wrapper button.ui-datepicker-trigger {
+ right: 1px !important;
+ top: -9px !important;
+ }
 
 div#weekdayScheduleSetupContainer {
 
@@ -110,3 +99,24 @@ div#reminderStartContainer {
     padding-bottom: 10px;
 }
 
+div.scheduling h1.nav-header {
+    font-size: 11px !important;
+    line-height: 20px !important;
+}
+
+div.scheduling .weekdays input {
+    margin-top: -2px;
+}
+
+div.scheduling .weekdays label {
+    display: inline
+}
+
+div.scheduleType div.fieldcontain > label {
+    font-weight: bold;
+}
+
+div.scheduleWindow div.inlined {
+    font-style: oblique;
+    padding-bottom: 10px;
+}

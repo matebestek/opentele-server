@@ -7,19 +7,17 @@ import org.opentele.builders.CompletedQuestionnaireBuilder
 import org.opentele.builders.MonitoringPlanBuilder
 import org.opentele.builders.PatientBuilder
 import org.opentele.builders.QuestionnaireScheduleBuilder
-import org.opentele.server.model.MonitoringPlan
-import org.opentele.server.model.Patient
-import org.opentele.server.model.QuestionnaireSchedule
-import org.opentele.server.model.Schedule
-import org.opentele.server.model.ScheduleWindow
+import org.opentele.server.model.*
+import org.opentele.server.model.Schedule.TimeOfDay
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.patientquestionnaire.PatientBooleanNode
 import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
 import org.opentele.server.model.questionnaire.*
 import org.opentele.server.model.types.Weekday
-import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.Unroll
+
+import static org.opentele.server.model.Schedule.ScheduleType.*
 
 @TestFor(QuestionnaireService)
 @Build([QuestionnaireHeader, Questionnaire, QuestionnaireNode, QuestionnaireSchedule, PatientBooleanNode, BooleanNode, ScheduleWindow, PatientQuestionnaire, MonitoringPlan])
@@ -34,10 +32,11 @@ class ReminderSpec extends Specification {
         startingDate = Date.parse("yyyy/M/d", "2013/6/5")
         monitoringPlan = new MonitoringPlanBuilder().forPatient(patient).forStartDate(startingDate).build()
 
-        ScheduleWindow.build(scheduleType: Schedule.ScheduleType.WEEKDAYS, windowSizeMinutes: 60)
-        ScheduleWindow.build(scheduleType: Schedule.ScheduleType.MONTHLY, windowSizeMinutes: 60)
-        ScheduleWindow.build(scheduleType: Schedule.ScheduleType.EVERY_NTH_DAY, windowSizeMinutes: 60)
-        ScheduleWindow.build(scheduleType: Schedule.ScheduleType.SPECIFIC_DATE, windowSizeMinutes: 60)
+        ScheduleWindow.build(scheduleType: WEEKDAYS, windowSizeMinutes: 60)
+        ScheduleWindow.build(scheduleType: WEEKDAYS_ONCE, windowSizeMinutes: 24 * 60)
+        ScheduleWindow.build(scheduleType: MONTHLY, windowSizeMinutes: 60)
+        ScheduleWindow.build(scheduleType: EVERY_NTH_DAY, windowSizeMinutes: 60)
+        ScheduleWindow.build(scheduleType: SPECIFIC_DATE, windowSizeMinutes: 60)
 
         service.questionnaireNodeService = Mock(QuestionnaireNodeService)
     }
@@ -57,7 +56,7 @@ class ReminderSpec extends Specification {
         setup:
         new QuestionnaireScheduleBuilder().
                 forMonitoringPlan(monitoringPlan).
-                forScheduleType(Schedule.ScheduleType.UNSCHEDULED).
+                forScheduleType(UNSCHEDULED).
                 build()
 
         def requestDate = Date.parse("yyyy-MM-dd HH:mm:ss", "2013-06-05 15:29:59").toCalendar()
@@ -73,7 +72,7 @@ class ReminderSpec extends Specification {
         setup:
         def questionnaireSchedule = new QuestionnaireScheduleBuilder().
                 forMonitoringPlan(monitoringPlan).
-                forScheduleType(Schedule.ScheduleType.SPECIFIC_DATE).
+                forScheduleType(SPECIFIC_DATE).
                 forSpecificDate(Date.parse("yyyy-MM-dd", "2013-06-05")).
                 forTimesOfDay([new Schedule.TimeOfDay(hour: 16, minute: 0)]).
                 forReminderStartMinutes(30).
@@ -95,7 +94,7 @@ class ReminderSpec extends Specification {
         new QuestionnaireScheduleBuilder().
                 forQuestionnaireName('q1').
                 forMonitoringPlan(monitoringPlan).
-                forScheduleType(Schedule.ScheduleType.SPECIFIC_DATE).
+                forScheduleType(SPECIFIC_DATE).
                 forSpecificDate(Date.parse("yyyy-MM-dd", "2013-06-05")).
                 forTimesOfDay([new Schedule.TimeOfDay(hour: 16, minute: 0)]).
                 forReminderStartMinutes(30).
@@ -111,12 +110,12 @@ class ReminderSpec extends Specification {
         questionnaireNamesAndReminderDates == expectedQuestionnaireIdsAndReminderDates
 
         where:
-        requestDate            | expectedQuestionnaireIdsAndReminderDates
-        "2013-06-05 15:29:59"  | [['q1', '2013-06-05 15:30:00', '2013-06-05 15:45:00']]
-        "2013-06-05 15:30:00"  | [['q1', '2013-06-05 15:45:00']]
-        "2013-06-05 15:30:01"  | [['q1', '2013-06-05 15:45:00']]
-        "2013-06-05 15:45:01"  | []
-        "2013-06-05 16:00:01"  | []
+        requestDate           | expectedQuestionnaireIdsAndReminderDates
+        "2013-06-05 15:29:59" | [['q1', '2013-06-05 15:30:00', '2013-06-05 15:45:00']]
+        "2013-06-05 15:30:00" | [['q1', '2013-06-05 15:45:00']]
+        "2013-06-05 15:30:01" | [['q1', '2013-06-05 15:45:00']]
+        "2013-06-05 15:45:01" | []
+        "2013-06-05 16:00:01" | []
     }
 
     @Unroll
@@ -125,7 +124,7 @@ class ReminderSpec extends Specification {
         new QuestionnaireScheduleBuilder().
                 forQuestionnaireName('q1').
                 forMonitoringPlan(monitoringPlan).
-                forScheduleType(Schedule.ScheduleType.SPECIFIC_DATE).
+                forScheduleType(SPECIFIC_DATE).
                 forSpecificDate(Date.parse("yyyy-MM-dd", "2013-06-05")).
                 forTimesOfDay([new Schedule.TimeOfDay(hour: 16, minute: 0)]).
                 forReminderStartMinutes(30).
@@ -134,7 +133,7 @@ class ReminderSpec extends Specification {
         new QuestionnaireScheduleBuilder().
                 forQuestionnaireName('q2').
                 forMonitoringPlan(monitoringPlan).
-                forScheduleType(Schedule.ScheduleType.SPECIFIC_DATE).
+                forScheduleType(SPECIFIC_DATE).
                 forSpecificDate(Date.parse("yyyy-MM-dd", "2013-06-05")).
                 forTimesOfDay([new Schedule.TimeOfDay(hour: 16, minute: 10)]).
                 forReminderStartMinutes(30).
@@ -150,11 +149,11 @@ class ReminderSpec extends Specification {
         questionnaireNamesAndReminderDates == expectedQuestionnaireNamesAndReminderDates
 
         where:
-        requestDate            | expectedQuestionnaireNamesAndReminderDates
-        '2013-06-05 15:29:59'  | [['q1', '2013-06-05 15:30:00', '2013-06-05 15:45:00'], ['q2', '2013-06-05 15:40:00', '2013-06-05 15:55:00']]
-        '2013-06-05 15:30:01'  | [['q1', '2013-06-05 15:45:00'], ['q2', '2013-06-05 15:40:00', '2013-06-05 15:55:00']]
-        '2013-06-05 15:40:01'  | [['q1', '2013-06-05 15:45:00'], ['q2', '2013-06-05 15:55:00']]
-        '2013-06-05 15:45:01'  | [['q2', '2013-06-05 15:55:00']]
+        requestDate           | expectedQuestionnaireNamesAndReminderDates
+        '2013-06-05 15:29:59' | [['q1', '2013-06-05 15:30:00', '2013-06-05 15:45:00'], ['q2', '2013-06-05 15:40:00', '2013-06-05 15:55:00']]
+        '2013-06-05 15:30:01' | [['q1', '2013-06-05 15:45:00'], ['q2', '2013-06-05 15:40:00', '2013-06-05 15:55:00']]
+        '2013-06-05 15:40:01' | [['q1', '2013-06-05 15:45:00'], ['q2', '2013-06-05 15:55:00']]
+        '2013-06-05 15:45:01' | [['q2', '2013-06-05 15:55:00']]
     }
 
     def 'gives reminder even if other, irrelevant patient has uploaded within the grace period'() {
@@ -163,11 +162,11 @@ class ReminderSpec extends Specification {
         MonitoringPlan otherMonitoringPlan = new MonitoringPlanBuilder().forPatient(patient).forStartDate(startingDate).build()
 
         // Schedule and completed questionnaire for other patient
-        Date createdDate = Date.parse('yyyy-MM-dd HH:mm:ss', '2013-06-05 15:29:58')
-        def completedQuestionnaire = new CompletedQuestionnaireBuilder(createdDate: createdDate).forName('q1').forPatient(otherPatient).build()
+        Date receivedDate = Date.parse('yyyy-MM-dd HH:mm:ss', '2013-06-05 15:29:58')
+        def completedQuestionnaire = new CompletedQuestionnaireBuilder(receivedDate: receivedDate).forName('q1').forPatient(otherPatient).build()
         new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire.questionnaireHeader).
                 forMonitoringPlan(otherMonitoringPlan).
-                forScheduleType(Schedule.ScheduleType.SPECIFIC_DATE).
+                forScheduleType(SPECIFIC_DATE).
                 forSpecificDate(Date.parse("yyyy-MM-dd", "2013-06-05")).
                 forTimesOfDay([new Schedule.TimeOfDay(hour: 16, minute: 0)]).
                 forReminderStartMinutes(30).
@@ -176,7 +175,7 @@ class ReminderSpec extends Specification {
         // Schedule for our patient, with no completed questionnaires
         new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire.questionnaireHeader).
                 forMonitoringPlan(monitoringPlan).
-                forScheduleType(Schedule.ScheduleType.SPECIFIC_DATE).
+                forScheduleType(SPECIFIC_DATE).
                 forSpecificDate(Date.parse("yyyy-MM-dd", "2013-06-05")).
                 forTimesOfDay([new Schedule.TimeOfDay(hour: 16, minute: 0)]).
                 forReminderStartMinutes(30).
@@ -193,14 +192,13 @@ class ReminderSpec extends Specification {
     }
 
     @Unroll
-    @Ignore ("KIH-785: test slået fra pga forkert anv. af createdDate")
     def "no reminder if data is uploaded within the grace period"() {
         setup:
-        createdDate = Date.parse("yyyy-MM-dd HH:mm:ss", createdDate)
-        def completedQuestionnaire = new CompletedQuestionnaireBuilder(createdDate: createdDate).forName('q1').forPatient(patient).build()
+        receivedDate = Date.parse("yyyy-MM-dd HH:mm:ss", receivedDate)
+        def completedQuestionnaire = new CompletedQuestionnaireBuilder(receivedDate: receivedDate).forName('q1').forPatient(patient).build()
         new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire.questionnaireHeader).
                 forMonitoringPlan(monitoringPlan).
-                forScheduleType(Schedule.ScheduleType.SPECIFIC_DATE).
+                forScheduleType(SPECIFIC_DATE).
                 forSpecificDate(Date.parse("yyyy-MM-dd", "2013-06-05")).
                 forTimesOfDay([new Schedule.TimeOfDay(hour: 16, minute: 0)]).
                 forReminderStartMinutes(30).
@@ -216,26 +214,25 @@ class ReminderSpec extends Specification {
         questionnaireNamesAndReminderDates == expectedQuestionnaireNamesAndReminderDates
 
         where:
-        createdDate            | expectedQuestionnaireNamesAndReminderDates
-        '2013-06-05 14:59:59'  | [['q1', '2013-06-05 15:30:00', '2013-06-05 15:45:00']]
-        '2013-06-05 15:29:58'  | []
+        receivedDate          | expectedQuestionnaireNamesAndReminderDates
+        '2013-06-05 14:59:59' | [['q1', '2013-06-05 15:30:00', '2013-06-05 15:45:00']]
+        '2013-06-05 15:29:58' | []
     }
 
     @Unroll
-    @Ignore ("KIH-785: test slået fra pga forkert anv. af createdDate")
     def "reminder moves to the next deadline with a repeating schedule once an upload is made"() {
         setup:
 
         def completedQuestionnaire = null
-        if (createdDate) {
-            createdDate = Date.parse("yyyy-MM-dd HH:mm:ss", createdDate)
-            completedQuestionnaire = new CompletedQuestionnaireBuilder(createdDate: createdDate).forName('q1').forPatient(patient).build()
+        if (receivedDate) {
+            receivedDate = Date.parse("yyyy-MM-dd HH:mm:ss", receivedDate)
+            completedQuestionnaire = new CompletedQuestionnaireBuilder(receivedDate: receivedDate).forName('q1').forPatient(patient).build()
         }
 
         new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire?.questionnaireHeader).
                 forQuestionnaireName('q1').
                 forMonitoringPlan(monitoringPlan).
-                forScheduleType(Schedule.ScheduleType.WEEKDAYS).
+                forScheduleType(WEEKDAYS).
                 forWeekdays(Weekday.values().collect()).
                 forTimesOfDay([new Schedule.TimeOfDay(hour: 16, minute: 0)]).
                 forReminderStartMinutes(30).
@@ -251,9 +248,46 @@ class ReminderSpec extends Specification {
         questionnaireNamesAndReminderDates == expectedQuestionnaireNamesAndReminderDates
 
         where:
-        createdDate            | expectedQuestionnaireNamesAndReminderDates
-        null                   | [['q1', '2013-06-05 15:30:00', '2013-06-05 15:45:00']]
-        '2013-06-05 15:29:58'  | [['q1', '2013-06-06 15:30:00', '2013-06-06 15:45:00']]
+        receivedDate          | expectedQuestionnaireNamesAndReminderDates
+        null                  | [['q1', '2013-06-05 15:30:00', '2013-06-05 15:45:00']]
+        '2013-06-05 15:29:58' | [['q1', '2013-06-06 15:30:00', '2013-06-06 15:45:00']]
+    }
+
+    @Unroll
+    def "reminder moves to the next deadline with a repeating schedule weekly once an upload is made"() {
+        setup:
+
+        def completedQuestionnaire = null
+        if (receivedDate) {
+            receivedDate = Date.parse("yyyy-MM-dd HH:mm:ss", receivedDate)
+            completedQuestionnaire = new CompletedQuestionnaireBuilder(receivedDate: receivedDate).forName('q1').forPatient(patient).build()
+        }
+
+        new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire?.questionnaireHeader).
+                forQuestionnaireName('q1').
+                forMonitoringPlan(monitoringPlan).
+                forScheduleType(WEEKDAYS_ONCE).
+                forWeekdaysOnce(Weekday.values().collect(), [Weekday.WEDNESDAY, Weekday.SUNDAY]).
+                forReminderTime(TimeOfDay.toTimeOfDay('10:00')).
+                forBlueAlarmTime(TimeOfDay.toTimeOfDay('11:30')).
+                build()
+
+        when:
+        def result = service.getNextReminders(patient, toCalendar(requestDate))
+        def questionnaireNamesAndReminderDates = getQuestionnaireNamesAndReminderDates(result, toCalendar(requestDate))
+
+        then:
+        questionnaireNamesAndReminderDates == expectedQuestionnaireNamesAndReminderDates
+
+        where:
+        requestDate          | receivedDate          | expectedQuestionnaireNamesAndReminderDates
+        "2013-06-05 08:31:59" | null                  | [['q1', '2013-06-05 10:00:00', '2013-06-05 10:15:00', '2013-06-05 10:30:00', '2013-06-05 10:45:00', '2013-06-05 11:00:00', '2013-06-05 11:15:00']]
+        "2013-06-05 10:50:59" | '2013-06-05 10:31:58' | [['q1', '2013-06-06 10:00:00', '2013-06-06 10:15:00', '2013-06-06 10:30:00', '2013-06-06 10:45:00', '2013-06-06 11:00:00', '2013-06-06 11:15:00']]
+        "2013-06-06 06:31:59" | '2013-06-05 11:28:58' | [['q1', '2013-06-06 10:00:00', '2013-06-06 10:15:00', '2013-06-06 10:30:00', '2013-06-06 10:45:00', '2013-06-06 11:00:00', '2013-06-06 11:15:00']]
+    }
+
+    private toCalendar(String requestDate) {
+        Date.parse("yyyy-MM-dd HH:mm:ss", requestDate).toCalendar()
     }
 
     private def getQuestionnaireNamesAndReminderDates(def serviceResult, Calendar requestTime) {

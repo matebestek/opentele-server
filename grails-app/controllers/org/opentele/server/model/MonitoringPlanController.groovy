@@ -19,7 +19,10 @@ class MonitoringPlanController {
             sessionService.setPatient(session, patientInstance)
         }
 
-        [monitoringPlanInstance: new MonitoringPlan(params)]
+        [
+            monitoringPlanInstance: new MonitoringPlan(params),
+            patientInstance: patientInstance
+        ]
     }
 
     @Secured(PermissionName.MONITORING_PLAN_CREATE)

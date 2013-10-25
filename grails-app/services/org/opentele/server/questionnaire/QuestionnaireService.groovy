@@ -2,11 +2,16 @@ package org.opentele.server.questionnaire
 import org.hibernate.Criteria
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
+import org.opentele.server.TimeFilter
 import org.opentele.server.model.*
 import org.opentele.server.model.patientquestionnaire.*
 import org.opentele.server.model.questionnaire.*
 import org.opentele.server.model.types.*
 import org.springframework.transaction.annotation.Transactional
+
+import static java.util.Calendar.HOUR_OF_DAY
+import static java.util.Calendar.MINUTE
+import static java.util.Calendar.SECOND
 
 class QuestionnaireService {
     static transactional = false
@@ -173,11 +178,11 @@ class QuestionnaireService {
         pq
     }
 
-    def extractMeasurements(Long patientID, List<Long> completedQuestionnairesFilter = null, boolean unacknowledgedOnly = false) {
-        def completedQuestionnaireResultModel = extractCompletedQuestionnaireWithAnswers(patientID, completedQuestionnairesFilter, unacknowledgedOnly)
+    def extractMeasurements(Long patientID, boolean unacknowledgedOnly = false, TimeFilter timeFilter = null) {
+        def completedQuestionnaireResultModel = extractCompletedQuestionnaireWithAnswers(patientID, null, unacknowledgedOnly, timeFilter)
 
         if(!unacknowledgedOnly) {
-            def conferenceResultModel = extractConferenceResults(patientID)
+            def conferenceResultModel = extractConferenceResults(patientID, timeFilter)
             completedQuestionnaireResultModel.columnHeaders.addAll(conferenceResultModel.columnHeaders)
             completedQuestionnaireResultModel.questions.addAll(0, conferenceResultModel.questions)
             completedQuestionnaireResultModel.results.putAll(conferenceResultModel.results)
@@ -188,11 +193,17 @@ class QuestionnaireService {
         return completedQuestionnaireResultModel
     }
 
-    def extractConferenceResults(Long patientID) {
+    def extractConferenceResults(Long patientID, TimeFilter timeFilter = null) {
         ResultTableViewModel result = new ResultTableViewModel()
         def patient = Patient.findById(patientID)
 
-        def completedConferences = Conference.findAllByPatientAndCompleted(patient, true)
+        def completedConferences
+        if (timeFilter && timeFilter.isLimited) {
+            // Filter created date
+            completedConferences = Conference.findAllByPatientAndCompletedAndCreatedDateBetween(patient, true, timeFilter.start, timeFilter.end)
+        } else {
+            completedConferences = Conference.findAllByPatientAndCompleted(patient, true)
+        }
 
         result.columnHeaders = completedConferences.collect {
             new OverviewColumnHeader(type: MeasurementParentType.CONFERENCE, uploadDate: it.createdDate, id: it.id)
@@ -239,7 +250,7 @@ class QuestionnaireService {
         result
     }
 
-    def extractCompletedQuestionnaireWithAnswers(Long patientID, List<Long> completedQuestionnairesFilter = null, boolean unacknowledgedOnly = false) {
+    def extractCompletedQuestionnaireWithAnswers(Long patientID, List<Long> completedQuestionnairesFilter = null, boolean unacknowledgedOnly = false, TimeFilter timeFilter = null) {
         ResultTableViewModel result = new ResultTableViewModel()
 
         def session = sessionFactory.currentSession
@@ -267,7 +278,16 @@ class QuestionnaireService {
             completedQuestionnairesCriteria.add(Restrictions.isNull("acknowledgedBy"))
         }
 
+        // Filter upload date
+        if (timeFilter && timeFilter.isLimited) {
+            completedQuestionnairesCriteria.add(Restrictions.between("uploadDate", timeFilter.start, timeFilter.end))
+        }
+
         def completedQuestionnaires = completedQuestionnairesCriteria.list()
+        if (completedQuestionnaires.empty) {
+            return result
+        }
+
         def sortedCompletedQuestionnaires = completedQuestionnaires.sort {a, b -> b[1] <=> a[1]}
         def completedQuestionnairesIds = sortedCompletedQuestionnaires.collect {it[0]}
 
@@ -275,17 +295,15 @@ class QuestionnaireService {
             new OverviewColumnHeader(type: MeasurementParentType.QUESTIONNAIRE, id: it[0], uploadDate: it[1], severity: it[2], acknowledgedBy: it[3], acknowledgedDate: it[4], acknowledgedNote: it[5], _questionnaireIgnored: it[6], questionnaireIgnoredReason: it[7], questionnareIgnoredBy: it[8] )
         }
 
-
-        // Alle inklusiv dem der er
         Criteria questionnaireNodesCriteria = session.createCriteria(QuestionnaireNode.class, "QN")
                 .createAlias("questionnaire", "Q")
                 .createAlias("Q.patientQuestionnaires", "PQs")
                 .createAlias("PQs.completedQuestionnaires", "CQs")
                 .createAlias("Q.questionnaireHeader", "QH")
-        //.add(Restrictions.eq("PQs.patient.id", patientID))
                 .add(Restrictions.eq("CQs.patient.id", patientID))
                 .add(Restrictions.in("CQs.id", completedQuestionnairesIds))
-                .setProjection(
+
+        questionnaireNodesCriteria.setProjection(
                 Projections.projectionList()
                         .add(Projections.property("QN.id"))
                         .add(Projections.property("QN.text"))
@@ -319,7 +337,6 @@ class QuestionnaireService {
 
         sortedFilteredNodesPerQuestionnaire = sortedFilteredNodesPerQuestionnaire.sort({a, b -> b <=> a} as Comparator)
 
-        result.questions = []
         sortedFilteredNodesPerQuestionnaire.values().each { listQuestions ->
             listQuestions.each {it ->
                 result.questions.add(new MeasurementDescription(type: MeasurementParentType.QUESTIONNAIRE, text: it.text, questionnaireName: it.questionnaireName, templateQuestionnaireNodeId: it.templateQuestionnaireNodeId, units: [] as Set, measurementTypeNames: [] as Set))
@@ -430,7 +447,6 @@ class QuestionnaireService {
             }
             resultsMap[key] << it
         }
-
         result.results = resultsMap
         result
     }
@@ -560,7 +576,13 @@ class QuestionnaireService {
         // Only generate reminders if there has not been an upload within the grace period.
         if (!hasUploadWithinGracePeriod(schedule, deadline)) {
             Calendar reminder = deadline.clone()
-            reminder.add(Calendar.MINUTE, -schedule.reminderStartMinutes)
+            if (schedule.type == Schedule.ScheduleType.WEEKDAYS_ONCE) {
+                reminder[HOUR_OF_DAY] = schedule.reminderTime.hour
+                reminder[MINUTE] = schedule.reminderTime.minute
+                reminder[SECOND] = 0
+            } else {
+                reminder.add(MINUTE, -schedule.reminderStartMinutes)
+            }
 
             def reminderEveryMinutes = (grailsApplication.config.reminderEveryMinutes ?: 15) as int
             if (reminderEveryMinutes <= 0) {
@@ -576,7 +598,7 @@ class QuestionnaireService {
                     alarms << secondsToNextReminder
                 }
 
-                reminder.add(Calendar.MINUTE, reminderEveryMinutes)
+                reminder.add(MINUTE, reminderEveryMinutes)
             }
 
             if (alarms.empty) {
@@ -646,7 +668,7 @@ class QuestionnaireService {
             return false
         }
 
-        windowStart.add(Calendar.MINUTE, -scheduleWindow.windowSizeMinutes)
+        windowStart.add(MINUTE, -scheduleWindow.windowSizeMinutes)
 
         // Find the previous deadline and adjust the window start if necessary.
         Calendar previousDeadline = questionnaireSchedule.getLatestDeadlineBefore(deadline)
@@ -657,7 +679,7 @@ class QuestionnaireService {
         def patient = questionnaireSchedule.monitoringPlan.patient
         def questionnaireHeader = questionnaireSchedule.questionnaireHeader
         def startTime = windowStart.getTime()
-        def questionnairesUploadedSinceLastCheck = CompletedQuestionnaire.findAllByPatientAndQuestionnaireHeaderAndCreatedDateGreaterThanEquals(patient, questionnaireHeader, startTime)
+        def questionnairesUploadedSinceLastCheck = CompletedQuestionnaire.findAllByPatientAndQuestionnaireHeaderAndReceivedDateGreaterThanEquals(patient, questionnaireHeader, startTime)
         return questionnairesUploadedSinceLastCheck.any()
     }
 
@@ -929,7 +951,7 @@ class QuestionnaireService {
     }
 
     private isEveryNthDayEquals(StandardSchedule standardSchedule, QuestionnaireSchedule questionnaireSchedule) {
-        standardSchedule.intervalInDays == questionnaireSchedule.dayInterval
+        standardSchedule.dayInterval == questionnaireSchedule.dayInterval
     }
 
     private isDaysInMonthEquals(StandardSchedule standardSchedule, QuestionnaireSchedule questionnaireSchedule) {
@@ -954,9 +976,9 @@ class QuestionnaireService {
 }
 
 public class ResultTableViewModel {
-    List<OverviewColumnHeader> columnHeaders
-    List<MeasurementDescription> questions
-    Map<ResultKey, MeasurementResult> results
+    List<OverviewColumnHeader> columnHeaders = []
+    List<MeasurementDescription> questions = []
+    Map<ResultKey, MeasurementResult> results = [:]
 }
 
 public class MeasurementDescription {

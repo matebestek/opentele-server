@@ -1,22 +1,23 @@
-package org.opentele.server.model
-
+package org.opentele.server.model.questionnaire
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
-import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
-import org.opentele.server.model.questionnaire.QuestionnaireHeader
+import org.opentele.server.model.MonitoringPlan
+import org.opentele.server.model.QuestionnaireSchedule
+import org.opentele.server.model.Schedule
 import org.opentele.server.model.types.Month
 import org.opentele.server.model.types.Weekday
 import spock.lang.Specification
 import spock.lang.Unroll
 
-import java.text.SimpleDateFormat
-
 @TestMixin(GrailsUnitTestMixin)
 public class QuestionnaireScheduleSpec extends Specification {
+    def setup() {
+        mockForConstraintsTests(QuestionnaireSchedule)
+    }
+
     def 'behaves well when initialized'() {
         when:
-        Calendar now = Calendar.getInstance()
-        def (day, month, year) = [now.get(Calendar.DATE), Month.fromCalendarMonth(now.get(Calendar.MONTH)), now.get(Calendar.YEAR)]
+        def today = new Date().clearTime()
 
         def schedule = new QuestionnaireSchedule()
 
@@ -25,8 +26,16 @@ public class QuestionnaireScheduleSpec extends Specification {
         schedule.timesOfDay == []
         schedule.daysInMonth == []
         schedule.weekdays == []
-        schedule.startingDate == new Schedule.StartingDate(day: day, month: month, year: year)
+        schedule.startingDate == today
         schedule.dayInterval == 2
+    }
+
+    Date createDate(int day, int month, int year) {
+        def date = new Date().clearTime()
+        date[Calendar.DATE] = day
+        date[Calendar.MONTH] = month
+        date[Calendar.YEAR] = year
+        return date
     }
 
     def 'accepts valid hours'() {
@@ -67,13 +76,13 @@ public class QuestionnaireScheduleSpec extends Specification {
 
     def 'rejects invalid days in month'() {
         when:
-        def schedule = new QuestionnaireSchedule(patientQuestionnaire: new PatientQuestionnaire(), monitoringPlan: new MonitoringPlan())
+        def schedule = new QuestionnaireSchedule(monitoringPlan: new MonitoringPlan())
         schedule.type = Schedule.ScheduleType.MONTHLY
         schedule.daysInMonth = [-1, 2, 100]
         schedule.validate()
 
         then:
-        assert schedule.errors.hasErrors()
+        schedule.errors['internalDaysInMonth']
     }
 
     def 'accepts weekdays'() {
@@ -85,46 +94,14 @@ public class QuestionnaireScheduleSpec extends Specification {
         schedule.weekdays == [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]
     }
 
-    def 'can set starting date and interval for nth day'() {
-        when:
-        def schedule = new QuestionnaireSchedule()
-        schedule.startingDate = new Schedule.StartingDate(day: 14, month: Month.APRIL, year: 2012)
-        schedule.dayInterval = 5
-
-        then:
-        schedule.startingDate == new Schedule.StartingDate(day: 14, month: Month.APRIL, year: 2012)
-        schedule.dayInterval == 5
-    }
-
-    def 'rejects invalid starting date'() {
-        when:
-        def schedule = new QuestionnaireSchedule()
-        schedule.startingDate = new Schedule.StartingDate(day: 29, month: Month.FEBRUARY, year: 2013)
-
-        then:
-        def e = thrown(IllegalArgumentException)
-        e.message ==~ /Invalid starting date:.*/
-    }
-
     def 'rejects zero days in interval'() {
         when:
         def schedule = new QuestionnaireSchedule()
         schedule.dayInterval = 0
+        schedule.validate()
 
         then:
-        def e = thrown(IllegalArgumentException)
-        e.message == 'Non-positive day interval: 0'
-    }
-
-    def 'rejects negative days in interval'() {
-        when:
-        def schedule = new QuestionnaireSchedule()
-        schedule.dayInterval = -1
-        fail 'How did you set a negative day interval?!?'
-
-        then:
-        def e = thrown(IllegalArgumentException)
-        e.message == 'Non-positive day interval: -1'
+        schedule.errors['dayInterval']
     }
 
     def 'gives no deadlines for unscheduled schedules'() {
@@ -142,13 +119,13 @@ public class QuestionnaireScheduleSpec extends Specification {
         given: "A schedule that should fire on 2013-06-07 at 08:00 and 10:30"
         def schedule = scheduleStartingAt(startingDate)
         schedule.type = Schedule.ScheduleType.SPECIFIC_DATE
-        schedule.specificDate = new Schedule.StartingDate(year: 2013, month: Month.JUNE, day: 7)
+        schedule.specificDate = createDate(7, Month.JUNE.asCalendarMonth(), 2013)
 
         when: "The latest deadline is requested"
-        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))
+        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))?.time
 
         then: "The correct date and time should be returned"
-        result.equals(calendarFromString(deadlineDate))
+        result == dateFromString(deadlineDate)
 
         where:
         startingDate          | endTime               | deadlineDate
@@ -165,13 +142,13 @@ public class QuestionnaireScheduleSpec extends Specification {
         given:
         def schedule = scheduleStartingAt(startingDate)
         schedule.type = Schedule.ScheduleType.SPECIFIC_DATE
-        schedule.specificDate = new Schedule.StartingDate(year: 2013, month: Month.JUNE, day: 7)
+        schedule.specificDate = createDate(7, Month.JUNE.asCalendarMonth(), 2013)
 
         when:
-        def result = schedule.getNextDeadlineAfter(calendarFromString(fromTime))
+        def result = schedule.getNextDeadlineAfter(calendarFromString(fromTime))?.time
 
         then:
-        result.equals(calendarFromString(deadlineDate))
+        result == dateFromString(deadlineDate)
 
         where:
         startingDate          | fromTime              | deadlineDate
@@ -187,10 +164,10 @@ public class QuestionnaireScheduleSpec extends Specification {
         schedule.daysInMonth = [3, 5, 19]
 
         when:
-        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))
+        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))?.time
 
         then:
-        result.equals(calendarFromString(deadlineDate))
+        result == dateFromString(deadlineDate)
 
         where:
         startingDate          | endTime               | deadlineDate
@@ -206,10 +183,10 @@ public class QuestionnaireScheduleSpec extends Specification {
         schedule.daysInMonth = [3, 5, 19]
 
         when:
-        def result = schedule.getNextDeadlineAfter(calendarFromString(fromTime)).time
+        def result = schedule.getNextDeadlineAfter(calendarFromString(fromTime))?.time
 
         then:
-        result.equals(calendarFromString(deadlineDate).time)
+        result == dateFromString(deadlineDate)
 
         where:
         startingDate          | fromTime              | deadlineDate
@@ -224,19 +201,19 @@ public class QuestionnaireScheduleSpec extends Specification {
         given:
         def schedule = scheduleStartingAt(startingDate)
         schedule.type = Schedule.ScheduleType.EVERY_NTH_DAY
-        schedule.startingDate = new Schedule.StartingDate(year: fromYear, month: fromMonth, day: fromDay)
+        schedule.startingDate = createDate(fromDay, fromMonth.asCalendarMonth(), fromYear)
         schedule.dayInterval = dayInterval
 
         when:
-        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))
+        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))?.time
 
         then:
-        result.equals(calendarFromString(deadlineDate))
+        result == dateFromString(deadlineDate)
 
         where:
         startingDate          | endTime               | dayInterval | fromYear | fromMonth  | fromDay | deadlineDate
-        '2013-06-01 00:00:00' | '2013-06-07 10:46:12' |           3 |     2013 | Month.JUNE |       1 | '2013-06-07 10:30:00'
-        '2013-06-01 00:00:00' | '2013-06-03 10:46:12' |           3 |     2013 | Month.MAY  |      30 | '2013-06-02 10:30:00'
+        '2013-06-01 00:00:00' | '2013-06-07 10:46:12' | 3           | 2013     | Month.JUNE | 1       | '2013-06-07 10:30:00'
+        '2013-06-01 00:00:00' | '2013-06-03 10:46:12' | 3           | 2013     | Month.MAY  | 30      | '2013-06-02 10:30:00'
     }
 
     @Unroll
@@ -244,20 +221,20 @@ public class QuestionnaireScheduleSpec extends Specification {
         given:
         def schedule = scheduleStartingAt(startingDate)
         schedule.type = Schedule.ScheduleType.EVERY_NTH_DAY
-        schedule.startingDate = new Schedule.StartingDate(year: fromYear, month: fromMonth, day: fromDay)
+        schedule.startingDate = createDate(fromDay, fromMonth.asCalendarMonth(), fromYear)
         schedule.dayInterval = dayInterval
 
         when:
-        def result = schedule.getNextDeadlineAfter(calendarFromString(fromTime)).time
+        def result = schedule.getNextDeadlineAfter(calendarFromString(fromTime))?.time
 
         then:
-        result.equals(calendarFromString(deadlineDate).time)
+        result == dateFromString(deadlineDate)
 
         where:
         startingDate          | fromTime              | dayInterval | fromYear | fromMonth  | fromDay | deadlineDate
-        '2013-06-01 00:00:00' | '2013-06-07 10:29:00' |           3 |     2013 | Month.JUNE |       1 | '2013-06-07 10:30:00'
-        '2013-06-01 00:00:00' | '2013-06-07 10:30:00' |           3 |     2013 | Month.JUNE |       1 | '2013-06-10 08:00:00'
-        '2013-06-01 00:00:00' | '2013-06-03 10:46:12' |           3 |     2013 | Month.MAY  |      30 | '2013-06-05 08:00:00'
+        '2013-06-01 00:00:00' | '2013-06-07 10:29:00' | 3           | 2013     | Month.JUNE | 1       | '2013-06-07 10:30:00'
+        '2013-06-01 00:00:00' | '2013-06-07 10:30:00' | 3           | 2013     | Month.JUNE | 1       | '2013-06-10 08:00:00'
+        '2013-06-01 00:00:00' | '2013-06-03 10:46:12' | 3           | 2013     | Month.MAY  | 30      | '2013-06-05 08:00:00'
     }
 
     @Unroll
@@ -265,13 +242,13 @@ public class QuestionnaireScheduleSpec extends Specification {
         given:
         def schedule = scheduleStartingAt(startingDate)
         schedule.type = Schedule.ScheduleType.WEEKDAYS
-        schedule.weekdays = [ Weekday.MONDAY, Weekday.FRIDAY ]
+        schedule.weekdays = [Weekday.MONDAY, Weekday.FRIDAY]
 
         when:
-        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))
+        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))?.time
 
         then:
-        result.equals(calendarFromString(deadlineDate))
+        result == dateFromString(deadlineDate)
 
         where:
         startingDate          | endTime               | deadlineDate
@@ -285,18 +262,68 @@ public class QuestionnaireScheduleSpec extends Specification {
         given:
         def schedule = scheduleStartingAt(startingDate)
         schedule.type = Schedule.ScheduleType.WEEKDAYS
-        schedule.weekdays = [ Weekday.MONDAY, Weekday.FRIDAY ]
+        schedule.weekdays = [Weekday.MONDAY, Weekday.FRIDAY]
 
         when:
         def result = schedule.getNextDeadlineAfter(calendarFromString(fromTime)).time
 
         then:
-        result.equals(calendarFromString(deadlineDate).time)
+        result == dateFromString(deadlineDate)
 
         where:
         startingDate          | fromTime              | deadlineDate
         '2013-06-01 00:00:00' | '2013-06-07 10:29:12' | '2013-06-07 10:30:00'
         '2013-06-01 00:00:00' | '2013-06-07 10:46:12' | '2013-06-10 08:00:00'
+    }
+
+
+    @Unroll
+    def 'gives correct past deadlines for weekday once schedules'() {
+        given:
+        def schedule = scheduleStartingAt(startingDate)
+        schedule.type = Schedule.ScheduleType.WEEKDAYS_ONCE
+        schedule.blueAlarmTime = new Schedule.TimeOfDay(hour: 10, minute: 0)
+        schedule.weekdaysIntroPeriod = [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]
+        schedule.weekdaysSecondPeriod = [Weekday.TUESDAY]
+        schedule.introPeriodWeeks = 2
+
+        when:
+        def result = schedule.getLatestDeadlineBefore(calendarFromString(endTime))?.time
+
+        then:
+        result == dateFromString(deadlineDate)
+
+        where:
+        startingDate          | endTime               | deadlineDate
+        '2013-06-01 00:00:00' | '2013-06-01 07:46:12' | null
+        '2013-06-01 00:00:00' | '2013-06-07 10:46:12' | '2013-06-07 10:00:00'
+        '2013-06-01 00:00:00' | '2013-06-11 10:46:12' | '2013-06-11 10:00:00'
+        '2013-06-01 00:00:00' | '2013-06-20 10:46:12' | '2013-06-18 10:00:00'
+    }
+
+    @Unroll
+    def 'gives correct future deadlines for weekday once schedules'() {
+        given:
+        def schedule = scheduleStartingAt(startingDate)
+        schedule.type = Schedule.ScheduleType.WEEKDAYS_ONCE
+        schedule.blueAlarmTime = new Schedule.TimeOfDay(hour: 10, minute: 0)
+        schedule.weekdaysIntroPeriod = [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]
+        schedule.weekdaysSecondPeriod = [Weekday.TUESDAY]
+        schedule.introPeriodWeeks = 2
+
+        when:
+        def result = schedule.getNextDeadlineAfter(calendarFromString(fromTime)).time
+
+        then:
+        result == dateFromString(deadlineDate)
+
+        where:
+        startingDate          | fromTime              | deadlineDate
+        '2013-06-01 00:00:00' | '2013-06-01 10:29:12' | '2013-06-03 10:00:00'
+        '2013-06-01 00:00:00' | '2013-06-03 10:29:12' | '2013-06-05 10:00:00'
+        '2013-06-01 00:00:00' | '2013-06-07 10:46:12' | '2013-06-11 10:00:00'
+        '2013-06-01 00:00:00' | '2013-06-11 07:46:12' | '2013-06-11 10:00:00'
+        '2013-06-01 00:00:00' | '2013-06-11 18:46:12' | '2013-06-18 10:00:00'
     }
 
     private QuestionnaireSchedule scheduleStartingAt(String startingDate) {
@@ -306,18 +333,22 @@ public class QuestionnaireScheduleSpec extends Specification {
         schedule
     }
 
-    private Calendar calendarFromString(String s) {
-        if (s == null) {
+    private Calendar calendarFromString(String dateString) {
+        if (dateString == null) {
             return null
         }
         def cal = Calendar.getInstance()
-        def sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-        cal.setTime(sdf.parse(s))
+        cal.setTime(dateFromString(dateString))
+
         cal
     }
 
+    private Date dateFromString(String dateString) {
+        return dateString ? Date.parse("yyyy-MM-dd HH:mm:ss", dateString) : null
+    }
+
     private boolean assertValidHours(List<Schedule.TimeOfDay> timesOfDay) {
-        def schedule = new QuestionnaireSchedule(questionnaireHeader: new QuestionnaireHeader(), patientQuestionnaire: new PatientQuestionnaire(), monitoringPlan: new MonitoringPlan())
+        def schedule = new QuestionnaireSchedule(questionnaireHeader: new QuestionnaireHeader(), monitoringPlan: new MonitoringPlan(), internalDaysInMonth: "1")
         schedule.type = Schedule.ScheduleType.MONTHLY
         schedule.timesOfDay = timesOfDay
         schedule.validate()
@@ -326,7 +357,7 @@ public class QuestionnaireScheduleSpec extends Specification {
     }
 
     private boolean assertInvalidHours(List<Schedule.TimeOfDay> timesOfDay) {
-        def schedule = new QuestionnaireSchedule(questionnaireHeader: new QuestionnaireHeader(), patientQuestionnaire: new PatientQuestionnaire(), monitoringPlan: new MonitoringPlan())
+        def schedule = new QuestionnaireSchedule(questionnaireHeader: new QuestionnaireHeader(), monitoringPlan: new MonitoringPlan())
         schedule.type = Schedule.ScheduleType.MONTHLY
         schedule.timesOfDay = timesOfDay
         schedule.validate()

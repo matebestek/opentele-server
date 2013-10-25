@@ -1,29 +1,22 @@
 package org.opentele.server.questionnaire
-
 import org.opentele.server.model.MeterType
-import org.opentele.server.model.Schedule
 import org.opentele.server.model.questionnaire.*
 import org.opentele.server.model.types.DataType
 import org.opentele.server.model.types.MeterTypeName
 import org.opentele.server.model.types.Severity
-import org.opentele.server.model.types.Weekday
-
-import java.text.ParseException
 
 class EditorQuestionnaireBuilder {
-    void buildQuestionnaire(questionnaireJson, Questionnaire questionnaire) {
-
-        validateQuestionnaireGraph(questionnaireJson)
+    void buildQuestionnaire(QuestionnaireEditorCommand command, Questionnaire questionnaire) {
 
         questionnaire.creationDate = new Date()
-        questionnaire.editorState  = questionnaireJson.toString()
+        questionnaire.editorState  = command.asJSON()
 
-        buildStandardSchedule(questionnaireJson.standardSchedule, questionnaire)
+        buildStandardSchedule(command, questionnaire)
 
-        def nodes = createNodes(questionnaireJson)
+        def nodes = createNodes(command.nodes)
         saveNodes(nodes)
 
-        createConnections(questionnaireJson, questionnaire, nodes)
+        createConnections(command.connections, questionnaire, nodes)
 
         nodes.values().each {
             it.save(failOnError: true)
@@ -34,52 +27,15 @@ class EditorQuestionnaireBuilder {
 
     }
 
-    private void validateQuestionnaireGraph(def questionnaireJson) {
-
-        if(!hasExactlyOneStartNode(questionnaireJson)) {
-            throw new IllegalArgumentException("Spørgeskemaer skal have præcis én startknude")
-        }
-
-        if(!hasExactlyOneEndNode(questionnaireJson)) {
-            throw new IllegalArgumentException("Spørgeskemaer skal have præcis én slutknude")
-        }
-    }
-
-    private boolean hasExactlyOneStartNode(questionnaireJson) {
-        questionnaireJson.nodes.findAll{it.value.type == "start"}.size() == 1
-    }
-
-    private boolean hasExactlyOneEndNode(questionnaireJson) {
-        questionnaireJson.nodes.findAll{it.value.type == "end"}.size() == 1
-    }
-    private void buildStandardSchedule(standardScheduleJson, questionnaire)
+    private void buildStandardSchedule(QuestionnaireEditorCommand command, Questionnaire questionnaire)
     {
-        def standardSchedule = new StandardSchedule()
-        if (standardScheduleJson.type == null || standardScheduleJson.type.empty) {
-            throw new IllegalArgumentException("Spørgeskemaer skal have en standard monitoreringsplan")
-        }
-        standardSchedule.type = standardScheduleJson.type as Schedule.ScheduleType
-        standardSchedule.weekdays = standardScheduleJson.weekdays.collect { Weekday.valueOf(it) }
-        standardSchedule.daysInMonth = standardScheduleJson.daysInMonth.collect { it as Integer }
-        standardSchedule.intervalInDays = standardScheduleJson.intervalInDays as Integer
-        standardSchedule.startingDate = Schedule.StartingDate.fromDate(parseDate(standardScheduleJson.startingDate as String, new Date()))
-        standardSchedule.specificDate = Schedule.StartingDate.fromDate(parseDate(standardScheduleJson.specificDate as String))
-        standardSchedule.timesOfDay = standardScheduleJson.timesOfDay.collect { new Schedule.TimeOfDay(hour: it.hour as Integer, minute: it.minute as Integer) }
-        standardSchedule.reminderStartMinutes = standardScheduleJson.reminderStartMinutes as Integer
+        def standardSchedule = questionnaire.standardSchedule ?: new StandardSchedule()
+        command.bindScheduleData(standardSchedule)
         questionnaire.standardSchedule = standardSchedule
     }
 
-    def parseDate(String stringDate, Date defaultDate = null) {
-        if(!stringDate) return defaultDate
-        try {
-            return Date.parse("dd/MM/yyyy",stringDate)
-        } catch(ParseException e) {
-            return Date.parse("dd-MM-yyyy", stringDate)
-        }
-    }
-
-    private void createConnections(questionnaireJson, questionnaire, nodes) {
-        questionnaireJson.connections.each {
+    private void createConnections(List connections, questionnaire, Map nodes) {
+        connections.each {
             if (it.source.startsWith("start")) {
                 questionnaire.startNode = nodes[it.target]
             } else {
@@ -152,9 +108,9 @@ class EditorQuestionnaireBuilder {
         endNode.save(failOnError: true)
     }
 
-    private LinkedHashMap createNodes(questionnaireJson) {
+    private Map createNodes(Map jsonNodes) {
         def nodes = [:]
-        questionnaireJson.nodes.each {
+        jsonNodes.each {
             switch (it.value.type) {
                 case 'measurement':
                     nodes[it.key] = createMeasurementNode(it)

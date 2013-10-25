@@ -8,7 +8,7 @@
 	<g:textField name="authority" required="" value="${roleInstance?.authority}" />
 </div>
 <div class="fieldcontain required">
-    <label for="permissionIds" onmouseover="tooltip.show('${message(code: 'tooltip.create.role.permissions')}');" onmouseout="tooltip.hide();">
+    <label for="permissionIds" data-tooltip="${message(code: 'tooltip.create.role.permissions')}">
         <g:message code="role.permissions.label" default="type" />
     </label>
     <g:select name="permissionIds"

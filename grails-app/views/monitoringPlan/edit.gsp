@@ -2,20 +2,14 @@
 <!doctype html>
 <html>
 <head>
-<meta name="layout" content="main">
-<g:set var="entityName"
-	value="${message(code: 'monitoringPlan.label', default: 'MonitoringPlan')}" />
-<title><g:message code="default.edit.label" args="[entityName]" />
-	for ${monitoringPlanInstance?.patient?.name()}</title>
+    <meta name="layout" content="main">
+    <g:set var="title" value="${message(code: 'monitoringPlan.edit.title', args: [monitoringPlanInstance.patient.name.encodeAsHTML()])}" />
+    <title>${title}</title>
 </head>
 
 <body>
 	<div id="edit-monitoringPlan" class="content scaffold-edit" role="main">
-		<h1>
-			<g:message code="default.edit.label" args="[entityName]" />
-			for
-			${monitoringPlanInstance?.patient?.name()}
-		</h1>
+		<h1>${title}</h1>
 		<g:if test="${flash.message}">
 			<div class="message" role="status">
 				${flash.message}

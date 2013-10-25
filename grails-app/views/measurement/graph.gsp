@@ -24,7 +24,9 @@
 	    <!--[if lte IE 7]>
 		<i>Der er desværre ikke support for grafer i Internet Explorer 7 eller mindre</i>
 		<![endif]-->
+        <![if gt IE 7]>
         <div id="${measurement.type}-${patient.id}" class="fullScreenGraph"></div>
+        <![endif]>
 	</div>
 </body>
 </html>

@@ -12,8 +12,8 @@ $(document).ready(function() {
 
 		if (input_cpr.indexOf("-") > 0 && input_cpr.length == 11) {
 			try {
-				var temp
-				temp = input_cpr.substring(0, input_cpr.indexOf('-'))
+				var temp;
+				temp = input_cpr.substring(0, input_cpr.indexOf('-'));
 				input_cpr = temp + input_cpr.substring(input_cpr.indexOf('-')+1, input_cpr.length)
 			} catch (err) {
 			}
@@ -32,7 +32,7 @@ $(document).ready(function() {
 
 <div
 	class="fieldcontain ${hasErrors(bean: patientInstance, field: 'cpr', 'error')} required">
-	<label for="cpr" onmouseover="tooltip.show('${message(code: 'tooltip.patient.create.SSN')}');" onmouseout="tooltip.hide();"> <g:message code="patient.cpr.label"
+	<label for="cpr" data-tooltip="${message(code: 'tooltip.patient.create.SSN')}"> <g:message code="patient.cpr.label"
 			default="Cpr" /> <span class="required-indicator">*</span>
 	</label>
 	<g:textField name="cpr" value="${patientInstance?.cpr}" />

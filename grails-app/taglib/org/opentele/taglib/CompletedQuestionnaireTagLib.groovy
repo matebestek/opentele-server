@@ -27,49 +27,64 @@ class CompletedQuestionnaireTagLib {
     ClinicianService clinicianService
 
 	def renderResultTableForPatient = { attrs, body ->
-		def withPrefs = attrs.withPrefs
+        def withPrefs = attrs.withPrefs
 		def patientID = attrs.patientID
-        def unacknowledgedOnly = attrs.unacknowledgedOnly
+        def resultModel = attrs.completedQuestionnaireResultModel
 
-		def resultModel = questionnaireService.extractMeasurements(patientID as Long, null, unacknowledgedOnly)
+        if (resultModel.results.size() == 0) {
+            out << "<div style=\"margin: 10px 0 20px;\">${g.message(code: 'patient.questionnaire.noMeasurementsForPeriod')}</div>"
+            return
+        }
 
-		out << "<div id=\"resultsContainer\">"
-		//<!-- Table on left side -->
-		out << "<div id=\"leftTable\">"
-		out << "<table>"
-		out << "<thead>"
-		out << "<tr><th>"
-		out << g.message(code: "default.questions", default: "Spørgsmål")
-		out << "</th></tr>"
-		out << "</thead>"
-		
-		if (withPrefs) {
+        out << "<div id=\"resultsContainer\" class=\"scrollable\">"
+        out << "<table cellspacing=\"0\"><tbody>"
+        out << "<tr>"
+        out << "<td class=\"outerCell\">"
+
+        // Upper left corner
+        out << "<div class=\"tableContainer\" id=\"staticHeader\">"
+        out << "<table><thead><tr><th>"
+        out << g.message(code: "default.questions", default: "Spørgsmål")
+        out << "</th></tr></thead></table>"
+        out << "</div>"
+
+        out << "</td><td class=\"outerCell\">"
+
+        // Top table with headers
+        out << "<div class=\"tableContainer\" id=\"headerContainer\">"
+        out << "<table cellspacing=\"0\"><thead><tr>"
+        resultModel.columnHeaders.each { questionnaireMetaData ->
+            out << "<th><div>"
+            renderHeaderForThisType(questionnaireMetaData)
+            out << "</div></th>"
+        }
+        out << "</tr></thead></table>"
+        out << "</div>"
+
+        out << "</td>"
+        out << "</tr><tr>"
+        out << "<td class=\"outerCell\">"
+
+        // Left table with headers
+        out << "<div class=\"tableContainer\" id=\"leftHeaderContainer\">"
+        out << "<table cellspacing=\"0\">"
+        if (withPrefs) {
             out << "<tbody class=\"questionTable"+patientID+"\" data-bind=\"template:{name:'prefRowTemplate', foreach: prefRows}\">"
-		} else {
-			out << "<tbody class='questionTable"+patientID+"'>"
-		}
+        } else {
+            out << "<tbody class='questionTable"+patientID+"'>"
+        }
 
         resultModel.questions.each { question ->
             renderQuestionForType(question, patientID)
         }
+        out << "</tbody></table>"
+        out << "</div>"
 
-		out << "</tbody>"
-		out << "</table>"
-		out << "</div>"
-		//<!-- END left side-->
+        out << "</td><td class=\"outerCell\">"
 
-		//<!-- Table on right side -->
-		out << "<div id=\"rightTable\">"
-		out << "<table border=\"1\">\n"
-		out << "<thead><tr>\n"
-            resultModel.columnHeaders.each { questionnaireMetaData ->
-                out << "<th>"
-                    renderHeaderForThisType(questionnaireMetaData)
-                out << "</th>"
-            }
-        out << "</tr></thead>"
-
-		//Display all results
+        // Result table
+        out << "<div class=\"tableContainer\" id=\"resultTableContainer\" >"
+        out << "<table cellspacing=\"0\">"
         if(withPrefs) {
             out << "<tbody class='resultsTable${patientID}' data-bind=\"template:{name:'prefRowResTemplate', foreach: prefResRows}\">"
         } else {
@@ -79,7 +94,7 @@ class CompletedQuestionnaireTagLib {
         for (int i = 0; i < resultModel.questions.size(); i++) {
             out << "<tr name='${resultModel.questions[i].templateQuestionnaireNodeId}' class='result'> "
             for(int j = 0; j < resultModel.columnHeaders.size(); j++) {
-               ResultKey key = getKeyForThisCell(resultModel.questions[i], resultModel.columnHeaders[j])
+                ResultKey key = getKeyForThisCell(resultModel.questions[i], resultModel.columnHeaders[j])
 
                 if(resultModel.results[key]) {
                     renderMeasurementCell(resultModel.results[key], key.type)
@@ -89,13 +104,12 @@ class CompletedQuestionnaireTagLib {
             }
             out << "</tr>"
         }
+        out << "</tbody></table>"
+        out << "</div>"
 
-		out << "</tbody>"
-		out << "</table>"
-		out << "</div>\n"
-		//<!-- END right side-->
-
-        out << "</div>\n"
+        out << "</td></tr>"
+        out << "</tbody></table>"
+        out << "</div>"
 	}
 
     def renderQuestionForType(MeasurementDescription measurementDescription, patientID) {
@@ -136,7 +150,7 @@ class CompletedQuestionnaireTagLib {
     }
 
     private void renderQuestionCell(_tooltip, cellContent, nestedDivStartTag, _units) {
-        out << "<tr><td onmouseover=\"tooltip.show(\'" + _tooltip + "\');\" onmouseout=\'tooltip.hide();\'>"
+        out << """<tr><td data-tooltip="$_tooltip">"""
         out << nestedDivStartTag
 
         out << "<B>"
@@ -222,7 +236,7 @@ class CompletedQuestionnaireTagLib {
     private void renderCellContents(String cellContent, tooltipText) {
         def toolTip = tooltipForMeasurementResult(tooltipText)
         if (toolTip) {
-            out << "<td><div onmouseover=\"tooltip.show('${toolTip}');\" onmouseout='tooltip.hide();'>"
+            out << """<td><div data-tooltip="${toolTip.encodeAsHTML()}">"""
         } else {
             out << "<td><div>"
         }
@@ -256,15 +270,15 @@ class CompletedQuestionnaireTagLib {
     def renderHeaderForConference(OverviewColumnHeader columnHeader) {
         out << columnHeader.uploadDate.toCalendar().format(g.message(code:"default.date.format.short")) + "<br/>"
 
-        def conference_image = "<img src=${g.resource(dir: 'images', file: 'conferenceshow.png')} onmouseover=\"tooltip.show('Målinger foretaget under video-konference');\" onmouseout=\"tooltip.hide();\"/>"
+        def conference_image = """<img src=${g.resource(dir: 'images', file: 'conferenceshow.png')} data-tooltip="Målinger foretaget under video-konference"/>"""
         out << g.link(controller:"patient", action:"conference",id:columnHeader.id, conference_image)
 
     }
 
     def renderHeaderForQuestionnaire(columnHeader) {
         def img_severity = "<img src=" + g.resource(dir: "images", file: columnHeader.severity.icon()) + " />"
-        def img_edit = "<img src=" + g.resource(dir: "images", file: "edit.png") + " onmouseover=\"tooltip.show('Se spørgeskema / ignorer besvarelser / tilføj kommentarer');\" onmouseout=\"tooltip.hide();\"/>"
-        def img_acknowledge = "<img src=" + g.resource(dir: "images", file: "unacknowledged.png") + " onmouseover=\"tooltip.show('Kvittér');\" onmouseout=\"tooltip.hide();\"/>"
+        def img_edit = """<img src=${g.resource(dir: "images", file: "edit.png")} data-tooltip="Se spørgeskema / ignorer besvarelser / tilføj kommentarer"/>"""
+        def img_acknowledge = """<img src=${g.resource(dir: "images", file: "unacknowledged.png")} data-tooltip="Kvittér"/>"""
 
         def autoMessageEnabledForPatient = messageService.autoMessageIsEnabledForCompletedQuestionnaire(columnHeader.id)
         def img_acknowledgeWithAutoMessage = getAutoMessageIcon(autoMessageEnabledForPatient)
@@ -275,7 +289,7 @@ class CompletedQuestionnaireTagLib {
         out << g.link(controller:"patient", action:"questionnaire", id:columnHeader.id, img_edit)
         if (columnHeader.acknowledgedBy) {
             def tooltip = g.message(code:"completedQuestionnaire.acknowledged.label", args: [columnHeader.acknowledgedBy, columnHeader.acknowledgedDate.format(message(code: "default.date.format")).toString()]) + (columnHeader.acknowledgedNote? "\\nNote: " + columnHeader.acknowledgedNote:"")
-            img_acknowledge = "<img src=" + g.resource(dir: "images", file: "acknowledged.png") + " onmouseover=\"tooltip.show('" + tooltip + "');\" onmouseout=\"tooltip.hide();\"/>"
+            img_acknowledge = """<img src=${g.resource(dir: "images", file: "acknowledged.png")} data-tooltip="$tooltip"/>"""
             out << img_acknowledge
         } else {
             out << "<a href='#' class='acknowledge' data-automessage='false' data-questionnaire-id='${columnHeader.id}')'>${img_acknowledge}</a>"
@@ -410,7 +424,7 @@ class CompletedQuestionnaireTagLib {
             } else if (result.value.equals("true") || result.value == true) {
                 prettyString = message(code: "default.yesno.true", default: "Ja")
             } else {
-                prettyString = result.value
+                prettyString = result.value.toString().encodeAsHTML()
             }
         } else {
             //MeasurementNodeResult
@@ -444,15 +458,6 @@ class CompletedQuestionnaireTagLib {
 		writeAcknowledgeAllGreenButtons(questionnaires, patient)
 		if (!patient.blueAlarmQuestionnaireIDs.empty) {
 			writeRemoveBlueAlarmsButton(patient.id)
-		}
-
-		//First next of kin information for this patient
-		def l = NextOfKinPerson.findAllByPatient(patient) //Optimize: Use 'find first' methods
-		def firstRel
-		def firstRelToolTip = ""
-		l.size() > 0 ? firstRel = l[0] : null
-		if (firstRel) {
-			firstRelToolTip = "<br/><br/>Første kontaktperson:<br/>$firstRel<br/>Tlf.: ${firstRel.phone}"
 		}
 
         //First entry item: Patient status
@@ -490,7 +495,7 @@ class CompletedQuestionnaireTagLib {
 
         //Third entry item: Patient name and CPR
         out << """<div data-tooltip="${message(code: 'patient.overview.goto.patient.tooltip')}">"""
-		out << """<h2 class="questionnaireListHeader" id="patientName">${g.link(action: 'questionnaires', controller: 'patient', id: patient.id, patient.name())}</h2>"""
+		out << """<h2 class="questionnaireListHeader" id="patientName">${g.link(action: 'questionnaires', controller: 'patient', id: patient.id, patient.name)}</h2>"""
 		out << "</div>"
 
         out << """<div data-tooltip="${message(code: 'patient.overview.goto.patient.tooltip')}">"""
@@ -537,7 +542,7 @@ class CompletedQuestionnaireTagLib {
     }
 
     def patientNoteToolTip(patientNotes, clinician) {
-        def tooltip = "Du har ingen ulæste noter til denne patient. Tryk for at gå til patientens noter."
+        String tooltip = "Du har ingen ulæste noter til denne patient. Tryk for at gå til patientens noter."
 
 
         def reminders = patientNotes.findAll{!it.seenBy.contains(clinician) && it.remindToday}
@@ -579,17 +584,17 @@ class CompletedQuestionnaireTagLib {
 
     def overviewGraphs = { attributes, body ->
         def patient = attributes['patient']
-        def (measurements, _) = measurementService.dataForGraphsAndTables(patient, TimeFilter.lastMonth())
+        def (measurements) = measurementService.dataForGraphsAndTables(patient, TimeFilter.lastMonth())
 
         out << "<div class=\"measurementsPlots\">"
 		//Graphs are not supported in IE7 (yet?)
-		out << "<!--[if gt IE 7]> -->"
+		out << "<![if gt IE 7]>"
 		out << "<h2>"+g.message(code: "patient.overview.graphs.header", args:["30"], default: "Grafer")+"</h2>"
 		measurements.each { measurement ->
             out << "<div id='${measurement.type}-${patient.id}' class='overviewGraph' style='width:750px'></div>"
         }
         out << g.render(template: "/measurement/measurementGraph", collection: measurements, var: 'measurement', model:[patient: patient])
-        out << "<!-- <![endif]-->"
+        out << "<![endif]>"
         out << "</div>"
 	}
 	
@@ -731,11 +736,11 @@ class CompletedQuestionnaireTagLib {
             }
             if (SpringSecurityUtils.ifAnyGranted(PermissionName.NODE_RESULT_IGNORE)) {
                 if (answer != null) {
-                    out << "<div onmouseover=\"tooltip.show('"+g.message(code: 'tooltip.patient.questionnaire.ignoreMeasurement')+"');\" onmouseout=\"tooltip.hide();\">"
+                    out << """<div data-tooltip="${g.message(code: 'tooltip.patient.questionnaire.ignoreMeasurement')}">"""
                     out << g.remoteLink(controller:"questionnaire", action:"toggleIgnoreNode", onComplete: "location.reload(true);", class: btnIcon, before:"", params:[resultID:answer.id, ignoreNavigation:'true'], btnLabel)
                     out << "</div>"
                 } else {
-                    out << "<div onmouseover=\"tooltip.show('"+g.message(code: 'questionnaire.show.question.answer.missing.ignorebutton.replacement.tooltip')+"');\" onmouseout=\"tooltip.hide();\">"
+                    out << """<div data-tooltip="${g.message(code: 'questionnaire.show.question.answer.missing.ignorebutton.replacement.tooltip')}">"""
                     out << g.message(code: "questionnaire.show.question.answer.missing.ignorebutton.replacement")
                     out << "</div>"
                 }

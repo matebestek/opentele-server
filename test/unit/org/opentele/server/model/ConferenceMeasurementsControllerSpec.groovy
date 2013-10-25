@@ -86,6 +86,18 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         measurement.included
     }
 
+    def 'can create new, automatic blood pressure measurement draft'() {
+        when:
+        controller.loadForm(conference.id, 'BLOOD_PRESSURE', true)
+        def measurement = ConferenceMeasurementDraft.findAll()[0]
+
+        then:
+        measurement instanceof ConferenceBloodPressureMeasurementDraft
+        measurement.conference == conference
+        measurement.automatic
+        measurement.waiting
+    }
+
     def 'can create new, manual saturation measurement draft'() {
         when:
         controller.loadForm(conference.id, 'SATURATION', false)
@@ -225,20 +237,41 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         controller.loadAutomaticMeasurement(lungFunctionMeasurementDraft.id)
 
         then:
-        response.status == 304
+        response.status == 200
+        response.text == ''
     }
 
-    def 'knows when automatic measurement has been submitted by patient'() {
+    def 'can load automatically submitted blood pressure measurement'() {
+        setup:
+        def bloodPressureMeasurementDraft = ConferenceBloodPressureMeasurementDraft.build(conference: conference, automatic: true, waiting: false,
+            systolic: 124, diastolic: 54, pulse: 47, meanArterialPressure: 102)
+
+        when:
+        params.id = bloodPressureMeasurementDraft.id
+        controller.loadAutomaticMeasurement(bloodPressureMeasurementDraft.id)
+        def json = response.json
+
+        then:
+        response.status == 200
+        json == [
+            systolic: '124',
+            diastolic: '54',
+            pulse: '47'
+        ]
+    }
+
+    def 'can load automatically submitted lung function measurement'() {
         setup:
         def lungFunctionMeasurementDraft = ConferenceLungFunctionMeasurementDraft.build(conference: conference, automatic: true, waiting: false, fev1: 3.4)
 
         when:
         params.id = lungFunctionMeasurementDraft.id
         controller.loadAutomaticMeasurement(lungFunctionMeasurementDraft.id)
+        def json = response.json
 
         then:
         response.status == 200
-        response.text.contains('3,4')
+        json == [fev1: '3,40']
     }
 
     def 'complains if confirming drafts given the wrong conference version'() {
@@ -275,6 +308,28 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         !model.measurementProposals[1].patient
 
         !conference.completed
+    }
+
+    def 'fills out all properties on automatic blood pressure measurements'() {
+        setup:
+        ConferenceBloodPressureMeasurementDraft.build(conference: conference, modifiedDate: new Date(), included: true,
+                systolic: 123, diastolic: 67, pulse: 45, meanArterialPressure: 100)
+        conference.measurements = []
+
+        when:
+        params.id = conference.id
+        params.conferenceVersion = conference.version
+        def model = controller.confirm()
+        Measurement bloodPressureMeasurement = model.measurementProposals[0]
+        Measurement pulseMeasurement = model.measurementProposals[1]
+
+        then:
+        bloodPressureMeasurement.measurementType.name == MeasurementTypeName.BLOOD_PRESSURE
+        bloodPressureMeasurement.systolic == 123
+        bloodPressureMeasurement.diastolic == 67
+        bloodPressureMeasurement.meanArterialPressure == 100
+        pulseMeasurement.measurementType.name == MeasurementTypeName.PULSE
+        pulseMeasurement.value == 45
     }
 
     def 'fills out all properties on automatic lung function measurements'() {

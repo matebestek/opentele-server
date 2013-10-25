@@ -13,9 +13,17 @@ enum Weekday {
 
     Weekday(int calendarWeekday) {
         this.calendarWeekday = calendarWeekday
-	}
+    }
+
+    static String fromWeekdays(List<Weekday> weekdays) {
+        (weekdays ?: []).join(',')
+    }
 
     int asCalendarWeekday() {
         return calendarWeekday
+    }
+
+    static toWeekdays(String weekdays) {
+        weekdays?.size() ? weekdays.split(',')?.collect { Weekday.valueOf(it) } : []
     }
 }

@@ -20,6 +20,7 @@ class ConferenceMeasurementDraft extends AbstractObject {
     boolean included
     boolean automatic
     boolean waiting
+    String deviceId
 
     ConferenceMeasurementDraftType getType() {
         throw new UnsupportedOperationException('Not implemented - override in subtype.')
@@ -48,5 +49,6 @@ class ConferenceMeasurementDraft extends AbstractObject {
 
     static transients = [ 'type', 'warningFields', 'errorFields' ]
     static constraints = {
+        deviceId(nullable: true)
     }
 }

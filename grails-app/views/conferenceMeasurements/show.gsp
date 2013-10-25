@@ -43,8 +43,8 @@
         function startUpdatingWaitingElement(element) {
             var measurementId = $(element).find("input[name='id']").val();
             return $.ajax('${createLink(action: 'loadAutomaticMeasurement')}?id=' + measurementId)
-            .success(function(data, statusText) {
-                if (statusText === 'success') {
+            .success(function(data) {
+                if (data !== '') {
                     updateWaitingElement(element, data);
                 }
             });
@@ -165,6 +165,9 @@
                 <g:if test="${measurementDraft.type == ConferenceMeasurementDraftType.BLOOD_PRESSURE && !measurementDraft.automatic}">
                     <g:render template="manualBloodPressure" model="[measurement: measurementDraft]"/>
                 </g:if>
+                <g:elseif test="${measurementDraft.type == ConferenceMeasurementDraftType.BLOOD_PRESSURE && measurementDraft.automatic}">
+                    <g:render template="automaticBloodPressure" model="[measurement: measurementDraft]"/>
+                </g:elseif>
                 <g:elseif test="${measurementDraft.type == ConferenceMeasurementDraftType.LUNG_FUNCTION && !measurementDraft.automatic}">
                     <g:render template="manualLungFunction" model="[measurement: measurementDraft]"/>
                 </g:elseif>
@@ -187,12 +190,12 @@
         <tr>
             <td colspan="3">
                 Tilføj måling:
-                <g:select name="measurementDraftType" valueMessagePrefix="conferenceMeasurements.measurementType" from="['MANUAL_BLOOD_PRESSURE', 'MANUAL_LUNG_FUNCTION', 'AUTOMATIC_LUNG_FUNCTION', 'MANUAL_SATURATION', 'MANUAL_WEIGHT']" noSelection="[null: '']"/>
+                <g:select name="measurementDraftType" valueMessagePrefix="conferenceMeasurements.measurementType" from="['MANUAL_BLOOD_PRESSURE', 'AUTOMATIC_BLOOD_PRESSURE', 'MANUAL_LUNG_FUNCTION', 'AUTOMATIC_LUNG_FUNCTION', 'MANUAL_SATURATION', 'MANUAL_WEIGHT']" noSelection="[null: '']"/>
 
                 <g:form action="confirm">
                     <g:hiddenField name="id" value="${conference.id}"/>
                     <g:hiddenField name="conferenceVersion" value="${conference.version}"/>
-                    <g:submitButton name="confirm" value="Afslut"/>
+                    <g:submitButton name="confirm" value="Gem og luk"/>
                 </g:form>
             </td>
         </tr>

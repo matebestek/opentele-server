@@ -1,5 +1,4 @@
 package org.opentele.server.questionnaire
-
 import grails.buildtestdata.mixin.Build
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
@@ -12,7 +11,6 @@ import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.patientquestionnaire.PatientBooleanNode
 import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
 import org.opentele.server.model.questionnaire.*
-import org.opentele.server.model.types.Month
 import org.opentele.server.model.types.PatientState
 import org.opentele.server.model.types.Severity
 import org.opentele.server.model.types.Unit
@@ -101,8 +99,10 @@ class QuestionnaireServiceSpec extends Specification {
     def 'triggers no blue alarm before starting date of monitoring plan for nth-day schedule'() {
         setup:
         def timesOfDay = [new Schedule.TimeOfDay(hour: 16, minute: 0)]
-        def nthDayStartingDate = new Schedule.StartingDate(year: 2013, month: Month.JUNE, day: 4)
-        new QuestionnaireScheduleBuilder().forMonitoringPlan(monitoringPlan).forScheduleType(EVERY_NTH_DAY).forIntervalInDays(2).forStartingDate(nthDayStartingDate).forTimesOfDay(timesOfDay).build()
+        def nthDayStartingDate = Date.parse("yyyy/M/d","2013/6/4")
+        new QuestionnaireScheduleBuilder().forMonitoringPlan(monitoringPlan)
+                .forScheduleType(EVERY_NTH_DAY).forIntervalInDays(2)
+                .forStartingDate(nthDayStartingDate).forTimesOfDay(timesOfDay).build()
 
         when:
         def checkDate = Date.parse("yyyy/M/d H:m:s", "2013/6/4 16:00:02").toCalendar()
@@ -141,10 +141,9 @@ class QuestionnaireServiceSpec extends Specification {
         blueAlarms.empty
     }
 
-    @Ignore ("KIH-785: test slået fra pga forkert anv. af createdDate")
     def 'triggers blue alarm alarm when questionnaire is uploaded too early'() {
-        def createdDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 15:13:12").toCalendar()
-        def completedQuestionnaire = new CompletedQuestionnaireBuilder(createdDate: createdDate.getTime()).forPatient(patient).build()
+        def receivedDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 15:13:12").toCalendar()
+        def completedQuestionnaire = new CompletedQuestionnaireBuilder(receivedDate: receivedDate.getTime()).forPatient(patient).build()
         def timesOfDay = [new Schedule.TimeOfDay(hour: 16, minute: 0)]
         new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire.questionnaireHeader).forMonitoringPlan(monitoringPlan).forScheduleType(WEEKDAYS).forWeekdays(Weekday.values().collect()).forTimesOfDay(timesOfDay).build()
 
@@ -158,8 +157,8 @@ class QuestionnaireServiceSpec extends Specification {
 
     def 'triggers no blue alarm when scheduled at two times a day and the first time has no uploaded questionnaire'() {
         setup:
-        def createdDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 15:54:12")
-        def completedQuestionnaire = new CompletedQuestionnaireBuilder(createdDate: createdDate).forPatient(patient).build()
+        def receivedDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 15:54:12")
+        def completedQuestionnaire = new CompletedQuestionnaireBuilder(receivedDate: receivedDate).forPatient(patient).build()
         def timesOfDay = [new Schedule.TimeOfDay(hour: 15, minute: 50), new Schedule.TimeOfDay(hour: 16, minute: 0)]
         new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire.questionnaireHeader).forMonitoringPlan(monitoringPlan).forScheduleType(WEEKDAYS).forWeekdays(Weekday.values().collect()).forTimesOfDay(timesOfDay).build()
 
@@ -171,11 +170,10 @@ class QuestionnaireServiceSpec extends Specification {
         blueAlarms.empty
     }
 
-    @Ignore ("KIH-785: test slået fra pga forkert anv. af createdDate")
     def 'triggers blue alarm when scheduled at two times a day and nothing is uploaded at the second time'() {
         setup:
-        def createdDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 15:44:12")
-        def completedQuestionnaire = new CompletedQuestionnaireBuilder(createdDate: createdDate).forPatient(patient).build()
+        def receivedDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 15:44:12")
+        def completedQuestionnaire = new CompletedQuestionnaireBuilder(receivedDate: receivedDate).forPatient(patient).build()
         def timesOfDay = [new Schedule.TimeOfDay(hour: 15, minute: 50), new Schedule.TimeOfDay(hour: 16, minute: 0)]
         new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire.questionnaireHeader).forMonitoringPlan(monitoringPlan).forScheduleType(WEEKDAYS).forWeekdays(Weekday.values().collect()).forTimesOfDay(timesOfDay).build()
 
@@ -310,8 +308,10 @@ class QuestionnaireServiceSpec extends Specification {
     @Unroll
     def "test that isEveryNthDayEquals returns the correct results"() {
         setup:
-        def standardSchedule = new StandardSchedule(intervalInDays: standardScheduleVal)
-        def questionnaireSchedule = new QuestionnaireSchedule(dayInterval: questionnaireScheduleVal)
+        def standardSchedule = new StandardSchedule()
+        standardSchedule.dayInterval = standardScheduleVal
+        def questionnaireSchedule = new QuestionnaireSchedule()
+        questionnaireSchedule.dayInterval = questionnaireScheduleVal
 
         when:
         def result = service.isEveryNthDayEquals(standardSchedule, questionnaireSchedule)
@@ -415,7 +415,7 @@ class QuestionnaireServiceSpec extends Specification {
     def "test that isSchedulesEquals returns the correct results"() {
         setup:
 
-        def standardSchedule = new StandardSchedule(type: standardScheduleVal, x: 'test')
+        def standardSchedule = new StandardSchedule(type: standardScheduleVal)
         def questionnaireSchedule = new QuestionnaireSchedule(type: questionnaireScheduleVal)
 
         expect:
@@ -568,8 +568,9 @@ class QuestionnaireServiceSpec extends Specification {
         setup:
         def questionnaireSchedule = new QuestionnaireSchedule(type: UNSCHEDULED, questionnaireHeader: QuestionnaireHeader.build(), monitoringPlan: MonitoringPlan.build())
         def standardSchedule = new StandardSchedule(type: type, internalWeekdays: internalWeekdays,
-                internalDaysInMonth: internalDaysInMonth, intervalInDays: dayInterval,
+                internalDaysInMonth: internalDaysInMonth, dayInterval: dayInterval,
                 internalTimesOfDay: "10:00,12:00", reminderStartMinutes: 60)
+        standardSchedule.dayInterval = dayInterval
 
         expect:
         !questionnaireSchedule.internalWeekdays
@@ -577,6 +578,7 @@ class QuestionnaireServiceSpec extends Specification {
 
         when:
         service.assignStandardScheduleToQuestionnaireSchedule(standardSchedule, questionnaireSchedule)
+
         then:
         questionnaireSchedule.type == expectedType
         questionnaireSchedule.weekdays == expectedWeekdays

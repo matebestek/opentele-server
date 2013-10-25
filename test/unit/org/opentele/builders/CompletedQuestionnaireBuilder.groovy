@@ -10,6 +10,7 @@ class CompletedQuestionnaireBuilder {
     def name
     def questionnaireHeader
     def uploadDate = new Date()
+    def receivedDate = new Date()
     def severity = Severity.GREEN
     def createdDate = new Date()
 
@@ -33,7 +34,7 @@ class CompletedQuestionnaireBuilder {
         this.questionnaireHeader = questionnaireHeaderBuilder.build()
 
         def result = new CompletedQuestionnaire(patient:patient, questionnaireHeader: questionnaireHeader,
-                patientQuestionnaire: patientQuestionnaire, uploadDate: uploadDate, severity: severity, createdDate: createdDate)
+                patientQuestionnaire: patientQuestionnaire, uploadDate: uploadDate, receivedDate: receivedDate, severity: severity, createdDate: createdDate)
         result.save(failOnError: true)
 
         result

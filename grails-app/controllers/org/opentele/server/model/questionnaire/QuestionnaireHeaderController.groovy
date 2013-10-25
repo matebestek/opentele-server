@@ -3,7 +3,6 @@ package org.opentele.server.model.questionnaire
 import grails.plugins.springsecurity.Secured
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.model.types.PermissionName
-import org.opentele.server.model.types.Severity
 
 @Secured(PermissionName.NONE)
 @SecurityWhiteListController
@@ -55,8 +54,8 @@ class QuestionnaireHeaderController {
 
     @Secured(PermissionName.QUESTIONNAIRE_READ_ALL)
     def show(Long id) {
-        withInstance(id) {
-            [questionnaireHeaderInstance: it, historicQuestionnaires: questionnaireHeaderService.findHistoricQuestionnaires(it)]
+        withInstance(id) { QuestionnaireHeader questionnaireHeader ->
+            [questionnaireHeaderInstance: questionnaireHeader, historicQuestionnaires: questionnaireHeaderService.findHistoricQuestionnaires(questionnaireHeader)]
         }
     }
 
@@ -105,8 +104,8 @@ class QuestionnaireHeaderController {
 
     @Secured(PermissionName.QUESTIONNAIRE_DELETE)
     def unpublish(Long id) {
-        withInstance(id) {
-            questionnaireHeaderService.unpublishActive(it)
+        withInstance(id) {  QuestionnaireHeader questionnaireHeader ->
+            questionnaireHeaderService.unpublishActive(questionnaireHeader)
             flash.message = message(code: 'questionnaireHeader.activeQuestionnaire.removed')
             redirect(action: 'show', id: id)
         }
@@ -114,9 +113,9 @@ class QuestionnaireHeaderController {
 
     @Secured(PermissionName.QUESTIONNAIRE_WRITE)
     def publishDraft(Long id) {
-        withInstance(id) {
+        withInstance(id) { QuestionnaireHeader questionnaireHeader ->
             try {
-                questionnaireHeaderService.publishDraft(it, clinicianService.currentClinician)
+                questionnaireHeaderService.publishDraft(questionnaireHeader, clinicianService.currentClinician)
                 flash.message = message(code: 'questionnaireHeader.draftPublished')
             } catch (Exception e) {
                 log.error('Could not publish draft', e)
@@ -128,8 +127,8 @@ class QuestionnaireHeaderController {
 
     @Secured(PermissionName.QUESTIONNAIRE_WRITE)
     def deleteDraft(Long id) {
-        withInstance(id) {
-            questionnaireHeaderService.deleteDraft(it)
+        withInstance(id) {  QuestionnaireHeader questionnaireHeader ->
+            questionnaireHeaderService.deleteDraft(questionnaireHeader)
             flash.message = message(code: 'questionnaireHeader.draftDeleted')
             redirect(action: 'show', id: id)
         }
@@ -137,8 +136,8 @@ class QuestionnaireHeaderController {
 
     @Secured(PermissionName.QUESTIONNAIRE_DELETE)
     def delete(Long id) {
-        withInstance(id) {
-            questionnaireHeaderService.delete(it)
+        withInstance(id) { QuestionnaireHeader questionnaireHeader ->
+            questionnaireHeaderService.delete(questionnaireHeader)
             flash.message = message(code: 'questionnaireHeader.deleted')
             redirect(action: 'list')
         }

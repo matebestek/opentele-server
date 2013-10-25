@@ -1,29 +1,29 @@
 package org.opentele.server.model
 
+import groovy.transform.EqualsAndHashCode
 import org.opentele.server.model.Schedule.ScheduleType
-import org.opentele.server.model.Schedule.StartingDate
+
 import org.opentele.server.model.Schedule.TimeOfDay
-import org.opentele.server.model.types.Month
 import org.opentele.server.model.types.Weekday
 
 public interface Schedule {
-    static enum ScheduleType { UNSCHEDULED, WEEKDAYS, MONTHLY, EVERY_NTH_DAY, SPECIFIC_DATE }
-    static class TimeOfDay {
+    static enum ScheduleType { UNSCHEDULED, WEEKDAYS, WEEKDAYS_ONCE, MONTHLY, EVERY_NTH_DAY, SPECIFIC_DATE }
+
+    @EqualsAndHashCode
+    static class TimeOfDay implements Comparable<TimeOfDay>{
         int hour
         int minute
 
-        @Override boolean equals(Object other) {
-            other.class == TimeOfDay &&
-            other.hour == hour &&
-            other.minute == minute
-        }
-
-        @Override int hashCode() {
-            hour.hashCode() ^ minute.hashCode()
+        int compareTo(TimeOfDay other) {
+            this.hour <=> other?.hour ?: this.minute <=> other?.minute
         }
 
         @Override String toString() {
             "${hour.toString().padLeft(2,'0')}:${minute.toString().padLeft(2,'0')}"
+        }
+
+        boolean isValid() {
+            this.hour >= 0 && this.hour < 24 && this.minute >= 0 && this.minute < 60
         }
 
         static TimeOfDay toTimeOfDay(String hour, String minute) {
@@ -32,84 +32,87 @@ public interface Schedule {
         static TimeOfDay toTimeOfDay(Integer hour, Integer minute) {
             new TimeOfDay(hour: hour.toInteger(), minute: minute.toInteger())
         }
-    }
-
-    static class StartingDate {
-        int day
-        Month month
-        int year
-
-        @Override boolean equals(Object other) {
-            other.class == StartingDate &&
-            other.day == day &&
-            other.month == month &&
-            other.year == year
-        }
-
-        @Override int hashCode() {
-            day.hashCode() ^ month.hashCode() ^ year.hashCode()
-        }
-
-
-        @Override String toString() {
-            "StartingDate[day=${day},month=${month},year=${year}]"
-        }
-
-        static StartingDate fromCalendar(Calendar calendar) {
-            new StartingDate(day: calendar.get(Calendar.DATE), month: Month.fromCalendarMonth(calendar.get(Calendar.MONTH)), year: calendar.get(Calendar.YEAR))
-        }
-
-        def getCalendar() { //is used from _nthDaySchedule.gsp
-            Calendar calendar = Calendar.getInstance()
-            calendar.clear()
-            calendar.set(Calendar.YEAR, year)
-            calendar.set(Calendar.MONTH, month.asCalendarMonth())
-            calendar.set(Calendar.DATE, day)
-
-            calendar
-        }
-
-        def asType(Class clazz) {
-            switch(clazz) {
-                case java.util.Date:
-                    return calendar.time
-                    break;
-                default:
-                    return this
+        static TimeOfDay toTimeOfDay( Map defaults = [:], String hourMinute) {
+            if(hourMinute) {
+                try {
+                    def (hour, minute) = hourMinute?.trim()?.split(':')
+                    return toTimeOfDay(hour as String, minute as String)
+                } catch (ignore) {}
             }
-
+            return defaults ? new TimeOfDay(defaults) : null
         }
-
-        Date toDate() {
-            calendar.time
+        static List<TimeOfDay> toTimesOfDay(String timesOfDay) {
+            timesOfDay?.trim()?.split(',')?.inject([]) { list, tod ->
+                def timeOfDay = TimeOfDay.toTimeOfDay(tod)
+                if(timeOfDay) {
+                    list << timeOfDay
+                } else {
+                    list
+                }
+            } ?: []
         }
-
-        static StartingDate fromDate(Date date) {
-            if(date) {
-                def calendar = Calendar.getInstance()
-                calendar.setTime(date)
-                StartingDate.fromCalendar(calendar)
-            } else {
-                return null
-            }
+        static String fromTimesOfDay(List<TimeOfDay> timesOfDay) {
+            (timesOfDay ?: [])*.toString().join(',')
         }
     }
 
-    ScheduleType type
-    List<TimeOfDay> timesOfDay
+    static class DaysInMonth {
+        static List<Integer> fromDaysInMonthString(String daysInMonth) {
+            daysInMonth?.trim()?.split(',')?.inject([]) {list, number ->
+                try {
+                    list << (number as Integer)
+                } catch (ignored) {
+                    list
+                }
+            } ?: []
+        }
+
+        static String toDaysInMonthString(List<Integer> daysInMonth) {
+            daysInMonth ? daysInMonth.join(",") : ""
+        }
+    }
+
+    ScheduleType getType()
+    void setType(ScheduleType type)
+
+    List<TimeOfDay> getTimesOfDay()
+    void setTimesOfDay(List<TimeOfDay> timesOfDay)
 
     // For WEEKDAYS
-    List<Weekday> weekdays
+    List<Weekday> getWeekdays()
+    void setWeekdays(List<Weekday> weekdays)
+
+    // For WEEKDAYS_ONCE
+    Integer getIntroPeriodWeeks()
+    void setIntroPeriodWeeks(Integer introPeriodWeeks)
+
+    TimeOfDay getReminderTime()
+    void setReminderTime(TimeOfDay reminderTime)
+
+    TimeOfDay getBlueAlarmTime()
+    void setBlueAlarmTime(TimeOfDay blueAlarmTime)
+
+    List<Weekday> getWeekdaysIntroPeriod()
+    void setWeekdaysIntroPeriod(List<Weekday> weekdaysIntroPeriod)
+
+    List<Weekday> getWeekdaysSecondPeriod()
+    void setWeekdaysSecondPeriod(List<Weekday> weekdaysSecondPeriod)
 
     // For MONTHLY
-    List<Integer> daysInMonth
+    List<Integer> getDaysInMonth()
+    void setDaysInMonth(List<Integer> daysInMonth)
 
     // For EVERY_NTH_DAY
-    StartingDate startingDate
-    int dayInterval
+    Date getStartingDate()
+    void setStartingDate(Date startingDate)
+
+    Integer getDayInterval()
+    void setDayInterval(Integer dayInterval)
 
     // For SPECIFIC_DATE
-    StartingDate specificDate
+    Date getSpecificDate()
+    void setSpecificDate(Date specificDate)
 
-    int reminderStartMinutes
+    int getReminderStartMinutes()
+    void setReminderStartMinutes(int reminderStartMinutes)
 }

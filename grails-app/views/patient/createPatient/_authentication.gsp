@@ -5,7 +5,7 @@
 
 
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'username', 'error')} required">
-    <label for="username" onmouseover="tooltip.show('${message(code: 'tooltip.patient.create.username')}');" onmouseout="tooltip.hide();">
+    <label for="username" data-tooltip="${message(code: 'tooltip.patient.create.username')}">
         <g:message code="patient.username.label" default="Username" /> <span class="required-indicator">*</span>
     </label>
     <g:textField name="username" value="${patientInstance?.username}" />
@@ -14,7 +14,7 @@
 
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'cpr', 'error')} required">
 
-	<label for="cleartextPassword" onmouseover="tooltip.show('${message(code: 'tooltip.patient.create.cleartextPassword')}');" onmouseout="tooltip.hide();">
+	<label for="cleartextPassword" data-tooltip="${message(code: 'tooltip.patient.create.cleartextPassword')}">
         <g:message code="patient.cleartextPassword.label" default="Midlertidig adgangskode" /> <span class="required-indicator">*</span>
 	</label>
 	<g:textField name="cleartextPassword" value="${patientInstance?.cleartextPassword}" autocomplete="off" />

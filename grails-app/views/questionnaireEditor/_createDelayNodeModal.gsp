@@ -41,7 +41,7 @@
         var text = $('#text', createDelayNodeModal);
         var countTime = $('#countTime', createDelayNodeModal);
         function validate() {
-            var shortTextValid = shortText.val() > 0;
+            var shortTextValid = shortText.val().length > 0;
             var textValid = text.val().length > 0;
             var countTimeValid = countTime.val().length >0 && parseInt(countTime.val())>0;
 

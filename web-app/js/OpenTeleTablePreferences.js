@@ -29,15 +29,15 @@ var QuestionnaireTableViewModel = function(patientID, questionPrefs) {
 				that.currentQuestionnaireName = qName;
 				self.questions.push({id: "-1", text: "--- "+qName});
 			}
+
 			//Remove '<b>' tags from question names
-			var name
-			if ($.browser.msie) { //IE always returns DOM-tags in upper case
-				name = elem.innerHTML.replace("<B>", "");
-				name = name.replace("</B>", "");
-			} else { //Chrome, FF always returns DOM-tags in lower case
-				name = elem.innerHTML.replace("<b>", "");
-				name = name.replace("</b>", "");				
-			}
+			// IE<10 always returns DOM-tags in upper case, Chrome, FF always returns DOM-tags in lower case
+            var name = elem.innerHTML
+                .replace("<B>", "")
+                .replace("<b>", "")
+                .replace("</B>", "")
+                .replace("</b>", "");
+
 			self.questions.push({id: elem.getAttribute("id"), text: name});
 		});
 		

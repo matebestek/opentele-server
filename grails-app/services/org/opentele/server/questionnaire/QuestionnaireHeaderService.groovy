@@ -26,6 +26,7 @@ class QuestionnaireHeaderService {
             questionnaireService.createPatientQuestionnaire(creator, questionnaireHeader.draftQuestionnaire)
             questionnaireHeader.activeQuestionnaire = questionnaireHeader.draftQuestionnaire
             questionnaireHeader.draftQuestionnaire = null
+            questionnaireHeader.save()
         }
     }
 
@@ -54,8 +55,7 @@ class QuestionnaireHeaderService {
     }
 
     @Transactional
-    QuestionnaireHeader getOrCreateQuestionnaireDraft(Long id, Clinician creator) {
-        def questionnaireHeader = QuestionnaireHeader.get(id)
+    QuestionnaireHeader getOrCreateQuestionnaireDraft(QuestionnaireHeader questionnaireHeader, Clinician creator) {
         if(questionnaireHeader.draftQuestionnaire) {
             questionnaireHeader
         } else {

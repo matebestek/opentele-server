@@ -6,11 +6,13 @@ class ConferenceBloodPressureMeasurementDraft extends ConferenceMeasurementDraft
     Integer systolic
     Integer diastolic
     Integer pulse
+    Integer meanArterialPressure
 
     static constraints = {
         systolic(nullable: true)
         diastolic(nullable: true)
         pulse(nullable: true)
+        meanArterialPressure(nullable: true)
     }
 
     static Map<String, Pattern> customValidators = [

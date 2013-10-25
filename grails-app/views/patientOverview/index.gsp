@@ -11,6 +11,7 @@
     <g:render template="/measurement/graphFunctions"/>
     <g:javascript src="knockout-2.2.0.js" />
     <g:javascript src="OpenTeleTablePreferences.js" />
+    <r:require module="opentele-scroll"/>
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'patient_overview.css')}" type="text/css">
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'measurement_results_tables.css')}" type="text/css">
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery.jqplot.css')}" type="text/css">

@@ -4,8 +4,7 @@
 
 <div
 	class="fieldcontain noborder ${hasErrors(bean: meterInstance, field: 'active', 'error')}"
-	onmouseover="tooltip.show('${message(code: 'tooltip.patient.meter.active')}');"
-	onmouseout="tooltip.hide();">
+	data-tooltip="${message(code: 'tooltip.patient.meter.active')}">
 	<label for="active"> <g:message code="meter.active.label"
 			default="Active" />
 
@@ -15,8 +14,7 @@
 
 <div
 	class="fieldcontain ${hasErrors(bean: meterInstance, field: 'meterId', 'error')} "
-	onmouseover="tooltip.show('${message(code: 'tooltip.patient.meter.id')}');"
-	onmouseout="tooltip.hide();">
+	data-tooltip="${message(code: 'tooltip.patient.meter.id')}">
 	<label for="meterId"> <g:message code="meter.meterId.label"
 			default="Meter Id" />
 
@@ -59,8 +57,7 @@
 
 <div
 	class="fieldcontain ${hasErrors(bean: meterInstance, field: 'monitorKit', 'error')} "
-	onmouseover="tooltip.show('${message(code: 'tooltip.patient.meter.kit')}');"
-	onmouseout="tooltip.hide();">
+	data-tooltip="${message(code: 'tooltip.patient.meter.kit')}">
 	<label for="monitorKit"> <g:message
 			code="meter.monitorKit.label" default="Monitor Kit" />
 

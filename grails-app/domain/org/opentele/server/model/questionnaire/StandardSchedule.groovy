@@ -1,20 +1,38 @@
 package org.opentele.server.model.questionnaire
-
-
 import org.opentele.server.model.Schedule
+import org.opentele.server.model.Schedule.TimeOfDay
+import org.opentele.server.model.Schedule.ScheduleType
+import org.opentele.server.model.ScheduleValidators
 import org.opentele.server.model.types.Weekday
 
+import static org.opentele.server.model.Schedule.ScheduleType.*
 
 class StandardSchedule implements Schedule {
 
-    Schedule.ScheduleType type = Schedule.ScheduleType.UNSCHEDULED
+    ScheduleType type = UNSCHEDULED
     //NOTE these internal properties are here as hibernate is using the getter, and this has to be of type string and not List<...> as the custom getters below
-    String internalWeekdays = ''
     String internalTimesOfDay = ''
+
+    // WEEKDAYS
+    String internalWeekdays = ''
+
+    // WEEKDAYS_ONCE
+    Integer introPeriodWeeks = 4
+    String internalReminderTime = ''
+    String internalBlueAlarmTime = ''
+    String internalWeekdaysIntroPeriod = ''
+    String internalWeekdaysSecondPeriod = ''
+
+     // MONTHLY
     String internalDaysInMonth = ''
-    Date internalStartingDate = new Date() // Only relevant when type is EVERY_NTH_DAY
-    int intervalInDays = 2 // Ought to be "dayInterval", since this is what the Schedule interface calls it. Alas, we have a getter and setter below
-    Date internalSpecificDate = null
+
+    // EVERY_NTH_DAY
+    Date startingDate = new Date().clearTime() // Only relevant when type is EVERY_NTH_DAY
+    Integer dayInterval = 2 // Mapped to INTERVAL_IN_DAYS in database
+
+    // SPECIFIC DATE
+    Date specificDate = null
+
     int reminderStartMinutes = 30
 
     // Otherwise Grails will create a standard_schedule in the database.
@@ -23,124 +41,90 @@ class StandardSchedule implements Schedule {
     static mapWith = "none"
 
     static constraints = {
-        internalSpecificDate nullable: true
+        internalTimesOfDay nullable: true, validator: ScheduleValidators.timesOfDay(WEEKDAYS, MONTHLY, EVERY_NTH_DAY, SPECIFIC_DATE)
+        internalWeekdays nullable: true, validator: ScheduleValidators.weekdays(WEEKDAYS)
+        introPeriodWeeks nullable: false, min: 1, max: 8
+        internalReminderTime nullable: true, validator: ScheduleValidators.timeOfDay(WEEKDAYS_ONCE)
+        internalBlueAlarmTime nullable: true, validator: ScheduleValidators.timeOfDay(WEEKDAYS_ONCE)
+        internalWeekdaysIntroPeriod nullable: true, validator: ScheduleValidators.weekdays(WEEKDAYS_ONCE)
+        internalWeekdaysSecondPeriod nullable: true, validator: ScheduleValidators.weekdays(WEEKDAYS_ONCE)
+        internalDaysInMonth nullable: true, validator: ScheduleValidators.daysInMonth(MONTHLY)
+        startingDate nullable: false
+        dayInterval nullable: false, min: 1
+        specificDate nullable: true
     }
 
     static mapping = {
-        internalWeekdays column: 'STANDARD_SCHEDULE_WEEKDAYS'
         internalTimesOfDay column: 'STANDARD_SCHEDULE_TIMES_OF_DAY'
+        internalWeekdays column: 'STANDARD_SCHEDULE_WEEKDAYS'
+        internalWeekdaysIntroPeriod column: 'STANDARD_SCHEDULE_WEEKDAYS_INTRO_PERIOD'
+        internalWeekdaysSecondPeriod column: 'STANDARD_SCHEDULE_WEEKDAYS_SECOND_PERIOD'
+        internalReminderTime column: 'STANDARD_SCHEDULE_REMINDER_TIME'
+        internalBlueAlarmTime column: 'STANDARD_SCHEDULE_BLUE_ALARM_TIME'
         internalDaysInMonth column: 'STANDARD_SCHEDULE_DAYS_IN_MONTH'
-        internalStartingDate column: 'STANDARD_SCHEDULE_STARTING_DATE'
-        internalSpecificDate column: 'STANDARD_SCHEDULE_SPECIFIC_DATE'
+        dayInterval column: 'STANDARD_SCHEDULE_INTERVAL_IN_DAYS'
+        startingDate column: 'STANDARD_SCHEDULE_STARTING_DATE'
+        specificDate column: 'STANDARD_SCHEDULE_SPECIFIC_DATE'
     }
-    static transients = [ 'startingDate', 'specificDate', 'dayInterval' ]
 
-    public void setWeekdays(List<Weekday> weekdays) {
-        this.internalWeekdays = weekdays.join(',')
+    static transients = ['timesOfDay','weekdays','weekdaysIntroPeriod','weekdaysSecondPeriod','reminderTime','blueAlarmTime']
+
+    public List<TimeOfDay> getTimesOfDay() {
+        TimeOfDay.toTimesOfDay(internalTimesOfDay)
     }
+
+    public void setTimesOfDay(List<TimeOfDay> timesOfDay) {
+        internalTimesOfDay = TimeOfDay.fromTimesOfDay(timesOfDay)
+    }
+
 
     public List<Weekday> getWeekdays() {
-        if (this.internalWeekdays == null || this.internalWeekdays.empty) {
-            return []
-        }
-        this.internalWeekdays.split(',').collect {Weekday.valueOf(it)}
+        return Weekday.toWeekdays(internalWeekdays)
     }
 
-    public void setTimesOfDay(List<Schedule.TimeOfDay> timesOfDay) {
-        this.internalTimesOfDay = timesOfDay.collect {
-            "${it.hour.toString().padLeft(2,'0')}:${it.minute.toString().padLeft(2,'0')}"
-        }.join(',')
+    public void setWeekdays(List<Weekday> weekdays) {
+        internalWeekdays = Weekday.fromWeekdays(weekdays)
     }
 
-    public List<Schedule.TimeOfDay> getTimesOfDay() {
-        if (internalTimesOfDay.empty) {
-            return []
-        }
-        internalTimesOfDay.split(',').collect {
-            def (hour, minute) = hourAndMinute(it)
-            new Schedule.TimeOfDay(hour: hour, minute: minute)
-        }
+    TimeOfDay getReminderTime() {
+        return TimeOfDay.toTimeOfDay(internalReminderTime, hour: 10, minute: 0)
+
     }
+
+    void setReminderTime(TimeOfDay reminderTime) {
+        internalReminderTime = reminderTime.toString()
+    }
+
+    TimeOfDay getBlueAlarmTime() {
+        return TimeOfDay.toTimeOfDay(internalBlueAlarmTime, hour: 23, minute: 59)
+    }
+
+    void setBlueAlarmTime(TimeOfDay blueAlarmTime) {
+        internalBlueAlarmTime = blueAlarmTime.toString()
+    }
+
+    List<Weekday> getWeekdaysIntroPeriod() {
+        return Weekday.toWeekdays(internalWeekdaysIntroPeriod)
+    }
+
+    void setWeekdaysIntroPeriod(List<Weekday> weekdaysIntroPeriod) {
+        internalWeekdaysIntroPeriod = Weekday.fromWeekdays(weekdaysIntroPeriod)
+    }
+
+    List<Weekday> getWeekdaysSecondPeriod() {
+        return Weekday.toWeekdays(internalWeekdaysSecondPeriod)
+    }
+
+    void setWeekdaysSecondPeriod(List<Weekday> weekdaysSecondPeriod) {
+        internalWeekdaysSecondPeriod = Weekday.fromWeekdays(weekdaysSecondPeriod)
+    }
+
 
     public void setDaysInMonth(List<Integer> daysInMonth) {
-        this.internalDaysInMonth = daysInMonth.join(',')
+        internalDaysInMonth = Schedule.DaysInMonth.toDaysInMonthString(daysInMonth)
     }
 
     public List<Integer> getDaysInMonth() {
-        if (internalDaysInMonth.empty) {
-            return []
-        }
-        internalDaysInMonth.split(',').collect {it as Integer}
-    }
-
-    public Schedule.StartingDate getStartingDate() {
-        def calendar = Calendar.getInstance()
-        calendar.setTime(internalStartingDate)
-
-        Schedule.StartingDate.fromCalendar(calendar)
-    }
-
-    public void setStartingDate(Schedule.StartingDate startingDate) {
-        def calendar = Calendar.getInstance()
-        calendar.clear()
-        calendar.set(Calendar.YEAR, startingDate.year)
-        calendar.set(Calendar.MONTH, startingDate.month.asCalendarMonth())
-        calendar.set(Calendar.DATE, startingDate.day)
-
-        if (!equalFields(startingDate, calendar)) {
-            throw new IllegalArgumentException("Invalid starting date: '${startingDate}")
-        }
-
-        internalStartingDate = calendar.getTime()
-    }
-
-    public void setDayInterval(int dayInterval) {
-        intervalInDays = dayInterval
-    }
-
-    public int getDayInterval() {
-        intervalInDays
-    }
-
-    public void setSpecificDate(Schedule.StartingDate specificDate) {
-        if (specificDate == null) {
-            internalSpecificDate = null
-        } else {
-            def calendar = Calendar.getInstance()
-            calendar.clear()
-            calendar.set(specificDate.year, specificDate.month.asCalendarMonth(), specificDate.day)
-            internalSpecificDate = calendar.getTime()
-        }
-    }
-
-    public Schedule.StartingDate getSpecificDate() {
-        if(internalSpecificDate == null) {
-            null
-        } else {
-            def calendar = Calendar.getInstance()
-            calendar.setTime(internalSpecificDate)
-            Schedule.StartingDate.fromCalendar(calendar)
-        }
-    }
-
-    //TODO mss refactor / this is also in QuestionnaireSchedule
-    private static def hourAndMinute(combinedHourAndMinute) {
-        def hourAndMinute = combinedHourAndMinute.split(':')
-        if (hourAndMinute.size() == 2) {
-            def hour = hourAndMinute.first()
-            def minute = hourAndMinute.last()
-            if (hour.matches('^\\d+$') && minute.matches('^\\d+$')) {
-                return [hour as Integer, minute as Integer]
-            }
-        }
-        [null, null]
-    }
-
-    private boolean equalFields(Schedule.StartingDate startingDate, Calendar calendar) {
-        calendar.getTime() // To recalculate all fields
-
-        calendar.get(Calendar.YEAR) == startingDate.year &&
-                calendar.get(Calendar.MONTH) == startingDate.month.asCalendarMonth() &&
-                calendar.get(Calendar.DATE) == startingDate.day
+        Schedule.DaysInMonth.fromDaysInMonthString(internalDaysInMonth)
     }
 }

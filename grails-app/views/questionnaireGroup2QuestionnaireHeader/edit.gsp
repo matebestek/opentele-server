@@ -12,16 +12,11 @@
 			<g:if test="${flash.message}">
 			<div class="message" role="status">${flash.message}</div>
 			</g:if>
-			<g:hasErrors bean="${questionnaireGroup2QuestionnaireHeaderInstance}">
-			<ul class="errors" role="alert">
-				<g:eachError bean="${questionnaireGroup2QuestionnaireHeaderInstance}" var="error">
-				<li <g:if test="${error in org.springframework.validation.FieldError}">data-field-id="${error.field}"</g:if>><g:message error="${error}"/></li>
-				</g:eachError>
-			</ul>
-			</g:hasErrors>
+            <tmpl:/questionnaireSchedule/errors/>
+
 			<g:form method="post" >
-				<g:hiddenField name="id" value="${id}" />
-				<g:hiddenField name="version" value="${version}" />
+				<g:hiddenField name="questionnaireGroup2QuestionnaireHeader.id" value="${questionnaireGroup2QuestionnaireHeader.id}" />
+				<g:hiddenField name="version" value="${questionnaireGroup2QuestionnaireHeader.version}" />
 				<fieldset class="form">
 					<g:render template="form"/>
 				</fieldset>

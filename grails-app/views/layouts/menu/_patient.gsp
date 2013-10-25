@@ -13,12 +13,12 @@
         <hr/>
         <g:message code="main.phone"/>:
         <g:if test="${session[Constants.SESSION_PHONE]}">
-            <otformat:formatPhoneNumber message="${session[Constants.SESSION_PHONE].encodeAsHTML()}"/>
+            <otformat:formatPhoneNumber message="${session[Constants.SESSION_PHONE]}"/>
         </g:if>
         <br/>
         <g:message code="main.mobilePhone"/>:
         <g:if test="${session[Constants.SESSION_MOBILE_PHONE]}">
-            <otformat:formatPhoneNumber message="${session[Constants.SESSION_MOBILE_PHONE].encodeAsHTML()}"/>
+            <otformat:formatPhoneNumber message="${session[Constants.SESSION_MOBILE_PHONE]}"/>
         </g:if>
         <br/>
         <g:if test="${session[Constants.SESSION_FIRST_RELEATIVE]}">

@@ -18,9 +18,11 @@
 				${flash.message}
 			</div>
 		</g:if>
-		
+        <tmpl:errors/>
 		<g:form method="post">
 			<fieldset class="form">
+                <g:hiddenField name="questionnaireSchedule.id" value="${questionnaireSchedule.id}"/>
+                <g:hiddenField name="version" value="${questionnaireSchedule.version}"/>
 				<tmpl:form/>
 			</fieldset>
 			<fieldset class="buttons">

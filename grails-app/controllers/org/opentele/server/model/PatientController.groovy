@@ -3,6 +3,7 @@ import grails.converters.JSON
 import grails.plugins.springsecurity.Secured
 import grails.util.Environment
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.opentele.server.TimeFilter
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.constants.Constants
 import org.opentele.server.cpr.CPRPerson
@@ -73,6 +74,7 @@ class PatientController {
             def result = [id: patient.id, firstName: patient.firstName, lastName: patient.lastName, user: [id: patient.user.id, changePassword: changePassword]]
             render result as JSON
         } else {
+            log.warn("User: ${user?.username}, Patient: ${patient}, client version too old. Was ${actualClientVersion} should be ${requiredClientVersion}.")
             render (status: 403, text: "Client version too old for this server. Update the client.") as JSON
         }
     }
@@ -482,7 +484,9 @@ class PatientController {
 		def questionnairesNumber = []
 		def completed
         def greenCompletedQuestionnaires = []
-		if (patient) {
+        def resultModel
+
+        if (patient) {
 			// Setting up session values
 			sessionService.setPatient(session, patient)
             if(patient.getMonitoringPlan()) {
@@ -490,12 +494,24 @@ class PatientController {
             } else {
                 questionnairesNumber = 0
             }
-			completed = CompletedQuestionnaire.findAllByPatient(patient).size()
-            greenCompletedQuestionnaires = CompletedQuestionnaire.unacknowledgedGreenQuestionnairesByPatient(patient).list()
+
+            // Default time frame is a month
+            TimeFilter timeFilter
+            if (params.filter) {
+                timeFilter = TimeFilter.fromParams(params)
+            } else {
+                timeFilter = TimeFilter.lastMonth()
+            }
+
+            resultModel = questionnaireService.extractMeasurements(patient.id, false, timeFilter)
+
+			completed = CompletedQuestionnaire.countByPatient(patient)
+
+            greenCompletedQuestionnaires = CompletedQuestionnaire.unacknowledgedGreenQuestionnairesByPatient(patient, timeFilter).list()
 
         }
 
-        [patientInstance: patient, questionnairesNumber: questionnairesNumber, questionPreferences: questionPreferences, completedNumber: completed, greenCompletedAndUnacknowledgedQuestionnaires: greenCompletedQuestionnaires]
+        [patientInstance: patient, questionnairesNumber: questionnairesNumber, completedQuestionnaireResultModel: resultModel, questionPreferences: questionPreferences, completedNumber: completed, greenCompletedAndUnacknowledgedQuestionnaires: greenCompletedQuestionnaires]
 	}
 
     @Secured([PermissionName.METER_READ_ALL, PermissionName.MONITOR_KIT_READ_ALL])

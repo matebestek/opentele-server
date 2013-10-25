@@ -3,20 +3,13 @@
 <!doctype html>
 <html>
 <head>
-<meta name="layout" content="main">
-<g:set var="entityName"
-	value="${message(code: 'monitoringPlan.label', default: 'MonitoringPlan')}" />
-<title><g:message code="default.create.label"
-		args="[entityName]" />for ${Patient.get(session.patientId)?.name()}</title>
+    <meta name="layout" content="main">
+    <g:set var="title" value="${message(code: 'monitoringPlan.create.title', args: [patientInstance.name.encodeAsHTML()])}" />
+    <title>${title}</title>
 </head>
 <body>
-	<div id="create-monitoringPlan" class="content scaffold-create"
-		role="main">
-		<h1>
-			<g:message code="default.create.label" args="[entityName]" />
-			for
-			${Patient.get(session.patientId)?.name()}
-		</h1>
+	<div id="create-monitoringPlan" class="content scaffold-create" role="main">
+        <h1>${title}</h1>
 		<g:if test="${flash.message}">
 			<div class="message" role="status">
 				${flash.message}
@@ -39,8 +32,7 @@
 				<div>
 					<g:submitButton name="create" class="save"
 						value="${message(code: 'default.button.create.label', default: 'Create')}"
-						onmouseover="tooltip.show('${message(code: 'tooltip.patient.monitoringPlan.create')}');"
-						onmouseout="tooltip.hide();" />
+						data-tooltip="${message(code: 'tooltip.patient.monitoringPlan.create')}" />
 					<g:link class="cancel" action="show" id="${session.patientId}">
 						<g:message code="default.button.goback.label" />
 					</g:link>

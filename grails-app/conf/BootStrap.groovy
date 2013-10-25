@@ -221,10 +221,11 @@ class BootStrap {
     }
 
     def createScheduleWindows() {
-        def scheduleWindows = [ new ScheduleWindow(scheduleType: Schedule.ScheduleType.WEEKDAYS, windowSizeMinutes: 600),        // 10 hours
-                                new ScheduleWindow(scheduleType: Schedule.ScheduleType.EVERY_NTH_DAY, windowSizeMinutes: 43200), // 30 days
-                                new ScheduleWindow(scheduleType: Schedule.ScheduleType.MONTHLY, windowSizeMinutes: 1440),        // 1 day
-                                new ScheduleWindow(scheduleType: Schedule.ScheduleType.SPECIFIC_DATE, windowSizeMinutes: 1440)]  // 1 day
+        def scheduleWindows = [ new ScheduleWindow(scheduleType: Schedule.ScheduleType.WEEKDAYS, windowSizeHours: 10),
+                                new ScheduleWindow(scheduleType: Schedule.ScheduleType.WEEKDAYS_ONCE, windowSizeHours: 23),
+                                new ScheduleWindow(scheduleType: Schedule.ScheduleType.EVERY_NTH_DAY, windowSizeDays: 30),
+                                new ScheduleWindow(scheduleType: Schedule.ScheduleType.MONTHLY, windowSizeDays: 1),
+                                new ScheduleWindow(scheduleType: Schedule.ScheduleType.SPECIFIC_DATE, windowSizeDays: 1)]
 
         scheduleWindows.each { scheduleWindow ->
             bootStrapUtil.createScheduleWindowIfNotExists(scheduleWindow)
@@ -520,7 +521,7 @@ class BootStrap {
         ctgMeasurement.save(failOnError:true,flush:true)
 
         Date now = new Date()
-        CompletedQuestionnaire completedQuestionnaire = new CompletedQuestionnaire(createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now, uploadDate: now)
+        CompletedQuestionnaire completedQuestionnaire = new CompletedQuestionnaire(createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now, uploadDate: now, receivedDate: now)
         completedQuestionnaire.setPatientQuestionnaire(patientQuestionnaire)
         completedQuestionnaire.setQuestionnaireHeader(patientQuestionnaire.getTemplateQuestionnaire().getQuestionnaireHeader())
         completedQuestionnaire.setPatient(patient)
@@ -662,17 +663,17 @@ class BootStrap {
         def nancysPlan = MonitoringPlan.findByPatient(nancyAnn)
         def lindasPlan = MonitoringPlan.findByPatient(linda)
 
-        createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk og puls"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk og puls"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
         PatientQuestionnaire pq
 
         // JSON Test patientQuestionnaire + results
-        pq = createPqAndSchedule(QuestionnaireHeader.findByName("JSON test"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.atWeekdays(new TimeOfDay(hour: 10), [Weekday.SATURDAY, Weekday.SUNDAY]))
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("JSON test"), nancyAnn, schemaCreator, nancysPlan, atWeekdays(new TimeOfDay(hour: 10), [Weekday.SATURDAY, Weekday.SUNDAY]))
         createResultsForJsonTest(pq, weightMeter, nancyAnn)
 
         //////////////
         // Simpelt Ja/Nej skema
-        pq = createPqAndSchedule(QuestionnaireHeader.findByName("JaNej"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.unscheduled())
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("JaNej"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
 
         if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndSeverityAndPatient(pq, Severity.RED, nancyAnn)) {
             createResultsForOverYesNoQuestionnaire(nancyAnn, pq, Severity.RED, new Date()-1, false)
@@ -681,11 +682,11 @@ class BootStrap {
             createResultsForOverYesNoQuestionnaire(nancyAnn, pq, Severity.GREEN, new Date(), true)
         }
 
-        createPqAndSchedule(QuestionnaireHeader.findByName("Proteinindhold i urin"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Proteinindhold i urin"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
         //////////////
         // Skema til måling af blodtryk
-        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.atWeekdays(new TimeOfDay(hour: 13), [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]))
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk"), nancyAnn, schemaCreator, nancysPlan, atWeekdays(new TimeOfDay(hour: 13), [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]))
         if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndPatient(pq, nancyAnn)) {
 
             def bpMeter = Meter.findByMeterId("58354")
@@ -700,59 +701,60 @@ class BootStrap {
         }
 
         // Skema til måling af CTG
-        createPqAndSchedule(QuestionnaireHeader.findByName("CTG"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("CTG"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
-        pq = createPqAndSchedule(QuestionnaireHeader.findByName("CTG m/tid"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("CTG m/tid"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
         if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndPatient(pq, nancyAnn)) {
             createCtgMeasurementForTest(nancyAnn, pq)
         }
 
-        pq = createPqAndSchedule(QuestionnaireHeader.findByName("CTG m/tid"), linda, schemaCreator, lindasPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("CTG m/tid"), linda, schemaCreator, lindasPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
         if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndPatient(pq, linda)) {
             createCtgMeasurementForTest(linda, pq)
         }
 
         // Skema til måling af temperatur, og intet andet (simpelt input-felt..)
-        createPqAndSchedule(QuestionnaireHeader.findByName("Temperatur test"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Temperatur test"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
         // Skema til måling af hæmoglobin, og intet andet
-        createPqAndSchedule(QuestionnaireHeader.findByName("Hæmoglobin indhold i blod"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
-        createPqAndSchedule(QuestionnaireHeader.findByName("Hæmoglobin indhold i blod"), linda, schemaCreator, lindasPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Hæmoglobin indhold i blod"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Hæmoglobin indhold i blod"), linda, schemaCreator, lindasPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
         // Skema til måling af CRP, og intet andet
-        createPqAndSchedule(QuestionnaireHeader.findByName("C-reaktivt Protein (CRP)"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.unscheduled())
-        createPqAndSchedule(QuestionnaireHeader.findByName("C-reaktivt Protein (CRP)"), linda, schemaCreator, lindasPlan, QuestionnaireSchedule.unscheduled())
+        createPqAndSchedule(QuestionnaireHeader.findByName("C-reaktivt Protein (CRP)"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
+        createPqAndSchedule(QuestionnaireHeader.findByName("C-reaktivt Protein (CRP)"), linda, schemaCreator, lindasPlan, unscheduled())
 
         // Skema til måling af Vaegt
-        createPqAndSchedule(QuestionnaireHeader.findByName("Vejning"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 7)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Vejning"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 7)))
 
         // Simpelt skema til test af radioknapper
-        createPqAndSchedule(QuestionnaireHeader.findByName("Radioknap test"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Radioknap test"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
         // Skema til måling af blodsukker
-        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blodsukker"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blodsukker"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
         createResultsForBloodSugarTest(nancyAnn, pq)
 
         // Manuel måling af blodsukker
-        createPqAndSchedule(QuestionnaireHeader.findByName("Blodsukker (manuel)"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
-        createPqAndSchedule(QuestionnaireHeader.findByName("Blodsukker (manuel)"), linda, schemaCreator, lindasPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Blodsukker (manuel)"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Blodsukker (manuel)"), linda, schemaCreator, lindasPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
-        createPqAndSchedule(QuestionnaireHeader.findByName("Rejse-sætte-sig test"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.unscheduled())
-        createPqAndSchedule(QuestionnaireHeader.findByName("Rejse-sætte-sig test"), linda, schemaCreator, lindasPlan, QuestionnaireSchedule.unscheduled())
+        createPqAndSchedule(QuestionnaireHeader.findByName("Rejse-sætte-sig test"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
+        createPqAndSchedule(QuestionnaireHeader.findByName("Rejse-sætte-sig test"), linda, schemaCreator, lindasPlan, unscheduled())
 
         // Lungefunktion-skemaer
-        createPqAndSchedule(QuestionnaireHeader.findByName("Lungefunktion"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.unscheduled())
+        createPqAndSchedule(QuestionnaireHeader.findByName("Lungefunktion"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
 
 
         //
         // Not strictly required for test, but very nice to have in development
         //
-        createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk (manuel)"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.unscheduled())
-        createPqAndSchedule(QuestionnaireHeader.findByName("Vejning (manuel)"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.unscheduled())
-        createPqAndSchedule(QuestionnaireHeader.findByName("Saturation"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
-        createPqAndSchedule(QuestionnaireHeader.findByName("Saturation (manuel)"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
-        createPqAndSchedule(QuestionnaireHeader.findByName("Saturation u/puls"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
-        createPqAndSchedule(QuestionnaireHeader.findByName("Saturation u/puls (manuel)"), nancyAnn, schemaCreator, nancysPlan, QuestionnaireSchedule.everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk (manuel)"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
+        createPqAndSchedule(QuestionnaireHeader.findByName("Vejning (manuel)"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
+        createPqAndSchedule(QuestionnaireHeader.findByName("Saturation"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Saturation (manuel)"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+
+        createPqAndSchedule(QuestionnaireHeader.findByName("Saturation u/puls"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createPqAndSchedule(QuestionnaireHeader.findByName("Saturation u/puls (manuel)"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
     }
 
@@ -1036,6 +1038,7 @@ class BootStrap {
                 patientQuestionnaire: pq,
                 patient: patient,
                 uploadDate: date,
+                receivedDate: date,
                 severity: Severity.GREEN,
                 createdBy: CREATED_BY_NAME,
                 modifiedBy: CREATED_BY_NAME,
@@ -1102,6 +1105,7 @@ class BootStrap {
             cq.setPatientQuestionnaire(pq)
             cq.setQuestionnaireHeader(pq.getTemplateQuestionnaire().getQuestionnaireHeader())
             cq.setPatient(patient)
+            cq.setReceivedDate(new Date())
             cq.setUploadDate(new Date())
             cq.setSeverity(Severity.RED)
 
@@ -1165,6 +1169,7 @@ class BootStrap {
             cq2.setQuestionnaireHeader(pq.getTemplateQuestionnaire().getQuestionnaireHeader())
             cq2.setPatient(patient)
             cq2.setUploadDate(new Date()-6)
+            cq2.setReceivedDate(new Date()-6)
             cq2.setSeverity(Severity.GREEN)
 
             cq2.save(failOnError:true)
@@ -1229,6 +1234,7 @@ class BootStrap {
             cq18.setQuestionnaireHeader(pq18.getTemplateQuestionnaire().getQuestionnaireHeader())
             cq18.setPatient(patient)
             cq18.setUploadDate(new Date())
+            cq18.setReceivedDate(new Date())
             cq18.setSeverity(Severity.ABOVE_THRESHOLD)
 
             cq18.save(failOnError:true)
@@ -1279,6 +1285,7 @@ class BootStrap {
             cq18.setQuestionnaireHeader(pq18.getTemplateQuestionnaire().getQuestionnaireHeader())
             cq18.setPatient(patient)
             cq18.setUploadDate(date)
+            cq18.setReceivedDate(date)
             cq18.setSeverity(severity)
 
             cq18.save(failOnError:true)
@@ -1316,6 +1323,7 @@ class BootStrap {
             cqBlodtryk.setQuestionnaireHeader(pqBlodtryk.getTemplateQuestionnaire().getQuestionnaireHeader())
             cqBlodtryk.setPatient(patient)
             cqBlodtryk.setUploadDate(when)
+            cqBlodtryk.setReceivedDate(when)
             cqBlodtryk.setSeverity(Severity.GREEN)
 
             cqBlodtryk.save(failOnError:true)
@@ -1403,5 +1411,25 @@ class BootStrap {
 
     @SuppressWarnings("GroovyUnusedDeclaration")
     def destroy = {
+    }
+    
+    static QuestionnaireSchedule everyWeekdayAt(TimeOfDay timeOfDay) {
+        atWeekdays(timeOfDay, new ArrayList((Collection<Weekday>) Weekday.values()))
+    }
+
+    static QuestionnaireSchedule atWeekdays(TimeOfDay timeOfDay, List<Weekday> weekdays) {
+        def schedule = new QuestionnaireSchedule()
+        schedule.type = Schedule.ScheduleType.WEEKDAYS
+        schedule.weekdays = weekdays
+        schedule.timesOfDay = [timeOfDay]
+
+        schedule
+    }
+
+    static QuestionnaireSchedule unscheduled() {
+        def schedule = new QuestionnaireSchedule()
+        schedule.type = Schedule.ScheduleType.UNSCHEDULED
+
+        schedule
     }
 }

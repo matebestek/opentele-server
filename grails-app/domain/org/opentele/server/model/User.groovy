@@ -1,6 +1,7 @@
 package org.opentele.server.model
 
 import org.opentele.server.util.PasswordUtil
+import org.springframework.security.core.context.SecurityContextHolder
 
 class User extends AbstractObject {
 
@@ -53,13 +54,18 @@ class User extends AbstractObject {
 	}
 
 	def beforeInsert() {
-        super.beforeInsert()
+        this.modifiedBy = SecurityContextHolder.context.authentication?.name ?: "Unknown"
+        this.modifiedDate = new Date()
 
 		encodePassword()
 	}
 
 	def beforeUpdate() {
-        super.beforeUpdate()
+        Date now = new Date()
+        this.createdDate = now
+        this.createdBy = SecurityContextHolder.context.authentication?.name ?: "Unknown"
+        this.modifiedBy = createdBy
+        this.modifiedDate = now
 
         if (!password || password.empty) {
             return; //Don't encode empty passwords. They will cause the constraint password: 'blank:false' not to fail

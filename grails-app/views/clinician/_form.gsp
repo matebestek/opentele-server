@@ -2,7 +2,7 @@
 <%@ page import="org.opentele.server.model.Role"%>
 
 <div
-	class="fieldcontain ${hasErrors(bean: cmd, field: 'firstName', 'error')} " required>
+	class="fieldcontain ${hasErrors(bean: cmd, field: 'firstName', 'error')} required" >
 	<label for="firstName">
         <g:message code="clinician.firstName.label" default="First Name" /> <span class="required-indicator">*</span>
 	</label>
@@ -22,15 +22,15 @@
         <g:message code="clinician.username.label" default="Username" /> <span class="required-indicator">*</span>
     </label>
     <g:if test="${cmd?.id}">
-        <g:field type="text" name="username" readonly="readonly" value="${cmd?.username}" onmouseover="tooltip.show('${message(code: 'tooltip.clinician.edit.username')}');" onmouseout="tooltip.hide();"/>
+        <g:field type="text" name="username" readonly="readonly" value="${cmd?.username}" data-tooltip="${message(code: 'tooltip.clinician.edit.username')}"/>
     </g:if>
     <g:else>
-        <g:textField name="username" value="${cmd?.username}" onmouseover="tooltip.show('${message(code: 'tooltip.clinician.create.username')}');" onmouseout="tooltip.hide();"/>
+        <g:textField name="username" value="${cmd?.username}" data-tooltip="${message(code: 'tooltip.clinician.create.username')}"/>
     </g:else>
 </div>
 
 <g:if test="${cmd?.cleartextPassword}">
-<div class="fieldcontain ${hasErrors(bean: cmd, field: 'cpr', 'error')} required" onmouseover="tooltip.show('${message(code: 'tooltip.clinician.create.cleartextPassword')}');" onmouseout="tooltip.hide();">
+<div class="fieldcontain ${hasErrors(bean: cmd, field: 'cpr', 'error')} required" data-tooltip="${message(code: 'tooltip.clinician.create.cleartextPassword')}">
 
     <label for="cleartextPassword">
         <g:message code="clinician.cleartextPassword.label" default="Adgangskode" /> <span class="required-indicator">*</span>
@@ -40,7 +40,7 @@
 </div>
 </g:if>
 <g:else>
-    <div class="fieldcontain ${hasErrors(bean: cmd, field: 'cpr', 'error')} required" onmouseover="tooltip.show('${message(code: 'tooltip.clinician.edit.password')}');" onmouseout="tooltip.hide();">
+    <div class="fieldcontain ${hasErrors(bean: cmd, field: 'cpr', 'error')} required" data-tooltip="${message(code: 'tooltip.clinician.edit.password')}">
 
         <label for="password">
             <g:message code="clinician.password.label" default="Adgangskode" /> <span class="required-indicator">*</span>
@@ -93,8 +93,7 @@
 
 <div
     class="fieldcontain ${hasErrors(bean: cmd, field: 'group', 'error')} required"
-    onmouseover="tooltip.show('${message(code: 'tooltip.clinician.create.group')}');"
-    onmouseout="tooltip.hide();">
+    data-tooltip="${message(code: 'tooltip.clinician.create.group')}">
     <label for="groupIds">
         <g:message code="clinician.group.label" default="type" />
     </label>
@@ -105,7 +104,7 @@
 </div>
 
 <div class="fieldcontain required">
-    <label for="roleIds" onmouseover="tooltip.show('${message(code: 'clinician.roles.label')}');" onmouseout="tooltip.hide();">
+    <label for="roleIds" data-tooltip="${message(code: 'clinician.roles.label')}">
         <g:message code="clinician.roles.label" default="type" />
     </label>
     <g:select name="roleIds" from="${cmd.possibleRoles}"

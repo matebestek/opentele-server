@@ -1,7 +1,9 @@
 package org.opentele.taglib
-
 import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
 import org.opentele.server.model.Schedule
+import org.opentele.server.model.types.Weekday
+
+import static org.opentele.server.model.Schedule.ScheduleType.*
 
 class ScheduleTagLib {
 	static namespace = "schedule"
@@ -16,31 +18,32 @@ class ScheduleTagLib {
             case null:
                 outputNoCurrentVersion()
                 break
-            case Schedule.ScheduleType.UNSCHEDULED:
+            case UNSCHEDULED:
                 outputNoSchedule()
                 break
-            case Schedule.ScheduleType.MONTHLY:
+            case MONTHLY:
                 outputTime(schedule)
                 outputMonthlySchedule(schedule)
                 break
-            case Schedule.ScheduleType.WEEKDAYS:
+            case WEEKDAYS:
                 outputTime(schedule)
                 outputWeeklySchedule(schedule)
                 break
-            case Schedule.ScheduleType.EVERY_NTH_DAY:
+            case WEEKDAYS_ONCE:
+                outputWeeklyOnceSchedule(schedule)
+                break
+            case EVERY_NTH_DAY:
                 outputTime(schedule)
                 outputNthDaySchedule(schedule)
                 break
-            case Schedule.ScheduleType.SPECIFIC_DATE:
+            case SPECIFIC_DATE:
                 outputTime(schedule)
                 outputSpecificDateSchedule(schedule)
                 break
             default:
-                throw new IllegalArgumentException("Unknown schedule type: '${schedule.type}'")
+                 throw new IllegalArgumentException("Unknown schedule type: '${schedule.type}'")
         }
-        if(tooltip) {
-            out << '</span>'
-        }
+        out << '</span>'
 	}
 
     private def outputNthDaySchedule(Schedule schedule) {
@@ -48,15 +51,19 @@ class ScheduleTagLib {
     }
 
     private def outputSpecificDateSchedule(Schedule schedule) {
-        def date = g.formatDate(date: schedule.specificDate.calendar.getTime(), format:  "dd/MM/yyyy")
+        def date = g.formatDate(date: schedule.specificDate, format:  "dd/MM/yyyy")
         out << g.message(code: message(code:"schedule.specificdateschedule"), args: [date])
     }
 
     private void outputWeeklySchedule(Schedule schedule) {
-        def sortedWeekdays = schedule.weekdays.sort { it.ordinal() }
-        def daysString = sortedWeekdays.collect { g.message(code: "enum.weekday.short.${it}") }.join(', ')
+        out << weekdaysToString(schedule.weekdays)
+    }
 
-        out << daysString
+    private void outputWeeklyOnceSchedule(Schedule schedule) {
+        def introPeriod = weekdaysToString(schedule.weekdaysIntroPeriod)
+        def secondPeriod = weekdaysToString(schedule.weekdaysSecondPeriod)
+
+        out << g.message(code: 'schedule.introPeriod', args: [schedule.reminderTime, introPeriod, g.message(code: 'questionnaireSchedule.introPeriodWeeks.week.'+schedule.introPeriodWeeks), secondPeriod])
     }
 
     private void outputMonthlySchedule(Schedule schedule) {
@@ -73,22 +80,10 @@ class ScheduleTagLib {
     }
 
     private void outputTime(Schedule schedule) {
-        schedule.timesOfDay.each {
-            def minute = toHumanReadableTime(it.minute)
-            def hour = toHumanReadableTime(it.hour)
-
-            out << hour
-            out << ":"
-            out << minute
-            out << " "
-        }
+        out << schedule.timesOfDay.join(" ")+" "
     }
 
-    private String toHumanReadableTime(int time) {
-        def timeString = time.toString()
-        if (timeString.length() == 1) {
-            timeString = "0" + time
-        }
-        timeString
+    private String weekdaysToString(List<Weekday> weekdays) {
+        weekdays.collect { g.message(code: "enum.weekday.short.${it}") }.join(', ')
     }
 }

@@ -1,4 +1,4 @@
-<td>Automatisk lungefunktionstest</td>
+<td>Automatisk spirometri</td>
 <%
     String tdClass = measurement.waiting ? 'waiting-measurement' : 'loaded-measurement'
     String waitingDisplay = measurement.waiting ? 'block' : 'none'

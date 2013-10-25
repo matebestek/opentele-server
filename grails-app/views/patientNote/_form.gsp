@@ -20,7 +20,7 @@
 </div>
 
 <div class="fieldcontain ${hasErrors(bean: patientNoteInstance, field: 'reminderDate', 'error')}">
-    <label for="datePicker" onmouseover="tooltip.show('${message(code: 'tooltip.patientNote.reminder.date')}');" onmouseout="tooltip.hide();">
+    <label for="reminderDate" data-tooltip="${message(code: 'tooltip.patientNote.reminder.date')}">
         <g:message code="patientNoteInstance.reminderDate.label" default="Reminder Date" />
     </label>
 <div class="ui-datepicker-opentele">

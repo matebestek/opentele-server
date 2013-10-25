@@ -2,9 +2,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <!--[if lt IE 7 ]> <html lang="en" class="no-js ie6 ie"> <![endif]-->
 <!--[if IE 7 ]>    <html lang="en" class="no-js ie7 ie"> <![endif]-->
-<!--[if IE 8 ]>    <html lang="en" class="no-js ie8 ie"> <![endif]-->
-<!--[if IE 9 ]>    <html lang="en" class="no-js ie9 ie"> <![endif]-->
-<!--[if (gt IE 9)|!(IE)]><!-->
+<!--[if (gt IE 10)|!(IE)]><!-->
 <html lang="en" class="no-js">
 <!--<![endif]-->
 	<head>
@@ -21,11 +19,13 @@
         <link rel="stylesheet" href="${resource(dir: 'css', file: 'style.css')}" type="text/css">
         <link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery-ui.custom.css')}" type="text/css"/>
         <link rel="stylesheet" href="${resource(dir: 'css', file: 'font-awesome.min.css')}"/>
+        <g:javascript src="layout.engine.min.js"/>
         <g:javascript src="jquery.js" />
         <g:javascript src="jquery-ui/jquery-ui-1.10.1.min.js"/>
         <g:javascript src="underscore-min.js"/>
         <g:javascript src="jquery-ui/jquery.ui.datepicker-da.js"/>
         <g:javascript src="jquery.openteleDatePicker.js"/>
+        <link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery.optenteleDatePicker.css')}" type="text/css">
         <g:javascript src="firebugx.js"/>
         <g:javascript src="modernizr.js"/>
 		<g:layoutHead />

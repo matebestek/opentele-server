@@ -20,6 +20,8 @@
 
 <g:javascript src="jquery-1.9.1.min.js"/>
 <g:javascript src="jquery-ui/jquery-ui-1.10.1.min.js"/>
+<g:javascript src="jquery.openteleDatePicker.js"/>
+<link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery.optenteleDatePicker.css')}" type="text/css">
 <g:javascript src="underscore-min.js"/>
 
 <g:hiddenField name="editUrl" value="${g.createLink(action: "edit")}"/>
@@ -57,7 +59,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="span2">
+        <div class="span3">
             <div class="well">
                 <ul class="nav nav-list">
                     <li class="nav-header"><g:message code="questionnaireEditor.nodetypes"/> </li>
@@ -77,10 +79,14 @@
                 </ul>
             </div>
             <div class="well scheduling">
+                <form id="schedule">
+                    <g:hiddenField name="questionnaireHeader.id" value="${questionnaireHeader.id}"/>
+
                 <g:render template="schedule" />
+                </form>
             </div>
         </div>
-        <div class="span10">
+        <div class="span9">
             <div class="well" id="drawingArea">
             </div>
         </div>
@@ -103,7 +109,6 @@
 
 <g:javascript src="jquery.jsPlumb-1.3.16-all-min.js"/>
 <g:javascript src="bootstrap-2.3.1.min.js"/>
-<g:javascript src="knockout-2.2.0.js"/>
 <g:javascript src="json2.js"/>
 <g:javascript src="questionnaireEditor.js"/>
 <r:script>

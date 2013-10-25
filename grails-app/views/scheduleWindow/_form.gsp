@@ -14,6 +14,6 @@
 		<g:message code="scheduleWindow.windowSizeMinutes.label" default="Window Size Minutes" />
 		<span class="required-indicator">*</span>
 	</label>
-    <g:textField name="windowSizeMinutes" value="${scheduleWindowInstance?.windowSizeMinutes}" />
+    <g:textField name="windowSizeMinutes" value="${scheduleWindowInstance?.windowSizeMinutes}" /> <g:message code="scheduleWindow.minutes"/>
 </div>
 

@@ -61,13 +61,13 @@
     <h1 class="fieldcontain">${pageTitle}</h1>
 
     <div style="margin: 0.8em 1em 0.3em;padding: 0 0.25em;">
-        ${message(code: 'graph.filter.text')}:
-        <a id="${MeasurementFilterType.ALL}" href="${createLink(mapping:"patientGraphs", params:[patientId: session.patientId])}">${message(code: 'graph.filter.show.all')}</a> |
-        <a id="${MeasurementFilterType.WEEK}" href="${createLink(mapping:"patientGraphs", params:[filter:"${MeasurementFilterType.WEEK}", patientId: session.patientId])}">${message(code: 'graph.filter.show.week')}</a> |
-        <a id="${MeasurementFilterType.MONTH}" href="${createLink(mapping:"patientGraphs", params:[filter:"${MeasurementFilterType.MONTH}", patientId: session.patientId])}">${message(code: 'graph.filter.show.month')}</a> |
-        <a id="${MeasurementFilterType.QUARTER}" href="${createLink(mapping:"patientGraphs", params:[filter:"${MeasurementFilterType.QUARTER}", patientId: session.patientId])}">${message(code: 'graph.filter.show.quarter')}</a> |
-        <a id="${MeasurementFilterType.YEAR}" href="${createLink(mapping:"patientGraphs", params:[filter:"${MeasurementFilterType.YEAR}", patientId: session.patientId])}">${message(code: 'graph.filter.show.year')}</a> |
-        <a id="${MeasurementFilterType.CUSTOM}" href="#" onclick="showIntervalChooser();">${message(code: 'graph.filter.show.choose')}</a>
+        ${message(code: 'time.filter.text')}:
+        <a id="${MeasurementFilterType.ALL}" href="${createLink(mapping:"patientGraphs", params:[patientId: session.patientId])}">${message(code: 'time.filter.show.all')}</a> |
+        <a id="${MeasurementFilterType.WEEK}" href="${createLink(mapping:"patientGraphs", params:[filter:"${MeasurementFilterType.WEEK}", patientId: session.patientId])}">${message(code: 'time.filter.show.week')}</a> |
+        <a id="${MeasurementFilterType.MONTH}" href="${createLink(mapping:"patientGraphs", params:[filter:"${MeasurementFilterType.MONTH}", patientId: session.patientId])}">${message(code: 'time.filter.show.month')}</a> |
+        <a id="${MeasurementFilterType.QUARTER}" href="${createLink(mapping:"patientGraphs", params:[filter:"${MeasurementFilterType.QUARTER}", patientId: session.patientId])}">${message(code: 'time.filter.show.quarter')}</a> |
+        <a id="${MeasurementFilterType.YEAR}" href="${createLink(mapping:"patientGraphs", params:[filter:"${MeasurementFilterType.YEAR}", patientId: session.patientId])}">${message(code: 'time.filter.show.year')}</a> |
+        <a id="${MeasurementFilterType.CUSTOM}" href="#" onclick="showIntervalChooser();">${message(code: 'time.filter.show.choose')}</a>
     </div>
     <g:if test="${MeasurementFilterType.valueOf(params.filter) == MeasurementFilterType.CUSTOM}">
         <div id="custom_interval_chooser">
@@ -78,9 +78,9 @@
         <g:form method="GET" mapping='patientGraphs' params='[patientId:session.patientId]'>
             <fieldset class="form">
                 <div class="fieldcontain">
-                    <label for="start" style="width:auto">${message(code: 'graph.filter.custom.start')}:</label>
+                    <label for="start" style="width:auto">${message(code: 'time.filter.custom.start')}:</label>
                     <jq:datePicker name="start" precision="day" value="${params.start}"/>
-                    <label for="end" style="width:auto">${message(code: 'graph.filter.custom.end')}:</label>
+                    <label for="end" style="width:auto">${message(code: 'time.filter.custom.end')}:</label>
                     <jq:datePicker name="end" precision="day" value="${params.end}"/>
                 </div>
                 <fieldset class="buttons">

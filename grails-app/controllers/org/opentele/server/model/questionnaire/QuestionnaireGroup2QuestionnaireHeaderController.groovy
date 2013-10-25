@@ -1,9 +1,8 @@
 package org.opentele.server.model.questionnaire
-
 import grails.plugins.springsecurity.Secured
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.model.types.PermissionName
-import org.opentele.server.util.ScheduleViewModel
+import org.opentele.server.questionnaire.QuestionnaireGroup2QuestionnaireHeaderCommand
 import org.springframework.dao.DataIntegrityViolationException
 
 @Secured(PermissionName.NONE)
@@ -19,75 +18,61 @@ class QuestionnaireGroup2QuestionnaireHeaderController {
     }
 
     @Secured(PermissionName.QUESTIONNAIRE_GROUP_CREATE)
-    def create() {
-        def questionnaireGroup2QuestionnaireHeader = new QuestionnaireGroup2QuestionnaireHeader(params)
-        def viewModel = questionnaireGroupService.viewModelForCreateAndEdit(questionnaireGroup2QuestionnaireHeader)
-
-        if (viewModel.selectableQuestionnaires.size == 0) {
+    def create(QuestionnaireGroup2QuestionnaireHeaderCommand command) {
+        if (!command.selectableQuestionnaireHeaders) {
             flash.message = message(code: 'questionnaireGroup2QuestionnaireHeader.questionnaire.none.left')
             redirect(controller: "questionnaireGroup", action: "show", id: params.questionnaireGroup.id)
         } else {
-            viewModel
+            command.properties
         }
     }
 
     @Secured(PermissionName.QUESTIONNAIRE_GROUP_CREATE)
-    def save() {
-        def questionnaireGroup2QuestionnaireHeaderInstance = new QuestionnaireGroup2QuestionnaireHeader(params)
-        def viewModel = new ScheduleViewModel(params.viewModel)
+    def save(QuestionnaireGroup2QuestionnaireHeaderCommand command) {
+        questionnaireGroupService.save(command)
+        if (command.hasErrors()) {
+            render(view: 'create', model: modelWithErrors(command))
+        } else {
+            flash.message = message(code: 'default.created.message', args: [message(code: 'questionnaireGroup2QuestionnaireHeader.label', default: 'QuestionnaireSchedule')])
+            redirect(controller: "questionnaireGroup", action: "show", id: command.questionnaireGroup.id)
+        }
+    }
 
-        questionnaireGroup2QuestionnaireHeaderInstance.questionnaireGroup = QuestionnaireGroup.get(viewModel.questionnaireGroupId)
 
-        def validationErrors = viewModel.validateViewModel()
-        if (viewModel.type && validationErrors) {
-            render(view: 'create', model: questionnaireGroupService.viewModelForCreateAndEdit(questionnaireGroup2QuestionnaireHeaderInstance, validationErrors))
+    @Secured(PermissionName.QUESTIONNAIRE_GROUP_WRITE)
+    def edit(Long id, QuestionnaireGroup2QuestionnaireHeaderCommand command) {
+        withInstance(id) { QuestionnaireGroup2QuestionnaireHeader questionnaireGroup2Header ->
+
+            command.questionnaireGroup2QuestionnaireHeader = questionnaireGroup2Header
+            command.questionnaireGroup = questionnaireGroup2Header.questionnaireGroup
+            command.selectedQuestionnaireHeader = questionnaireGroup2Header.questionnaireHeader
+            if(questionnaireGroup2Header?.standardSchedule?.type) {
+                bindData(command,questionnaireGroup2Header.standardSchedule.properties)
+            }
+            def model = command.properties
+
+            return model
+        }
+
+    }
+
+    @Secured(PermissionName.QUESTIONNAIRE_GROUP_WRITE)
+    def update(QuestionnaireGroup2QuestionnaireHeaderCommand command) {
+        if(!command.questionnaireGroup2QuestionnaireHeader) {
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'questionnaireGroup2QuestionnaireHeader.label', default: 'QuestionnaireGroup2QuestionnaireHeader'), "$id"])
+            redirect(controller: "questionnaireGroup", action: "list")
             return
         }
 
-        if (questionnaireGroupService.createOrUpdate(questionnaireGroup2QuestionnaireHeaderInstance, viewModel)) {
-            flash.message = message(code: 'default.created.message', args: [message(code: 'questionnaireGroup2QuestionnaireHeader.label', default: 'QuestionnaireSchedule')])
-            redirect(controller: "questionnaireGroup", action: "show", id: questionnaireGroup2QuestionnaireHeaderInstance.questionnaireGroup.id)
+        questionnaireGroupService.update(command)
+
+        if (command.hasErrors()) {
+            render(view: 'edit', model: modelWithErrors(command))
         } else {
-            render(view: 'create', model: questionnaireGroupService.viewModelForCreateAndEdit(questionnaireGroup2QuestionnaireHeaderInstance, domainErrorsToErrors(questionnaireGroup2QuestionnaireHeaderInstance)))
-        }
-    }
-
-
-    @Secured(PermissionName.QUESTIONNAIRE_GROUP_WRITE)
-    def edit(Long id) {
-        withInstance(id) {
-            questionnaireGroupService.viewModelForCreateAndEdit(it)
+            flash.message = message(code: 'default.updated.message', args: [message(code: 'questionnaireGroup2QuestionnaireHeader.label', default: 'QuestionnaireSchedule')])
+            redirect(controller: "questionnaireGroup", action: "show", id: command.questionnaireGroup.id)
         }
 
-    }
-
-    @Secured(PermissionName.QUESTIONNAIRE_GROUP_WRITE)
-    def update(Long id) {
-        ScheduleViewModel viewModel = new ScheduleViewModel(params.viewModel)
-
-        withInstance(viewModel.id) {
-            def validationErrors = viewModel.validateViewModel()
-            if (validationErrors) {
-                render(view: 'edit', model: questionnaireGroupService.viewModelForCreateAndEdit(it, validationErrors))
-            } else if (viewModel.version) {
-                def version = viewModel.version.toLong()
-                if (it.version > version) {
-                    it.errors.rejectValue("version", "default.optimistic.locking.failure",
-                            [message(code: 'questionnaireGroup2QuestionnaireHeader.label', default: 'QuestionnaireGroup2QuestionnaireHeader')] as Object[],
-                            "Another user has updated this QuestionnaireGroup2QuestionnaireHeader while you were editing")
-                    render(view: "edit", model: [questionnaireGroup2QuestionnaireHeaderInstance: it])
-                    return
-                }
-            }
-
-            if (questionnaireGroupService.createOrUpdate(it, viewModel)) {
-                flash.message = message(code: 'default.updated.message', args: [message(code: 'questionnaireGroup2QuestionnaireHeader.label', default: 'QuestionnaireSchedule')])
-                redirect(controller: "questionnaireGroup", action: "show", id: it.questionnaireGroup.id)
-            } else {
-                render(view: 'edit', model: questionnaireGroupService.viewModelForCreateAndEdit(it, domainErrorsToErrors(it)))
-            }
-
-        }
     }
 
     @Secured(PermissionName.QUESTIONNAIRE_GROUP_DELETE)
@@ -95,26 +80,21 @@ class QuestionnaireGroup2QuestionnaireHeaderController {
         withInstance(id) {
             QuestionnaireGroup questionnaireGroup = it.questionnaireGroup
             try {
-                questionnaireGroup.removeFromQuestionnaireGroup2Header(it)
+                questionnaireGroup.removeFromQuestionnaireGroup2Header(it as QuestionnaireGroup2QuestionnaireHeader)
                 questionnaireGroup.save()
                 it.delete(flush: true)
                 flash.message = message(code: 'default.deleted.message', args: [message(code: 'questionnaireGroup2QuestionnaireHeader.label', default: 'QuestionnaireGroup2QuestionnaireHeader'), questionnaireGroup.id])
                 redirect(controller: "questionnaireGroup", action: "show", id: questionnaireGroup.id)
             }
-            catch (DataIntegrityViolationException e) {
+            catch (DataIntegrityViolationException ignored) {
                 flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'questionnaireGroup2QuestionnaireHeader.label', default: 'QuestionnaireGroup2QuestionnaireHeader'), questionnaireGroup.id])
                 redirect(controller: "questionnaireGroup", action: "show", id: questionnaireGroup.id)
             }
         }
     }
-
-    private domainErrorsToErrors(QuestionnaireGroup2QuestionnaireHeader questionnaireGroup2QuestionnaireHeader) {
-        questionnaireGroup2QuestionnaireHeader.errors.fieldErrors.collect {
-            [
-                    field: it.field,
-                    message: message(error: it)
-            ]
-        }
+    private modelWithErrors(QuestionnaireGroup2QuestionnaireHeaderCommand command) {
+        def model = command.properties ? [*:command.properties, errors: command.errors] : [errors: command.errors]
+        model
     }
 
     private withInstance(Long id, Closure closure) {

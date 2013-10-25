@@ -8,11 +8,12 @@
 	value="${message(code:"patient.label", default: 'Patient')}" />
 <title><g:message code="patient.completed.questionnaire" /></title>
 <g:javascript>
-		function showIgnoreReasonInput() {
-			$("#ignoreReasonInput").css("display", "inline-block")
-			$("#ignoreReasonButton").css("display", "none")
-		}
-	</g:javascript>
+    function showIgnoreReasonInput() {
+        $("#ignoreReasonInput").css("display", "inline-block");
+        $("#ignoreReasonInput").css("display", "inline-block")
+        $("#ignoreReasonButton").css("display", "none")
+    }
+</g:javascript>
 </head>
 
 <body>
@@ -106,24 +107,20 @@
                 <g:if test="${completedQuestionnaire._questionnaireIgnored}">
                     <sec:ifAnyGranted roles="${PermissionName.QUESTIONNAIRE_IGNORE}">
                         <g:actionSubmit value="Fjern ignorering af hele skema"
-                            class="acknowledge" action="toggleIgnoreQuestionnaire"
-                            onmouseover="tooltip.show('${message(code: 'tooltip.patient.questionnaire.unignoreQuestionnaire')}');"
-                            onmouseout="tooltip.hide();" />
+                            class="acknowledge" action="toggleIgnoreQuestionnaire" data-tooltip="${message(code: 'tooltip.patient.questionnaire.unignoreQuestionnaire')}" />
                     </sec:ifAnyGranted>
                 </g:if>
                 <g:else>
                     <sec:ifAnyGranted roles="${PermissionName.QUESTIONNAIRE_IGNORE}">
                         <div id="ignoreReasonInput" style="display: none;">
                             <span><g:message code="questionnaire.ignoreReason.label" /></span>
-                            <g:textArea name="ignoreReason"></g:textArea>
+                            <g:textArea name="ignoreReason"> </g:textArea>
                             <g:actionSubmit value="Ignorer hele skema" class="cancel"
                                 action="toggleIgnoreQuestionnaire" />
                         </div>
                         <input id="ignoreReasonButton" type="button"
                             value="Ignorer hele skema" class="cancel"
-                            onClick="showIgnoreReasonInput()"
-                            onmouseover="tooltip.show('${message(code: 'tooltip.patient.questionnaire.ignoreQuestionnaire')}');"
-                            onmouseout="tooltip.hide();" />
+                            onClick="showIgnoreReasonInput()" data-tooltip="${message(code: 'tooltip.patient.questionnaire.ignoreQuestionnaire')}" />
                     </sec:ifAnyGranted>
                 </g:else>
             </fieldset>

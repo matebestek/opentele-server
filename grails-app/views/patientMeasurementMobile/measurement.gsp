@@ -66,11 +66,11 @@
 
     <h1 style="text-align: center">${message(code: "patientMeasurements.label." + params.type)}</h1>
     <div class="period_adjustment">
-        <a id="${MeasurementFilterType.WEEK}" href="${createLink(mapping: "patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.WEEK}"])}">${message(code: 'graph.filter.show.week')}</a> |
-        <a id="${MeasurementFilterType.MONTH}" href="${createLink(mapping:"patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.MONTH}"])}">${message(code: 'graph.filter.show.month')}</a> |
-        <a id="${MeasurementFilterType.QUARTER}" href="${createLink(mapping:"patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.QUARTER}"])}">${message(code: 'graph.filter.show.quarter')}</a> |
-        <a id="${MeasurementFilterType.YEAR}" href="${createLink(mapping:"patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.YEAR}"])}">${message(code: 'graph.filter.show.year')}</a> |
-        <a id="${MeasurementFilterType.ALL}" href="${createLink(mapping:"patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.ALL}"])}">${message(code: 'graph.filter.show.all')}</a>
+        <a id="${MeasurementFilterType.WEEK}" href="${createLink(mapping: "patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.WEEK}"])}">${message(code: 'time.filter.show.week')}</a> |
+        <a id="${MeasurementFilterType.MONTH}" href="${createLink(mapping:"patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.MONTH}"])}">${message(code: 'time.filter.show.month')}</a> |
+        <a id="${MeasurementFilterType.QUARTER}" href="${createLink(mapping:"patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.QUARTER}"])}">${message(code: 'time.filter.show.quarter')}</a> |
+        <a id="${MeasurementFilterType.YEAR}" href="${createLink(mapping:"patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.YEAR}"])}">${message(code: 'time.filter.show.year')}</a> |
+        <a id="${MeasurementFilterType.ALL}" href="${createLink(mapping:"patientMeasurementsTypeMobile", params:[type: "${params.type}", filter:"${MeasurementFilterType.ALL}"])}">${message(code: 'time.filter.show.all')}</a>
     </div>
 
     <div class="measurements">

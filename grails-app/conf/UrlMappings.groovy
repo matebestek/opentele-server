@@ -13,7 +13,6 @@ class UrlMappings {
 				// apply constraints here
 			}
 		}
-
 		name patientMeasurements: "/patient/$patientId/measurements"(controller:"measurement", action:"patientMeasurements")
 		name patientGraphs: "/patient/$patientId/graphs"(controller:"measurement", action:"patientGraphs")
 		name patientMeasurementGraph: "/patient/$patientId/measurements/$measurementType/graph"(controller:"measurement", action:"graph")

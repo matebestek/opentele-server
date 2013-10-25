@@ -53,8 +53,7 @@
 		<sec:ifAnyGranted roles="${PermissionName.METER_CREATE}">
 			<fieldset class="buttons">
 				<g:link class="create" action="create"
-					onmouseover="tooltip.show('${message(code: 'tooltip.patient.meter.add')}');"
-					onmouseout="tooltip.hide();">
+					data-tooltip="${message(code: 'tooltip.patient.meter.add')}">
 					<g:message code="default.new.label" args="[entityName]" />
 				</g:link>
 			</fieldset>

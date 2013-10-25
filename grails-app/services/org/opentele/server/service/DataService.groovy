@@ -41,7 +41,6 @@ class DataService {
 	   def patientId = mr.patientId
 	   def meterId = mr.meterId
 	   log.debug "Meter id: " + meterId
-	   println "Meter id: " + meterId
 	   def m = Meter.get(Integer.valueOf(meterId).value)
 	   log.debug "Using meter_: " + m
 	   def p = Patient.get(patientId)

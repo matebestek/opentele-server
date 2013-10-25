@@ -1,6 +1,7 @@
 package org.opentele.server.model
 import org.junit.Test
-import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
+import org.opentele.server.constants.Constants
+import org.opentele.server.model.questionnaire.QuestionnaireScheduleController
 
 class QuestionnaireScheduleControllerIntegrationTests extends AbstractControllerIntegrationTest {
     def grailsApplication
@@ -40,6 +41,7 @@ class QuestionnaireScheduleControllerIntegrationTests extends AbstractController
         QuestionnaireSchedule toDelete = QuestionnaireSchedule.findAllByMonitoringPlan(plan).get(0)
         assert toDelete != null
 
+        scheduleController.session[Constants.SESSION_PATIENT_ID] = patient.id
         scheduleController.params.id = toDelete.id
         scheduleController.del()
 

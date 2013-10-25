@@ -18,7 +18,7 @@
 					
 						<g:sortableColumn property="scheduleType" title="${message(code: 'scheduleWindow.scheduleType.label', default: 'Schedule Type')}" />
 					
-						<g:sortableColumn property="windowSizeMinutes" title="${message(code: 'scheduleWindow.windowSizeMinutes.label', default: 'Window Size Minutes')}" />
+						<g:sortableColumn property="windowSizeMinutes" title="${message(code: 'scheduleWindow.windowSizeMinutes.label', default: 'Window Size')}" />
 					
 					</tr>
 				</thead>
@@ -28,7 +28,7 @@
 					
 						<td><g:link action="show" id="${scheduleWindowInstance.id}"><otformat:prettyStringForScheduleType  message="${scheduleWindowInstance.scheduleType}"/></g:link></td>
 					
-						<td>${fieldValue(bean: scheduleWindowInstance, field: "windowSizeMinutes")}</td>
+						<td><scheduleWindow:prettyformat scheduleType="${scheduleWindowInstance.scheduleType}"/></td>
 					
 					</tr>
 				</g:each>

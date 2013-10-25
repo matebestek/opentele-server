@@ -1,20 +1,19 @@
-<g:if test="${unacknowledgedQuestionnaires.empty}">
+<g:if test="${noUnacknowledgedQuestionnaires}">
     <g:message code="default.questionnaires.no.new" />
 </g:if>
 <g:else>
     <cq:renderResultTableForPatient patientID="${patient.id}"
-                                    patientCompletedQuestionnaires="${unacknowledgedQuestionnaires}"
                                     questionPreferences="${questionPreferences}" withPrefs="${true}"
-                                    unacknowledgedOnly="${true}" />
+                                    completedQuestionnaireResultModel="${completedQuestionnaireResultModel}"/>
     <!-- Templates for Knockout.js -->
     <script id="prefRowTemplate" type="text/html">
         <tr id="prefQuestion" class="prefQuestion" data-bind="attr: {'selectedQuestionID': $root.getQuestionID($data)}">
             <td>
                 <div>
-                    <select data-bind="options: $root.questions, optionsText: 'text', value: $data.questionObj, optionsCaption: 'Vælg..'" onmouseover="tooltip.show('Vælg foretrukken værdi, denne kopieres til toppen af skemaet.');" onmouseout='tooltip.hide();'>
+                    <select data-bind="options: $root.questions, optionsText: 'text', value: $data.questionObj, optionsCaption: 'Vælg..'" data-tooltip="${message(code:"patient.questionnaire.preferredValue.tooltip")}">
                     </select>
                     <!-- ko if: $root.notLastRow($data) -->
-                    <button id="removeBtn" class="remove" data-bind="click: function(){ $data.remove(); }" onmouseover="tooltip.show('Fjern denne række');" onmouseout='tooltip.hide();'><img src="../images/cancel.png"/></button>
+                    <button id="removeBtn" class="remove" data-bind="click: function(){ $data.remove(); }" data-tooltip="${message(code:"patient.questionnaire.preferredValue.remove.tooltip")}"><r:img uri='/images/cancel.png'/></button>
                     <!-- /ko -->
                 </div>
             </td>

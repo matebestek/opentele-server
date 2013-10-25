@@ -7,15 +7,11 @@ import org.opentele.builders.CompletedQuestionnaireBuilder
 import org.opentele.builders.MonitoringPlanBuilder
 import org.opentele.builders.PatientBuilder
 import org.opentele.builders.QuestionnaireScheduleBuilder
-import org.opentele.server.model.MonitoringPlan
-import org.opentele.server.model.QuestionnaireSchedule
-import org.opentele.server.model.Schedule
-import org.opentele.server.model.ScheduleWindow
+import org.opentele.server.model.*
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.patientquestionnaire.PatientBooleanNode
 import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
 import org.opentele.server.model.questionnaire.BooleanNode
-import org.opentele.server.model.types.Month
 import org.opentele.server.model.types.Weekday
 import org.opentele.server.questionnaire.QuestionnaireService
 import spock.lang.Specification
@@ -27,9 +23,9 @@ import spock.lang.Unroll
 class ScheduleWindowSpec extends Specification {
 
     QuestionnaireService service
-    def patient
-    def completedQuestionnaire
-    def timesOfDay
+    Patient patient
+    CompletedQuestionnaire completedQuestionnaire
+    List<Schedule.TimeOfDay> timesOfDay
 
     def setup() {
         ScheduleWindow.build(scheduleType: Schedule.ScheduleType.WEEKDAYS, windowSizeMinutes: 30)
@@ -39,8 +35,8 @@ class ScheduleWindowSpec extends Specification {
         service = new QuestionnaireService()
         patient = new PatientBuilder().build()
 
-        def createdDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 15:29:12").toCalendar()
-        completedQuestionnaire = new CompletedQuestionnaireBuilder(createdDate: createdDate.getTime()).forPatient(patient).build()
+        def receivedDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 15:29:12").toCalendar()
+        completedQuestionnaire = new CompletedQuestionnaireBuilder(receivedDate: receivedDate.getTime()).forPatient(patient).build()
         timesOfDay = [new Schedule.TimeOfDay(hour: 16, minute: 0)]
     }
 
@@ -50,13 +46,16 @@ class ScheduleWindowSpec extends Specification {
         def checkWindow = ScheduleWindow.findByScheduleType(scheduleType)
         if (checkWindow != null) {
             checkWindow.windowSizeMinutes = windowSizeMinutes
-            checkWindow.save()
+            checkWindow.save(flush: true)
         }
 
         Date startDate = Date.parse("yyyy/M/d", "2013/6/5")
         MonitoringPlan monitoringPlan = new MonitoringPlanBuilder().forPatient(patient).forStartDate(startDate).build();
-        Schedule.StartingDate nthDayStartingDate = new Schedule.StartingDate(year: 2013, month: Month.JUNE, day: 5)
-        new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire.questionnaireHeader).forMonitoringPlan(monitoringPlan).forScheduleType(scheduleType).forDaysInMonth([5]).forStartingDate(nthDayStartingDate).forWeekdays(Weekday.values().collect()).forTimesOfDay(timesOfDay).build()
+        Date nthDayStartingDate = Date.parse("yyyy/M/d","2013/6/5")
+        new QuestionnaireScheduleBuilder(questionnaireHeader: completedQuestionnaire.questionnaireHeader)
+                .forMonitoringPlan(monitoringPlan)
+                .forScheduleType(scheduleType).forDaysInMonth([5])
+                .forStartingDate(nthDayStartingDate).forWeekdays(Weekday.values().collect()).forTimesOfDay(timesOfDay).build()
 
         def checkDate = Date.parse("yyyy/M/d H:m:s", "2013/6/5 16:00:02").toCalendar()
         def blueAlarms = service.checkForBlueAlarms(patient, subtractOneMinute(checkDate), checkDate)
@@ -67,18 +66,18 @@ class ScheduleWindowSpec extends Specification {
         where:
 
         scheduleType                        | windowSizeMinutes | hasBlueAlarm
-      //  Schedule.ScheduleType.WEEKDAYS      | 30                | true
+        Schedule.ScheduleType.WEEKDAYS      | 30                | true
         Schedule.ScheduleType.WEEKDAYS      | 35                | false
-      //  Schedule.ScheduleType.EVERY_NTH_DAY | 30                | true
+        Schedule.ScheduleType.EVERY_NTH_DAY | 30                | true
         Schedule.ScheduleType.EVERY_NTH_DAY | 35                | false
-      //  Schedule.ScheduleType.MONTHLY       | 30                | true
+        Schedule.ScheduleType.MONTHLY       | 30                | true
         Schedule.ScheduleType.MONTHLY       | 35                | false
         Schedule.ScheduleType.UNSCHEDULED   | 30                | false
         Schedule.ScheduleType.UNSCHEDULED   | 35                | false
     }
 
     Calendar subtractOneMinute(Calendar c) {
-        def result = c.clone()
+        Calendar result = c.clone() as Calendar
         result.add(Calendar.MINUTE, -1)
         result
     }

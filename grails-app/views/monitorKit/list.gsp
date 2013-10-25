@@ -49,8 +49,7 @@
     <sec:ifAnyGranted roles="${PermissionName.MONITOR_KIT_CREATE}">
         <fieldset class="buttons">
             <g:link class="create" action="create"
-                onmouseover="tooltip.show('${message(code: 'tooltip.patient.monitorKit.add')}');"
-                onmouseout="tooltip.hide();">
+                data-tooltip="${message(code: 'tooltip.patient.monitorKit.add')}">
                 <g:message code="default.new.label" args="[entityName]" />
             </g:link>
         </fieldset>

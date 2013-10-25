@@ -103,7 +103,7 @@ body, input, select, textarea {
     }
 
     .twoCharacterInput {
-        width: 25px !important;
+        width: 34px !important;
     }
 
     .wide_select {
@@ -341,6 +341,11 @@ fieldset.buttons, div.pagination {
 
     div.fieldcontain img {
         vertical-align: top
+    }
+
+    div.fieldcontain div.inlined {
+        margin-top: 4px;
+        display: inline-block;
     }
 
     div.content li.fieldcontain span.property-value,
@@ -660,43 +665,6 @@ fieldset.buttons, div.pagination {
     margin: 5px !important;;
 }
 
-.ui-datepicker-opentele input.ui-datepicker-ot-time {
-    width: 28px !important;
-    text-align: center !important;
-}
-
-.ui-datepicker-opentele input.ui-datepicker-ot-date {
-    width: 90px !important;
-    padding-right: 42px !important;
-    text-align: right !important;
-}
-
-.ui-datepicker-opentele div.ui-datepicker-wrapper {
-    display: inline;
-    position: relative;
-    vertical-align: text-top;
-}
-
-.ui-datepicker-opentele div.ui-datepicker-wrapper button.ui-datepicker-trigger {
-    display: inline;
-    position: absolute;
-    right: 0;
-}
-
-.ui-datepicker-opentele div.ui-datepicker-timewrapper {
-    vertical-align: text-top;
-    display: inline;
-}
-
-.ui-datepicker-opentele-simple {
-    position: relative;
-}
-
-.ui-datepicker-opentele-simple .ui-datepicker-trigger {
-    top: -6px;
-    right: 0;
-    position: absolute;
-}
 
 
 table .actions {
@@ -755,4 +723,41 @@ tr.thresholds td img {
     position: relative;
     top: 4px;
     right: 25px;
+}
+
+html.vendor-ie tr.thresholds td img {
+    right: 0;
+}
+
+.scheduleTypeSelector {
+    display: inline-block;
+}
+.scheduleTypeSelector input[type="radio"]{
+    width: auto !important;
+    height: 13px !important;
+}
+.scheduleTypeSelector label {
+    width: auto !important;
+}
+
+.narrow-checkbox {
+    width: auto !important;
+}
+
+#reminderStartMinutes {
+    width: 100px !important
+}
+
+.weekdays {
+    display: inline-block;
+}
+
+.weekdays label {
+    width: auto !important;
+    height: auto !important;
+}
+
+.weekdays input {
+    height: auto !important;
+
 }

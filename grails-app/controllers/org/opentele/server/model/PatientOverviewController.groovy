@@ -1,5 +1,6 @@
 package org.opentele.server.model
 import grails.plugins.springsecurity.Secured
+import org.opentele.server.TimeFilter
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.constants.Constants
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
@@ -80,12 +81,15 @@ class PatientOverviewController {
         def patient = Patient.get(params.id)
         checkAccessToPatient(patient)
 
-        def unacknowledgedQuestionnaires = CompletedQuestionnaire.findAllByPatientAndAcknowledgedDateIsNull(patient, [sort: 'uploadDate', order: 'desc'])
+        def completedQuestionnaireResultModel = questionnaireService.extractMeasurements(patient.id, true, TimeFilter.all())
+
+        def noUnacknowledgedQuestionnaires = completedQuestionnaireResultModel.columnHeaders.empty
 
         [
             patient: patient,
-            unacknowledgedQuestionnaires: unacknowledgedQuestionnaires,
+            noUnacknowledgedQuestionnaires: noUnacknowledgedQuestionnaires,
             questionPreferences: questionPreferencesForClinician(clinician),
+            completedQuestionnaireResultModel: completedQuestionnaireResultModel
         ]
     }
 
@@ -103,10 +107,14 @@ class PatientOverviewController {
         }
 
         def unacknowledgedQuestionnaires = CompletedQuestionnaire.findAllByPatientAndAcknowledgedDateIsNull(patient, [sort: 'uploadDate', order: 'desc'])
+
+        def completedQuestionnaireResultModel = questionnaireService.extractMeasurements(patient.id, true, TimeFilter.all())
+
         def notes = patient.notes.sort { it.createdDate }
 
         render(view: '/patientOverview/detailsWithHeader', model: [
             patient: patient,
+            completedQuestionnaireResultModel: completedQuestionnaireResultModel,
             unacknowledgedQuestionnaires: unacknowledgedQuestionnaires,
             notes: notes,
             questionPreferences: questionPreferencesForClinician(clinician)
@@ -120,8 +128,10 @@ class PatientOverviewController {
             // Setting up session values
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'patient.label', default: 'Patient')])
         } else {
-            def questionnaires = CompletedQuestionnaire.unacknowledgedGreenQuestionnairesByPatient(patient).list()
 
+            def completedQuestionnaireIds = params.list('ids').collect {it as Long}
+
+            def questionnaires = CompletedQuestionnaire.findAllByIdInList(completedQuestionnaireIds)
             questionnaires.each { questionnaire ->
                 checkAccessToPatient(questionnaire.patient)
             }
@@ -139,6 +149,9 @@ class PatientOverviewController {
             }
         }
 
+        println session.lastParams
+
+
         redirect(controller: session.lastController, action: session.lastAction, params: session.lastParams)
     }
 
@@ -155,9 +168,9 @@ class PatientOverviewController {
         }
 
         //Only get CQs that are green has have no blue alarms and are not previously acknowledged
-        def unacklowledgedGreenCompletedQuestionnaires = CompletedQuestionnaire.unacknowledgedGreenQuestionnairesByPatients(patientList).list()
+        def unacknowledgedGreenCompletedQuestionnaires = CompletedQuestionnaire.unacknowledgedGreenQuestionnairesByPatients(patientList).list()
 
-        completedQuestionnaireService.acknowledge(unacklowledgedGreenCompletedQuestionnaires, withAutoMessage)
+        completedQuestionnaireService.acknowledge(unacknowledgedGreenCompletedQuestionnaires, withAutoMessage)
 
         redirect(action: 'index')
     }

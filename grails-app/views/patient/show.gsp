@@ -17,25 +17,25 @@
 			</div>
 		</g:if>
 		<ol class="property-list patient">
-			<g:if test="${patientInstance?.user}">
+			<g:if test="${patientInstance.user}">
 				<li class="fieldcontain">
                     <span id="patientinstance-user-username-label" class="property-label">
                         <g:message code="patient.user.label" />
 				    </span>
                     <span class="property-value" aria-labelledby="user-label">
-                        ${patientInstance?.user?.username}
+                        ${patientInstance.user.username.encodeAsHTML()}
 				    </span>
                 </li>
 			</g:if>
-			<g:if test="${patientInstance?.user}">
+			<g:if test="${patientInstance.user}">
                 <g:if test="${patientInstance.user.cleartextPassword}">
                     <li class="fieldcontain">
                         <span id="cleartextPassword-label" class="property-label">
                             <g:message code="patient.cleartextPassword.label"/>
                         </span>
                         <span class="property-value" aria-labelledby="user-label">
-                            ${patientInstance?.user?.cleartextPassword}
-                            <g:if test="${patientInstance?.user?.accountLocked}">
+                            ${patientInstance.user.cleartextPassword.encodeAsHTML()}
+                            <g:if test="${patientInstance.user.accountLocked}">
                                 <strong><g:message code="patient.account.locked"/></strong>
                             </g:if>
                         </span>
@@ -48,7 +48,7 @@
                         </span>
                         <span class="property-value" aria-labelledby="user-label">
                            <g:message code="patient.password.set-by-user"/>
-                            <g:if test="${patientInstance?.user?.accountLocked}">
+                            <g:if test="${patientInstance.user.accountLocked}">
                                 <strong><g:message code="patient.account.locked"/></strong>
                             </g:if>
                         </span>
@@ -56,18 +56,18 @@
                 </g:else>
             </g:if>
 
-			<g:if test="${patientInstance?.cpr}">
+			<g:if test="${patientInstance.cpr}">
 				<li class="fieldcontain">
                     <span id="cpr-label" class="property-label">
                         <g:message code="patient.cpr.label" />
                     </span>
                     <span class="property-value" aria-labelledby="cpr-label">
-                        ${patientInstance?.cpr[0..5]+"-"+patientInstance?.cpr[6..9]}
+                        <otformat:formatCPR cpr="${patientInstance.cpr}"/>
 				    </span>
                 </li>
 			</g:if>
 
-			<g:if test="${patientInstance?.firstName}">
+			<g:if test="${patientInstance.firstName}">
 				<li class="fieldcontain">
                     <span id="firstName-label" class="property-label">
                         <g:message code="patient.firstName.label" />
@@ -78,7 +78,7 @@
                 </li>
 			</g:if>
 
-			<g:if test="${patientInstance?.lastName}">
+			<g:if test="${patientInstance.lastName}">
 				<li class="fieldcontain">
                     <span id="lastName-label" class="property-label">
                         <g:message code="patient.lastName.label" />
@@ -89,7 +89,7 @@
                 </li>
 			</g:if>
 
-			<g:if test="${patientInstance?.sex}">
+			<g:if test="${patientInstance.sex}">
 				<li class="fieldcontain">
                     <span id="sex-label" class="property-label">
                         <g:message code="patient.sex.label" />
@@ -109,7 +109,7 @@
     			</span>
             </li>
 
-			<g:if test="${patientInstance?.address}">
+			<g:if test="${patientInstance.address}">
 				<li class="fieldcontain">
                     <span id="address-label" class="property-label">
                         <g:message code="patient.address.label" />
@@ -120,7 +120,7 @@
                 </li>
 			</g:if>
 
-			<g:if test="${patientInstance?.postalCode}">
+			<g:if test="${patientInstance.postalCode}">
 				<li class="fieldcontain">
                     <span id="postalCode-label" class="property-label">
                         <g:message code="patient.postalCode.label" />
@@ -131,7 +131,7 @@
                 </li>
 			</g:if>
 
-			<g:if test="${patientInstance?.city}">
+			<g:if test="${patientInstance.city}">
 				<li class="fieldcontain">
                     <span id="city-label" class="property-label">
                         <g:message code="patient.city.label" />
@@ -142,7 +142,7 @@
                 </li>
 			</g:if>
 
-			<g:if test="${patientInstance?.phone}">
+			<g:if test="${patientInstance.phone}">
 				<li class="fieldcontain">
                     <span id="phone-label" class="property-label">
                         <g:message code="patient.phone.label" />
@@ -153,7 +153,7 @@
                 </li>
 			</g:if>
 
-			<g:if test="${patientInstance?.mobilePhone}">
+			<g:if test="${patientInstance.mobilePhone}">
 				<li class="fieldcontain">
                     <span id="mobilePhone-label" class="property-label">
                         <g:message code="patient.mobilePhone.label" />
@@ -164,7 +164,7 @@
                 </li>
 			</g:if>
 
-			<g:if test="${patientInstance?.email}">
+			<g:if test="${patientInstance.email}">
 				<li class="fieldcontain">
                     <span id="email-label" class="property-label">
                         <g:message code="patient.email.label" />
@@ -202,8 +202,7 @@
                 </span>
             </li>
 
-            <li class="fieldcontain" onmouseover="tooltip.show('${message(code: 'tooltip.patient.responsible.group.label')}');"
-                onmouseout="tooltip.hide();">
+            <li class="fieldcontain" data-tooltip="${message(code: 'tooltip.patient.responsible.group.label')}">
                 <span id="dataResponsible-label" class="property-label">
                     <g:message code="responsible.patient.group.label" />
                 </span>
@@ -218,25 +217,25 @@
         <fieldset class="buttons">
         <sec:ifAnyGranted roles="${PermissionName.PATIENT_WRITE}">
             <g:form>
-                <g:hiddenField name="id" value="${patientInstance?.id}"/>
-                <g:link class="edit" action="edit" id="${patientInstance?.id}">
+                <g:hiddenField name="id" value="${patientInstance.id}"/>
+                <g:link class="edit" action="edit" id="${patientInstance.id}">
                     <g:message code="default.button.edit.label"/>
                 </g:link>
-                <g:if test="${!patientInstance?.user?.cleartextPassword}">
+                <g:if test="${!patientInstance.user.cleartextPassword}">
                     <g:actionSubmit class="resetPassword" action="resetPassword"
                                     value="${message(code: 'patient.reset-password.label')}"
                                     onclick="return confirm('${message(code: 'patient.reset-password.confirm.message')}');"/>
                 </g:if>
                 <g:else>
                     <mailsender:isEnabled>
-                        <g:if test="${patientInstance?.email}">
+                        <g:if test="${patientInstance.email}">
                             <g:actionSubmit class="mail" action="sendPassword"
                                             value="${message(code: 'patient.send-password.label')}"/>
                         </g:if>
                     </mailsender:isEnabled>
                 </g:else>
 
-                <g:if test="${patientInstance?.user?.accountLocked}">
+                <g:if test="${patientInstance.user.accountLocked}">
                     <g:actionSubmit class="resetPassword" action="unlockAccount"
                                     value="${message(code: 'patient.unlock-account.label')}"/>
                 </g:if>

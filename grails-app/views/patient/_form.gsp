@@ -10,8 +10,8 @@ $(document).ready(function() {
 
 		if (input_cpr.indexOf("-") > 0 && input_cpr.length == 11) {
 			try {
-				var temp
-				temp = input_cpr.substring(0, input_cpr.indexOf('-'))
+				var temp;
+				temp = input_cpr.substring(0, input_cpr.indexOf('-'));
 				input_cpr = temp + input_cpr.substring(input_cpr.indexOf('-')+1, input_cpr.length)
 			} catch (err) {
 			}
@@ -29,8 +29,7 @@ $(document).ready(function() {
 
 
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'user.username', 'error')} required"
-	onmouseover="tooltip.show('${message(code: 'tooltip.patient.edit.username')}');"
-	onmouseout="tooltip.hide();">
+	data-tooltip="${message(code: 'tooltip.patient.edit.username')}">
 	<label for="username">
         <g:message code="patient.username.label" />
         <span class="required-indicator">*</span>
@@ -41,8 +40,7 @@ $(document).ready(function() {
 </div>
 <g:if test="${patientInstance?.user?.cleartextPassword}">
     <div class="fieldcontain ${hasErrors(bean: patientInstance?.user, field: 'cleartextPassword', 'error')} required"
-    	onmouseover="tooltip.show('${message(code: 'tooltip.patient.create.cleartextPassword')}');"
-    	onmouseout="tooltip.hide();">
+    	data-tooltip="${message(code: 'tooltip.patient.create.cleartextPassword')}">
 
     	<label for="cleartextPassword">
             <g:message code="patient.cleartextPassword.label" /> <span class="required-indicator">*</span>
@@ -51,9 +49,7 @@ $(document).ready(function() {
      </div>
 </g:if>
 <g:else>
-    <div class="fieldcontain $required"
-    	onmouseover="tooltip.show('${message(code: 'tooltip.patient.edit.password')}');"
-    	onmouseout="tooltip.hide();">
+    <div class="fieldcontain $required" data-tooltip="${message(code: 'tooltip.patient.edit.password')}">
 
     	<label for="password">
             <g:message code="patient.password.label" /> <span class="required-indicator">*</span>
@@ -62,9 +58,7 @@ $(document).ready(function() {
     </div>
 </g:else>
 
-<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'cpr', 'error')} required"
-	onmouseover="tooltip.show('${message(code: 'tooltip.patient.create.SSN')}');"
-	onmouseout="tooltip.hide();">
+<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'cpr', 'error')} required" data-tooltip="${message(code: 'tooltip.patient.create.SSN')}">
 	<label for="cpr">
         <g:message code="patient.cpr.label" />
         <span class="required-indicator">*</span>
@@ -91,9 +85,7 @@ $(document).ready(function() {
 
 
 
-<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'sex', 'error')} required"
-        onmouseover="tooltip.show('${message(code: 'tooltip.patient.create.state')}');"
-        onmouseout="tooltip.hide();">
+<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'sex', 'error')} required" data-tooltip="${message(code: 'tooltip.patient.create.state')}">
     <label for="sex">
         <g:message code="patient.sex.label" />
         <span class="required-indicator">*</span>
@@ -104,9 +96,7 @@ $(document).ready(function() {
               value="${patientInstance?.sex}" />
 </div>
 
-<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'state', 'error')} required"
-	onmouseover="tooltip.show('${message(code: 'tooltip.patient.create.state')}');"
-	onmouseout="tooltip.hide();">
+<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'state', 'error')} required" data-tooltip="${message(code: 'tooltip.patient.create.state')}">
 	<label for="state">
         <g:message code="patient.state.label" />
         <span class="required-indicator">*</span>
@@ -162,16 +152,14 @@ $(document).ready(function() {
 	<g:textField name="email" value="${patientInstance?.email}" />
 </div>
 
-<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'group', 'error')} required"
-	onmouseover="tooltip.show('${message(code: 'tooltip.patient.create.group')}');"
-	onmouseout="tooltip.hide();">
+<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'group', 'error')} required" data-tooltip="${message(code: 'tooltip.patient.create.group')}">
 	<label for="group">
         <g:message code="patient.group.label" />
 	</label>
 
 	<g:select name="groupid" from="${groups}" noSelection="${['':"..."]}"
 		optionKey="id" multiple="multiple"
-		value="${patientInstance*.patient2PatientGroups?.patientGroup.id?.flatten()}" />
+		value="${patientInstance*.patient2PatientGroups?.patientGroup?.id?.flatten()}" />
 </div>
 
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'comment', 'error')}">
@@ -191,8 +179,7 @@ $(document).ready(function() {
 <div class="fieldcontain">
     <ul>
         <li class="buttons add">
-            <g:link controller="patient" action="editResponsability" params="['id': patientInstance?.id]" onmouseover="tooltip.show('${message(code: 'tooltip.patient.responsible.group')}');"
-                    onmouseout="tooltip.hide();">
+            <g:link controller="patient" action="editResponsability" params="['id': patientInstance?.id]" data-tooltip="${message(code: 'tooltip.patient.responsible.group')}">
                 ${message(code: 'responsible.patient.group.edit.label', default: 'Skift dataansvarlig')}
             </g:link>
         </li>

@@ -65,7 +65,7 @@ databaseChangeLog = {
     property name: "schemaName", value: "", dbms:"h2"
     property name: "fullSchemaName", value: "", dbms:"h2"
 
-    println "Starting migrations.."
+    println "Starting migrations..."
 
     // Includes
 
@@ -82,5 +82,8 @@ databaseChangeLog = {
     include file: '1_8_4_update.groovy'
 
     include file: '1_9_0_update.groovy'
+
+    include file: '1_11_0_update.groovy'
+
 }
 

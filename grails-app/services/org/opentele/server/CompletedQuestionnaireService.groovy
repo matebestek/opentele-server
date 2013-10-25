@@ -76,6 +76,7 @@ class CompletedQuestionnaireService {
 
         // Create completed questionnaire
         CompletedQuestionnaire completed = new CompletedQuestionnaire(createdBy: "WS", modifiedBy: "WS", createdDate: new Date(), modifiedDate: new Date())
+        completed.setReceivedDate(new Date())
         completed.setPatientQuestionnaire(thePq)
         completed.setQuestionnaireHeader(thePq.getTemplateQuestionnaire().getQuestionnaireHeader())
         completed.setPatient(patient)

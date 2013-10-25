@@ -296,7 +296,7 @@
         "type": "UNSCHEDULED",
         "weekdays": [],
         "daysInMonth": [],
-        "intervalInDays": 2,
+        "dayInterval": 2,
         "startingDate": "25/06/2013",
         "specificDate": "",
         "timesOfDay": [],

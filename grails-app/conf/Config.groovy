@@ -71,21 +71,31 @@ grails {
     }
 }
 greenmail.disabled = true
-video.connection.timeoutMillis = 5 * 60 * 1000 // 5 minutes
-video.connection.asyncTimeoutMillis = 6 * 60 * 1000 // 6 minutes
+cpr.lookup.enabled = false
+
+milou {
+    run = false
+    repeatIntervalMillis = 180000
+}
+
+kihdb {
+    run = false
+    repeatIntervalMillis = 180000
+}
+
+video {
+    enabled = false
+    connection {
+        timeoutMillis = 5 * 60 * 1000 // 5 minutes
+        asyncTimeoutMillis = 6 * 60 * 1000 // 6 minutes
+    }
+}
 
 // set per-environment serverURL stem for creating absolute links
 environments {
 	development {
 		grails.logging.jul.usebridge = true
         
-        milou.run = false
-        milou.repeatIntervalMillis = 180000
-
-        video.enabled = true
-        video.serviceURL = 'https://silverbullet.vconf.dk/services/v1_1/VidyoPortalUserService/'
-        video.client.serviceURL = 'https://silverbullet.vconf.dk/services/VidyoPortalGuestService/'
-
         // Database plugin settings: Run autoupdate in all devel contexts.. But nowhere else..
         grails.plugin.databasemigration.dropOnStart = true
         grails.plugin.databasemigration.updateOnStart = true
@@ -96,12 +106,10 @@ environments {
         grails.plugin.databasemigration.updateOnStartFileNames = ['changelog.groovy']
         grails.plugin.databasemigration.autoMigrateScripts = ['RunApp', 'TestApp']
 
-        kihdb.run = false
-
+        //kihdb.run = true
         // Systemnavn som overføres til KIH Databasen, hvorn navnet
         // anvendes til at vise hvor maalinger kommer fra.
         kihdb.createdByText = "OpenTele udvikling"
-        kihdb.repeatIntervalMillis = 180000
         kihdb.service.url = "http://localhost:8090/kih_database/services/monitoringDataset"
 
         // SOSI Settings
@@ -132,12 +140,10 @@ environments {
         grails.plugin.databasemigration.updateOnStart = true
         grails.plugin.databasemigration.updateOnStartFileNames = ['changelog.groovy']
         grails.plugin.databasemigration.autoMigrateScripts = ['RunApp', 'TestApp']
-        milou.run = false
 
+        /*kihdb.run = true
         kihdb.createdByText = "OpenTele intern test"
-        kihdb.run = false
-        kihdb.repeatIntervalMillis = 180000
-        kihdb.serverURL = "https://kihdb-test.rn.dk/XXX"
+        kihdb.serverURL = "https://kihdb-test.rn.dk/XXX"*/
 
         seal.sts.url = "http://test1.ekstern-test.nspop.dk:8080/sts/services/SecurityTokenService"
         cpr.service.url = "http://test1.ekstern-test.nspop.dk:8080/stamdata-cpr-ws/service/StamdataPersonLookup"
@@ -146,8 +152,6 @@ environments {
 
         // SOSI Settings
         // Removed in open-source version
-
-        video.enabled = false
 
         grails {
             mail {

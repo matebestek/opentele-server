@@ -39,8 +39,8 @@
 			<fieldset class="buttons">
                 <g:submitButton name="previous" class="goback" value="${message(code: 'patient.create.flow.button.previous.label', default: 'Previous')}" />
 				<g:submitButton name="next" class="gonext" value="${message(code: 'patient.create.flow.button.next.label', default: 'Next')}" />
-                <g:submitButton name="saveAndShow" class="save" value="${message(code: 'patient.create.flow.button.saveAndExit.label', default: 'Next')}" onmouseover="tooltip.show('${message(code: 'patient.create.flow.finish.tooltip')}');" onmouseout="tooltip.hide();"/>
-                <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label', default: 'Next')}" onmouseover="tooltip.show('${message(code: 'patient.create.flow.finish.monplan.tooltip')}');" onmouseout="tooltip.hide();"/>
+                <g:submitButton name="saveAndShow" class="save" value="${message(code: 'patient.create.flow.button.saveAndExit.label', default: 'Next')}" data-tooltip="${message(code: 'patient.create.flow.finish.tooltip')}"/>
+                <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label', default: 'Next')}" data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
 			</fieldset>
 		</g:form>
 	</div>

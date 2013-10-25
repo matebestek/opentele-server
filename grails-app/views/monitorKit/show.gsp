@@ -80,30 +80,26 @@
                 <sec:ifAnyGranted roles="${PermissionName.MONITOR_KIT_DELETE}">
                     <g:actionSubmit class="delete" action="delete" value="${message(code: 'default.button.delete.label')}"
                         onclick="return confirm('${message(code: 'default.confirm.msg', args: ['på du vil fjerne kittet'], default: 'Are you sure?')}');"
-                        onmouseover="tooltip.show('${message(code: 'tooltip.patient.meter.remove')}');"
-                        onmouseout="tooltip.hide();" />
+                        data-tooltip="${message(code: 'tooltip.patient.meter.remove')}" />
                 </sec:ifAnyGranted>
                 <sec:ifAnyGranted roles="${PermissionName.MONITOR_KIT_WRITE}">
                     <g:link class="edit" action="attachMeter"
                         id="${monitorKitInstance?.id}"
-                        onmouseover="tooltip.show('${message(code: 'tooltip.patient.monitorKit.addExistingMeter')}');"
-                        onmouseout="tooltip.hide();">
+                        data-tooltip="${message(code: 'tooltip.patient.monitorKit.addExistingMeter')}">
                         ${message(code:'default.button.attach.label', args: [message(code: 'meter.label', default: 'Meter')])}
                     </g:link>
                 </sec:ifAnyGranted>
                 <sec:ifAnyGranted roles="${PermissionName.MONITOR_KIT_CREATE}">
                     <g:link class="edit" controller="meter" action="create"
                         params="['monitorKit.id': monitorKitInstance?.id]"
-                        onmouseover="tooltip.show('${message(code: 'tooltip.patient.monitorKit.addNewMeter')}');"
-                        onmouseout="tooltip.hide();">
+                        data-tooltip="${message(code: 'tooltip.patient.monitorKit.addNewMeter')}">
                         ${message(code: 'default.add.new.label', args: [message(code: 'meter.label', default: 'Meter')])}
                     </g:link>
                 </sec:ifAnyGranted>
                 <sec:ifAnyGranted roles="${PermissionName.MONITOR_KIT_WRITE}">
                     <g:link class="edit" action="removeMeter"
                         id="${monitorKitInstance?.id}"
-                        onmouseover="tooltip.show('${message(code: 'tooltip.patient.monitorKit.removeMeter')}');"
-                        onmouseout="tooltip.hide();">
+                        data-tooltip="${message(code: 'tooltip.patient.monitorKit.removeMeter')}">
                         ${message(code:'default.button.remove.label', args: [message(code: 'meter.label', default: 'Meter')])}
                     </g:link>
                 </sec:ifAnyGranted>

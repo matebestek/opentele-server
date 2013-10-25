@@ -1,15 +1,57 @@
-<div id="timeOfDayContainer" data-bind='visible: scheduleType() !== undefined && scheduleType() !== "${org.opentele.server.model.Schedule.ScheduleType.UNSCHEDULED}"'>
+<div id="timeOfDayContainer" class="scheduleType WEEKDAYS MONTHLY EVERY_NTH_DAY SPECIFIC_DATE">
     <div class="fieldcontain">
-        <label data-tooltip="${message(code: "schedule.timesOfDay.tooltip")}"><g:message code="schedule.timesOfDay.label"/></label>
-        <span data-bind="foreach: timesOfDay" style="display: inline-block;">
-            <div style="white-space: nowrap;">
-                <input data-bind="value: hour, valueUpdate: 'afterkeydown'" maxLength="2" size="2" class="twoCharacterInput" data-tooltip="${message(code: 'tooltip.patient.questionnaireSchedule.create.hours')}"/>
-                :
-                <input data-bind="value: minute, valueUpdate: 'afterkeydown'"  maxLength="2" size="2" class="twoCharacterInput" data-tooltip="${message(code: 'tooltip.patient.questionnaireSchedule.create.minutes')}"/>
-                <g:img file="delete.png" data-bind="click: \$root.removeTimeOfDay" data-tooltip="${message(code: 'tooltip.questionnaireSchedule.removeTimeOfDay')}"/>
+        <label data-tooltip="${message(code: "schedule.timesOfDay.tooltip")}"><g:message
+                code="schedule.timesOfDay.label"/></label>
+
+        <div style="display: inline-block">
+            <div class="timesOfDay">
+                <g:each in="${timesOfDay}" var="timeOfDay" status="i">
+                    <tmpl:/schedule/timeOfDay name="timesOfDay[${i}]" value="${timeOfDay}">
+                        <g:img file="delete.png"
+                               data-tooltip="${message(code: 'tooltip.questionnaireSchedule.removeTimeOfDay')}"
+                               class="removeTimeOfDay"/>
+                    </tmpl:/schedule/timeOfDay>
+                </g:each>
             </div>
-        </span>
-        <g:img file="add.png" data-bind="click: addTimeOfDay" data-tooltip="${message(code: 'tooltip.questionnaireSchedule.addTimeOfDay')}"/>
+        </div>
+        <div style="display: inline-block; vertical-align: middle">
+            <g:img file="add.png" data-tooltip="${message(code: 'tooltip.questionnaireSchedule.addTimeOfDay')}"
+                   class="addTimeOfDay"/>
+        </div>
     </div>
 </div>
+<r:script>
+    var timesOfDay = $('.timesOfDay', '#timeOfDayContainer');
+    timesOfDay
+            .on('click', '.removeTimeOfDay', function () {
+                $(this).parent().remove();
+                timesOfDay.trigger('reindex');
+            })
+            .on('reindex', function () {
+                var spans = $('.timeOfDay', timesOfDay).each(function (index) {
+                    $('input', this).each(function () {
+                        var element = $(this);
+                        var name = element.attr('name').replace(/\d+/, "" + index);
+                        element.attr('name', name).attr('id', name)
+                    });
+                    $('.removeTimeOfDay', this).show();
+                });
+                if (spans.size() == 1) {
+                    spans.find('.removeTimeOfDay').hide();
+                }
+            })
+            .trigger('reindex')
+            .data('timeOfDay', timesOfDay.find('.timeOfDay')[0].outerHTML);
 
+    $('#timeOfDayContainer').on('click', '.addTimeOfDay', function () {
+        var newTimeOfDay = $(timesOfDay.data('timeOfDay')).appendTo(timesOfDay);
+
+        $('input', newTimeOfDay).each(function () {
+            $(this).val('00');
+        });
+        $('input:first', newTimeOfDay).focus().select();
+        setTimeout(function () {
+            newTimeOfDay.trigger('reindex')
+        }, 100);
+    })
+</r:script>

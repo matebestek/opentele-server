@@ -1,10 +1,9 @@
 package org.opentele.server.bootstrap
-
 import grails.converters.JSON
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.opentele.server.model.Clinician
+import org.opentele.server.model.questionnaire.QuestionnaireEditorCommand
 import org.opentele.server.model.questionnaire.QuestionnaireHeader
-import org.opentele.server.model.types.Severity
 
 class BootstrapQuestionnaireService {
     def questionnaireEditorService
@@ -19,8 +18,16 @@ class BootstrapQuestionnaireService {
 
             QuestionnaireHeader header = createQuestionnaireHeader(title)
             JSONElement json = readQuestionnaireJson(jsonFileName, title, header)
+            QuestionnaireEditorCommand command = new QuestionnaireEditorCommand()
+            command.cloneScheduleData(json.standardSchedule)
 
-            questionnaireEditorService.createOrUpdateQuestionnaire(json, creator)
+            // TODO: Maps does not bind well before Grails 2.3 and binding fails in integration tests
+            command.questionnaireHeader = header
+            command.nodes = json.nodes
+            command.connections = json.connections
+            command.title = json.title
+
+            questionnaireEditorService.createOrUpdateQuestionnaire(command, creator)
             questionnaireHeaderService.publishDraft(header, creator)
         }
     }
@@ -36,7 +43,7 @@ class BootstrapQuestionnaireService {
         def jsonFile = grailsApplication.getParentContext().getResource("classpath:resources/questionnaires/${jsonFileName}").inputStream.getText('UTF-8')
         def json = JSON.parse(jsonFile)
         json['title'] = title
-        json['questionnaireHeaderId'] = header.id
+        json['questionnaireHeader'] = header
         json
     }
 }

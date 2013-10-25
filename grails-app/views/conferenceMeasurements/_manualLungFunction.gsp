@@ -1,4 +1,4 @@
-<td>Lungefunktionstest</td>
+<td>Spirometri</td>
 <td>
     <span>
         <g:hiddenField name="id" value="${measurement.id}"/>

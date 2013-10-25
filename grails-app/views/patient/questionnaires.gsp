@@ -1,5 +1,7 @@
 <%@ page import="org.opentele.server.model.types.PermissionName; org.opentele.server.model.Patient"%>
 <%@ page import="org.opentele.server.model.types.MeasurementTypeName"%>
+<%@ page import="org.opentele.server.model.types.MeasurementFilterType" %>
+
 <!doctype html>
 <html>
 <head>
@@ -9,16 +11,17 @@
     <title>${title}</title>
     <g:javascript src="knockout-2.2.0.js" />
     <g:javascript src="OpenTeleTablePreferences.js" />
+    <r:require module="opentele-scroll"/>
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'measurement_results_tables.css')}" type="text/css">
     <script type="text/javascript">
         $(document).ready(function() {
-            if(document.getElementById("rightTable")) {
-                document.getElementById("rightTable").focus();
+            if(document.getElementById("resultTableContainer")) {
+                document.getElementById("resultTableContainer").focus();
             }
 
             new QuestionnaireTableViewModel(${patientInstance.id},${questionPreferences}).init();
 
-            $('.acknowledge').click(function(event) {
+            $('a.acknowledge').click(function(event) {
                 event.preventDefault();
                 var message = '${g.message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.questionnaire')]).encodeAsJavaScript()}';
                 if (confirm(message)) {
@@ -29,6 +32,7 @@
                 }
             });
         });
+
     </script>
 </head>
 
@@ -40,19 +44,27 @@
 			</div>
 		</g:if>
         <h1 class="fieldcontain">${title}</h1>
-        <g:if test="${greenCompletedAndUnacknowledgedQuestionnaires}">
-            <sec:ifAnyGranted roles="${PermissionName.QUESTIONNAIRE_ACKNOWLEDGE}">
-                <div class="acknowledgeAll">
-                    <span>
-                        <g:message code="patientOverview.questionnaire.acknowledge.green.label"/>
-                    </span><cq:renderAcknowledgeAllGreenButtons
-                            completedQuestionnaires="${greenCompletedAndUnacknowledgedQuestionnaires}"
-                            patient="${patientInstance}"/>
-                </div>
-            </sec:ifAnyGranted>
-        </g:if>
         <g:if test="${questionnairesNumber > 0 && completedNumber > 0}">
             <sec:ifAnyGranted roles="${PermissionName.PATIENT_PREFERENCES_WRITE}">
+
+                <!-- Time interval chooser -->
+                <div>
+                    <g:render template="/measurement/timeIntervalSelector"
+                        model="[controller:'patient', action:'questionnaires', pageId:'patientQuestionnaires', id:session.patientId, defaultInterval:MeasurementFilterType.MONTH]" />
+                </div>
+
+                <g:if test="${greenCompletedAndUnacknowledgedQuestionnaires}">
+                    <sec:ifAnyGranted roles="${PermissionName.QUESTIONNAIRE_ACKNOWLEDGE}">
+                        <div class="acknowledgeAll" style="margin: 0 1em; padding: 0 0.25em;">
+                            <span>
+                                <g:message code="patientOverview.questionnaire.acknowledge.green.label"/>
+                            </span><cq:renderAcknowledgeAllGreenButtons
+                                completedQuestionnaires="${greenCompletedAndUnacknowledgedQuestionnaires}"
+                                patient="${patientInstance}"/>
+                        </div>
+                    </sec:ifAnyGranted>
+                </g:if>
+
                 <g:form url="[action:'savePrefs',controller:'patient']" onsubmit="return createFormFields();">
                     <fieldset id="hiddenparams"></fieldset>
                     <fieldset id="patientparams">
@@ -60,12 +72,13 @@
                     </fieldset>
 
                     <div display="hidden" id="patientPrefs" value=${questionPreferences}></div>
-                    <cq:renderResultTableForPatient patientID="${patientInstance.id}" withPrefs="${true}" unacknowledgedOnly="${false}" />
+                    <cq:renderResultTableForPatient patientID="${patientInstance.id}" withPrefs="${true}" completedQuestionnaireResultModel="${completedQuestionnaireResultModel}" />
                     <fieldset class="buttons">
                         <g:submitButton name="savePrefs" class="save" value="Gem foretrukne felter" />
                     </fieldset>
                 </g:form>
             </sec:ifAnyGranted>
+
 		</g:if>
 		<g:else>
 			<g:if test="${questionnairesNumber > 0 && completedNumber == 0}">
@@ -82,9 +95,9 @@
 		<tr id="prefQuestion" class="prefQuestion" data-bind="attr: {'selectedQuestionID': $root.getQuestionID($data)}">
 			<td>
                 <div>
-                    <select data-bind="options: $root.questions, optionsText: 'text', value: $data.questionObj, optionsCaption: 'Vælg..'" onmouseover="tooltip.show('Vælg foretrukken værdi, denne kopieres til toppen af skemaet.');" onmouseout='tooltip.hide();'></select>
+                    <select data-bind="options: $root.questions, optionsText: 'text', value: $data.questionObj, optionsCaption: 'Vælg..'" data-tooltip="<g:message code="patient.questionnaire.preferredValue.tooltip" />"></select>
                     <!-- ko if: $root.notLastRow($data) -->
-                        <button id="removeBtn" class="remove" data-bind="click: function(){ $data.remove(); }" onmouseover="tooltip.show('Fjern denne række');" onmouseout='tooltip.hide();'><img src="../../images/cancel.png"/></button>
+                        <button id="removeBtn" class="remove" data-bind="click: function(){ $data.remove(); }" data-tooltip="<g:message code="patient.questionnaire.preferredValue.remove.tooltip" />"><r:img uri='/images/cancel.png'/></button>
                     <!-- /ko -->
                 </div>
             </td>
@@ -101,11 +114,11 @@
 	//no need to do it until we actually want to submit
 	function createFormFields() {
 		var hiddenparamsElem = $("#hiddenparams");
-		$("#leftTable tbody tr.prefQuestion").each(function(idx, elem) {
+		$("#leftHeaderContainer tbody tr.prefQuestion").each(function(idx, elem) {
 			var id = elem.getAttribute('selectedQuestionID');
 			
 			if((! isNaN (id-0) && id != null)) {
-				hiddenparamsElem.append($('<input type=\"hidden\" id=\"preferredQuestionId\" name=\"preferredQuestionId\" value=\"'+id+'\"/>'));	
+				hiddenparamsElem.append($('<input type="hidden" id="preferredQuestionId" name="preferredQuestionId" value="'+id+'"/>'));
 			} 
 		});
 
