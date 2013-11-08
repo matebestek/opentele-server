@@ -37,19 +37,19 @@
             <g:each in="${measurementProposals}" var="measurementProposal">
                 <tr>
                     <g:if test="${measurementProposal.measurementType.name == MeasurementTypeName.BLOOD_PRESSURE}">
-                        <g:render template="bloodPressureProposal" model="[measurement: measurementProposal]"/>
+                        <g:render template="confirmations/bloodPressure" model="[measurement: measurementProposal]"/>
                     </g:if>
                     <g:elseif test="${measurementProposal.measurementType.name == MeasurementTypeName.LUNG_FUNCTION}">
-                        <g:render template="lungFunctionProposal" model="[measurement: measurementProposal]"/>
+                        <g:render template="confirmations/lungFunction" model="[measurement: measurementProposal]"/>
                     </g:elseif>
                     <g:elseif test="${measurementProposal.measurementType.name == MeasurementTypeName.SATURATION}">
-                        <g:render template="saturationProposal" model="[measurement: measurementProposal]"/>
+                        <g:render template="confirmations/saturation" model="[measurement: measurementProposal]"/>
                     </g:elseif>
                     <g:elseif test="${measurementProposal.measurementType.name == MeasurementTypeName.WEIGHT}">
-                        <g:render template="weightProposal" model="[measurement: measurementProposal]"/>
+                        <g:render template="confirmations/weight" model="[measurement: measurementProposal]"/>
                     </g:elseif>
                     <g:elseif test="${measurementProposal.measurementType.name == MeasurementTypeName.PULSE}">
-                        <g:render template="pulseProposal" model="[measurement: measurementProposal]"/>
+                        <g:render template="confirmations/pulse" model="[measurement: measurementProposal]"/>
                     </g:elseif>
                 </tr>
             </g:each>
@@ -57,9 +57,11 @@
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="2">
+            <td>
+                <button onclick="window.location.href='${createLink(action:"show", id:"${conference.id}")}'">Gå tilbage og rediger</button>
+            </td>
+            <td>
                 <g:form action="finish">
-                    <g:link action="show" id="${conference.id}">Gå tilbage og rediger</g:link>
                     <g:hiddenField name="id" value="${conference.id}"/>
                     <g:hiddenField name="conferenceVersion" value="${conference.version}"/>
                     <g:submitButton name="finish" value="Afslut"/>

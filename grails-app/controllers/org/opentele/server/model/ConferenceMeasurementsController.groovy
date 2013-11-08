@@ -62,6 +62,11 @@ class ConferenceMeasurementsController {
     @SecurityWhiteListController
     def updateMeasurement(long id) {
         ConferenceMeasurementDraft measurement = ConferenceMeasurementDraft.findById(id)
+        if (measurement == null) {
+            render ''
+            return
+        }
+
         Conference conference = measurement.conference
         checkPermissionToPatient(conference.patient)
         checkPermissionToConference(conference)
@@ -86,8 +91,28 @@ class ConferenceMeasurementsController {
 
     @Secured(PermissionName.VIDEO_CALL)
     @SecurityWhiteListController
+    def deleteMeasurement(long id) {
+        ConferenceMeasurementDraft measurement = ConferenceMeasurementDraft.findById(id)
+        Conference conference = measurement.conference
+        checkPermissionToPatient(conference.patient)
+        checkPermissionToConference(conference)
+
+        measurement.delete()
+        conference.version++
+
+        def result = [conferenceVersion: conference.version]
+        render result as JSON
+    }
+
+    @Secured(PermissionName.VIDEO_CALL)
+    @SecurityWhiteListController
     def loadAutomaticMeasurement(long id) {
         ConferenceMeasurementDraft measurement = ConferenceMeasurementDraft.findById(id)
+        if (measurement == null) {
+            render ''
+            return
+        }
+
         Conference conference = measurement.conference
         checkPermissionToPatient(conference.patient)
         checkPermissionToConference(conference)
@@ -103,10 +128,18 @@ class ConferenceMeasurementsController {
                         diastolic: formatNumber(number: measurement.diastolic, format: '0'),
                         pulse: formatNumber(number: measurement.pulse, format: '0')
                     ]
-                    break;
+                    break
                 case ConferenceMeasurementDraftType.LUNG_FUNCTION:
-                    result = [fev1: formatNumber(number: measurement.fev1, format:'0.00', locale: 'DA')]
-                    break;
+                    result = [
+                        fev1: formatNumber(number: measurement.fev1, format:'0.00', locale: 'DA')
+                    ]
+                    break
+                case ConferenceMeasurementDraftType.SATURATION:
+                    result = [
+                        saturation: formatNumber(number: measurement.saturation, format:'0'),
+                        pulse: formatNumber(number: measurement.pulse, format:'0')
+                    ]
+                    break
                 default:
                     throw new IllegalStateException("Unknown measurement type: '${measurement.type}'")
             }
@@ -178,13 +211,13 @@ class ConferenceMeasurementsController {
     private String templateForMeasurementType(ConferenceMeasurementDraftType type, boolean automatic) {
         switch (type) {
             case ConferenceMeasurementDraftType.BLOOD_PRESSURE:
-                return automatic ? 'automaticBloodPressure' : 'manualBloodPressure'
+                return automatic ? 'drafts/automaticBloodPressure' : 'drafts/manualBloodPressure'
             case ConferenceMeasurementDraftType.LUNG_FUNCTION:
-                return automatic ? 'automaticLungFunction' : 'manualLungFunction'
+                return automatic ? 'drafts/automaticLungFunction' : 'drafts/manualLungFunction'
             case ConferenceMeasurementDraftType.WEIGHT:
-                return 'manualWeight'
+                return 'drafts/manualWeight'
             case ConferenceMeasurementDraftType.SATURATION:
-                return 'manualSaturation'
+                return automatic ? 'drafts/automaticSaturation' : 'drafts/manualSaturation'
             default:
                 throw new IllegalArgumentException("Unknown draft type: $type")
         }

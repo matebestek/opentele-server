@@ -21,7 +21,7 @@
 
         <style type="text/css">
             body {
-                width: 670px; <!-- Override fixed witdh of parent style-->
+                width: 710px; <!-- Override fixed witdh of parent style-->
                 height: 100%;
                 padding-bottom: 5px;
                 margin: auto;

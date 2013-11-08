@@ -622,7 +622,7 @@ class QuestionnaireServiceSpec extends Specification {
         def monitoringPlan = MonitoringPlan.build()
         def standardSchedule = new StandardSchedule(type: WEEKDAYS, internalWeekdays: "MONDAY",
                 internalTimesOfDay: "10:00,12:00", reminderStartMinutes: 60)
-        def command = new QuestionnaireGroup2HeaderCommand(questionnaireGroup2Header: new QuestionnaireGroup2QuestionnaireHeader(standardSchedule: standardSchedule))
+        def command = new QuestionnaireGroup2HeaderCommand(questionnaireGroup2Header: new QuestionnaireGroup2QuestionnaireHeader(standardSchedule: standardSchedule, questionnaireHeader: QuestionnaireHeader.build()))
 
         expect:
         !monitoringPlan.questionnaireSchedules

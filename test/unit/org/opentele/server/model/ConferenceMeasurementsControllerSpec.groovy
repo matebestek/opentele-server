@@ -89,13 +89,14 @@ class ConferenceMeasurementsControllerSpec extends Specification {
     def 'can create new, automatic blood pressure measurement draft'() {
         when:
         controller.loadForm(conference.id, 'BLOOD_PRESSURE', true)
-        def measurement = ConferenceMeasurementDraft.findAll()[0]
+        def measurement = ConferenceMeasurementDraft.findAll()[0] // I'd much rather like to get to the rendered model, but that's not possible
 
         then:
         measurement instanceof ConferenceBloodPressureMeasurementDraft
         measurement.conference == conference
         measurement.automatic
         measurement.waiting
+        measurement.included
     }
 
     def 'can create new, manual saturation measurement draft'() {
@@ -109,6 +110,19 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         !measurement.automatic
         measurement.saturation == null
         measurement.pulse == null
+        measurement.included
+    }
+
+    def 'can create new, automatic saturation measurement draft'() {
+        when:
+        controller.loadForm(conference.id, 'SATURATION', true)
+        def measurement = ConferenceMeasurementDraft.findAll()[0] // I'd much rather like to get to the rendered model, but that's not possible
+
+        then:
+        measurement instanceof ConferenceSaturationMeasurementDraft
+        measurement.conference == conference
+        measurement.automatic
+        measurement.waiting
         measurement.included
     }
 
@@ -148,6 +162,7 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         measurement.conference == conference
         measurement.automatic
         measurement.waiting
+        measurement.included
     }
 
     def 'can update manual measurement draft'() {
@@ -228,12 +243,34 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         model.warnings == ['systolic', 'diastolic']
     }
 
+    def 'gives blank response when updating non-existing measurement'() {
+        when:
+        controller.updateMeasurement(125)
+
+        then:
+        response.contentAsString == ''
+    }
+
+    def 'can delete measurement draft'() {
+        setup:
+        def lungFunctionMeasurementDraft = ConferenceLungFunctionMeasurementDraft.build(conference: conference, automatic: true, waiting: true)
+        def oldConferenceVersion = conference.version
+
+        when:
+        controller.deleteMeasurement(lungFunctionMeasurementDraft.id)
+        def model = JSON.parse(response.contentAsString)
+        conference.refresh()
+
+        then:
+        model == [conferenceVersion: oldConferenceVersion + 1]
+        conference.measurementDrafts.empty
+    }
+
     def 'knows when automatic measurement has not been submitted by patient'() {
         setup:
         def lungFunctionMeasurementDraft = ConferenceLungFunctionMeasurementDraft.build(conference: conference, automatic: true, waiting: true)
 
         when:
-        params.id = lungFunctionMeasurementDraft.id
         controller.loadAutomaticMeasurement(lungFunctionMeasurementDraft.id)
 
         then:
@@ -241,13 +278,23 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         response.text == ''
     }
 
+
+    def 'gives blank response when loading non-existing measurement'() {
+        when:
+        controller.loadAutomaticMeasurement(243)
+
+        then:
+        response.status == 200
+        response.text == ''
+    }
+
+
     def 'can load automatically submitted blood pressure measurement'() {
         setup:
         def bloodPressureMeasurementDraft = ConferenceBloodPressureMeasurementDraft.build(conference: conference, automatic: true, waiting: false,
             systolic: 124, diastolic: 54, pulse: 47, meanArterialPressure: 102)
 
         when:
-        params.id = bloodPressureMeasurementDraft.id
         controller.loadAutomaticMeasurement(bloodPressureMeasurementDraft.id)
         def json = response.json
 
@@ -265,13 +312,25 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         def lungFunctionMeasurementDraft = ConferenceLungFunctionMeasurementDraft.build(conference: conference, automatic: true, waiting: false, fev1: 3.4)
 
         when:
-        params.id = lungFunctionMeasurementDraft.id
         controller.loadAutomaticMeasurement(lungFunctionMeasurementDraft.id)
         def json = response.json
 
         then:
         response.status == 200
         json == [fev1: '3,40']
+    }
+
+    def 'can load automatically submitted saturation measurement'() {
+        setup:
+        def saturationMeasurementDraft = ConferenceSaturationMeasurementDraft.build(conference: conference, automatic: true, waiting: false, saturation: 96, pulse: 45)
+
+        when:
+        controller.loadAutomaticMeasurement(saturationMeasurementDraft.id)
+        def json = response.json
+
+        then:
+        response.status == 200
+        json == [saturation: '96', pulse: '45']
     }
 
     def 'complains if confirming drafts given the wrong conference version'() {

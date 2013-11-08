@@ -1,12 +1,13 @@
-<%@ page import="org.opentele.server.model.types.MeasurementTypeName; org.opentele.server.model.Patient"%>
+<%@ page import="org.opentele.server.model.types.MeasurementTypeName; org.opentele.server.model.Patient" %>
 <!doctype html>
 <html>
 <head>
     <meta name="layout" content="main">
-    <g:set var="entityName" value="${message(code: 'patient.label', default: 'Patient')}" />
+    <g:set var="entityName" value="${message(code: 'patient.label', default: 'Patient')}"/>
     <title>
         <g:message code="patient.create.flow.thresholdValues.label"/></title>
 </head>
+
 <body>
 <div id="create-patient" class="content scaffold-create" role="main">
     <h1>
@@ -17,22 +18,22 @@
             ${error}
         </div>
     </g:if>
-    <g:if test="${patientInstance.thresholdSetWasReduced()}">
+    <g:if test="${patientInstance.thresholdSetWasReduced}">
         <div class="errors" role="status">
             <g:message code="patient.create.flow.thresholdValues.duplicates.label"/>
         </div>
     </g:if>
-    <g:each in="${patientInstance.thresholds}" var="threshold">
-        <g:hasErrors bean="${threshold}">
-            <ul class="errors" role="alert">
+    <ul class="errors" role="alert">
+        <g:each in="${patientInstance.thresholds}" var="threshold">
+            <g:hasErrors bean="${threshold}">
                 <g:eachError bean="${threshold}" var="error">
                     <li>
-                        <g:message error="${error}" />
+                        ${threshold.prettyToString()}: <g:message error="${error}"/>
                     </li>
                 </g:eachError>
-            </ul>
-        </g:hasErrors>
-    </g:each>
+            </g:hasErrors>
+        </g:each>
+    </ul>
     <g:form>
 
         <table>
@@ -46,107 +47,64 @@
             </tr>
             </thead>
             <tbody>
-            <g:each in="${patientInstance.thresholds.sort { it.prettyToString() } }" var="threshold">
+            <g:each in="${patientInstance.thresholds.sort { it.prettyToString() }}" var="threshold">
                 <g:if test="${threshold.type.name == MeasurementTypeName.BLOOD_PRESSURE}">
-                    <tr>
-                        <td>${threshold.prettyToString()} diastolisk</td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.diastolicAlertHigh}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.diastolicWarningHigh}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.diastolicWarningLow}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.diastolicAlertLow}"/></td>
-                    </tr>
-                    <tr>
-                        <td>${threshold.prettyToString()} systolisk</td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.systolicAlertHigh}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.systolicWarningHigh}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.systolicWarningLow}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.systolicAlertLow}"/></td>
-                    </tr>
+                    <tmpl:/bloodPressureThreshold/thresholds threshold="${threshold}"
+                                                             text="${threshold.prettyToString()}"
+                                                             prefix="${threshold.type.name}"/>
                 </g:if>
                 <g:elseif test="${threshold.type.name == MeasurementTypeName.URINE}">
-                    <tr>
-                        <td>${threshold.prettyToString()}</td>
-                        <td><g:select 	  name="${threshold.type.name}"
-                                            from="${org.opentele.server.model.types.ProteinValue.values()}"
-                                            keys="${org.opentele.server.model.types.ProteinValue.values()}"
-                                            valueMessagePrefix="enum.proteinValue"
-                                            noSelection="${['':"..."]}"
-                                            value="${threshold.alertHigh}" />
-                        </td>
-                        <td><g:select 	  name="${threshold.type.name}"
-                                            from="${org.opentele.server.model.types.ProteinValue.values()}"
-                                            keys="${org.opentele.server.model.types.ProteinValue.values()}"
-                                            valueMessagePrefix="enum.proteinValue"
-                                            noSelection="${['':"..."]}"
-                                            value="${threshold.warningHigh}" />
-                        </td>
-                        <td><g:select 	  name="${threshold.type.name}"
-                                            from="${org.opentele.server.model.types.ProteinValue.values()}"
-                                            keys="${org.opentele.server.model.types.ProteinValue.values()}"
-                                            valueMessagePrefix="enum.proteinValue"
-                                            noSelection="${['':"..."]}"
-                                            value="${threshold.warningLow}" />
-                        </td>
-                        <td><g:select 	name="${threshold.type.name}"
-                                          from="${org.opentele.server.model.types.ProteinValue.values()}"
-                                          keys="${org.opentele.server.model.types.ProteinValue.values()}"
-                                          valueMessagePrefix="enum.proteinValue"
-                                          noSelection="${['':"..."]}"
-                                          value="${threshold.alertLow}" />
-                        </td>
-                    </tr>
+                    <tmpl:/urineThreshold/threshold threshold="${threshold}" text="${threshold.prettyToString()}"
+                                                    prefix="${threshold.type.name}"/>
+
                 </g:elseif>
                 <g:elseif test="${threshold.type.name == MeasurementTypeName.URINE_GLUCOSE}">
-                    <tr>
-                        <td>${threshold.prettyToString()}</td>
-                        <td><g:select 	  name="${threshold.type.name}"
-                                            from="${org.opentele.server.model.types.GlucoseInUrineValue.values()}"
-                                            keys="${org.opentele.server.model.types.GlucoseInUrineValue.values()}"
-                                            valueMessagePrefix="enum.proteinValue"
-                                            noSelection="${['':"..."]}"
-                                            value="${threshold.alertHigh}" />
-                        </td>
-                        <td><g:select 	  name="${threshold.type.name}"
-                                            from="${org.opentele.server.model.types.GlucoseInUrineValue.values()}"
-                                            keys="${org.opentele.server.model.types.GlucoseInUrineValue.values()}"
-                                            valueMessagePrefix="enum.proteinValue"
-                                            noSelection="${['':"..."]}"
-                                            value="${threshold.warningHigh}" />
-                        </td>
-                        <td><g:select 	  name="${threshold.type.name}"
-                                            from="${org.opentele.server.model.types.GlucoseInUrineValue.values()}"
-                                            keys="${org.opentele.server.model.types.GlucoseInUrineValue.values()}"
-                                            valueMessagePrefix="enum.proteinValue"
-                                            noSelection="${['':"..."]}"
-                                            value="${threshold.warningLow}" />
-                        </td>
-                        <td><g:select 	name="${threshold.type.name}"
-                                          from="${org.opentele.server.model.types.GlucoseInUrineValue.values()}"
-                                          keys="${org.opentele.server.model.types.GlucoseInUrineValue.values()}"
-                                          valueMessagePrefix="enum.proteinValue"
-                                          noSelection="${['':"..."]}"
-                                          value="${threshold.alertLow}" />
-                        </td>
-                    </tr>
+                    <tmpl:/urineGlucoseThreshold/threshold threshold="${threshold}" text="${threshold.prettyToString()}"
+                                                           prefix="${threshold.type.name}"/>
                 </g:elseif>
                 <g:else>
-                    <tr>
-                        <td>${threshold.prettyToString()}</td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.alertHigh}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.warningHigh}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.warningLow}"/></td>
-                        <td><g:field type="text" step="any" name="${threshold.type.name}" value="${threshold.alertLow}"/></td>
-                    </tr>
+                    <tmpl:/numericThreshold/threshold threshold="${threshold}" text="${threshold.prettyToString()}"
+                                                      prefix="${threshold.type.name}"/>
                 </g:else>
             </g:each>
             </tbody>
         </table>
+        <script lang="javascript">
+            $('.thresholds')
+                    .on('focus', 'input[type="text"]', function () {
+                        var input = $(this);
+                        input.css('background-color', '');
+                    })
+                    .on('blur', 'input[type="text"]', function () {
+                        var input = $(this);
+                        if (!input.val()) {
+                            input.css('background-color', "#C2C2C2")
+                        }
+                    })
+                    .on('click', 'img', function () {
+                        var input = $(this).prev();
+                        input.css('background-color', '#C2C2C2').val('')
+                    })
+                    .find('input[type="text"]')
+                    .each(function () {
+                        var input = $(this);
+                        if (!input.val() || input.val() == "") {
+                            input.css('background-color', "#C2C2C2")
+                        }
+                    });
+        </script>
 
         <fieldset class="buttons">
-            <g:submitButton name="previous" class="goback" value="${message(code: 'patient.create.flow.button.previous.label', default: 'Previous')}" />
-            <g:submitButton name="next" class="gonext" value="${message(code: 'patient.create.flow.button.next.label', default: 'Next')}" />
-            <g:submitButton name="saveAndShow" class="save" value="${message(code: 'patient.create.flow.button.saveAndExit.label', default: 'Next')}" data-tooltip="${message(code: 'patient.create.flow.finish.tooltip')}"/>
-            <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label', default: 'Next')}" data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
+            <g:submitButton name="previous" class="goback"
+                            value="${message(code: 'patient.create.flow.button.previous.label', default: 'Previous')}"/>
+            <g:submitButton name="next" class="gonext"
+                            value="${message(code: 'patient.create.flow.button.next.label', default: 'Next')}"/>
+            <g:submitButton name="saveAndShow" class="save"
+                            value="${message(code: 'patient.create.flow.button.saveAndExit.label', default: 'Next')}"
+                            data-tooltip="${message(code: 'patient.create.flow.finish.tooltip')}"/>
+            <g:submitButton name="saveAndGotoMonplan" class="save"
+                            value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label', default: 'Next')}"
+                            data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
         </fieldset>
     </g:form>
 </div>

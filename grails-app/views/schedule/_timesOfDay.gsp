@@ -3,7 +3,7 @@
         <label data-tooltip="${message(code: "schedule.timesOfDay.tooltip")}"><g:message
                 code="schedule.timesOfDay.label"/></label>
 
-        <div style="display: inline-block">
+        <div class="timeOfDayInlined">
             <div class="timesOfDay">
                 <g:each in="${timesOfDay}" var="timeOfDay" status="i">
                     <tmpl:/schedule/timeOfDay name="timesOfDay[${i}]" value="${timeOfDay}">
@@ -14,7 +14,7 @@
                 </g:each>
             </div>
         </div>
-        <div style="display: inline-block; vertical-align: middle">
+        <div class="timesOfDayAdd">
             <g:img file="add.png" data-tooltip="${message(code: 'tooltip.questionnaireSchedule.addTimeOfDay')}"
                    class="addTimeOfDay"/>
         </div>

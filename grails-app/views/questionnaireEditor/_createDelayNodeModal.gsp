@@ -16,7 +16,7 @@
                 <input type="text" id="text" placeholder="${g.message(code: 'questionnaireEditor.modal.text')} " class="span5">
 
                 <label><g:message code="questionnaireEditor.modal.countTime"/> </label>
-                <input type="number" min="0" id="countTime" placeholder="${g.message(code: 'questionnaireEditor.modal.countTime')} " class="span5">
+                <input type="number" min="0" id="countTime" placeholder="${g.message(code: 'questionnaireEditor.modal.countTime')}" class="span5">
 
                 <label><g:message code="questionnaireEditor.modal.counttype"/> </label>
                 <g:select name="countType" from="${['Op', 'Ned']}"  valueMessagePrefix="questionnaireEditor.countType" class="span5"/>
@@ -40,6 +40,9 @@
         var shortText = $('#shortText', createDelayNodeModal);
         var text = $('#text', createDelayNodeModal);
         var countTime = $('#countTime', createDelayNodeModal);
+        countTime.on('keydown', function(event) {
+            return event.which < 48 || (event.which >= 48 && event.which <= 57) || (event.which >= 96 && event.which <= 105)
+        });
         function validate() {
             var shortTextValid = shortText.val().length > 0;
             var textValid = text.val().length > 0;

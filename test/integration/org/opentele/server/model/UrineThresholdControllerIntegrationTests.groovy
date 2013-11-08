@@ -1,12 +1,9 @@
 package org.opentele.server.model
-
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.ProteinValue
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
 
 class UrineThresholdControllerIntegrationTests extends GroovyTestCase {
 	def daoAuthenticationProvider
@@ -90,11 +87,11 @@ class UrineThresholdControllerIntegrationTests extends GroovyTestCase {
         //Pre-check
 
         //Execute
-        controller.params.alertHigh = "+4"
-        controller.params.warningHigh = "+3"
-        controller.params.warningLow = "+/-"
-        controller.params.alertLow = "Neg."
-        controller.params.id = testThreshold.id
+        controller.params.alertHigh = "PLUS_FOUR"
+        controller.params.warningHigh = "PLUS_THREE"
+        controller.params.warningLow = "PLUSMINUS"
+        controller.params.alertLow = "NEGATIVE"
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -116,10 +113,10 @@ class UrineThresholdControllerIntegrationTests extends GroovyTestCase {
 
         //Execute
         //No alertHigh param
-        controller.params.warningHigh = "+3"
-        controller.params.warningLow = "+/-"
-        controller.params.alertLow = "Neg."
-        controller.params.id = testThreshold.id
+        controller.params.warningHigh = "PLUS_THREE"
+        controller.params.warningLow = "PLUSMINUS"
+        controller.params.alertLow = "NEGATIVE"
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -140,10 +137,10 @@ class UrineThresholdControllerIntegrationTests extends GroovyTestCase {
 
         //Execute
         //No warningHigh param
-        controller.params.alertHigh = "+4"
-        controller.params.warningLow = "+/-"
-        controller.params.alertLow = "Neg."
-        controller.params.id = testThreshold.id
+        controller.params.alertHigh = "PLUS_FOUR"
+        controller.params.warningLow = "PLUSMINUS"
+        controller.params.alertLow = "NEGATIVE"
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -165,10 +162,10 @@ class UrineThresholdControllerIntegrationTests extends GroovyTestCase {
 
         //Execute
         //No warningLow param
-        controller.params.alertHigh = "+4"
-        controller.params.warningHigh = "+3"
-        controller.params.alertLow = "Neg."
-        controller.params.id = testThreshold.id
+        controller.params.alertHigh = "PLUS_FOUR"
+        controller.params.warningHigh = "PLUS_THREE"
+        controller.params.alertLow = "NEGATIVE"
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -190,10 +187,10 @@ class UrineThresholdControllerIntegrationTests extends GroovyTestCase {
 
         //Execute
         //No alertLow param
-        controller.params.alertHigh = "+4"
-        controller.params.warningHigh = "+3"
-        controller.params.warningLow = "+/-"
-        controller.params.id = testThreshold.id
+        controller.params.alertHigh = "PLUS_FOUR"
+        controller.params.warningHigh = "PLUS_THREE"
+        controller.params.warningLow = "PLUSMINUS"
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check

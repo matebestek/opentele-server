@@ -28,6 +28,7 @@
 			</g:hasErrors>
 			<g:form method="post" >
 				<g:hiddenField name="id" value="${standardThresholdInstance?.id}" />
+				<g:hiddenField name="threshold.id" value="${standardThresholdInstance?.id}" />
 				<g:hiddenField name="version" value="${standardThresholdInstance?.version}" />
                 <g:hiddenField name="ignoreNavigation" value="true"/>
 				<fieldset class="form">

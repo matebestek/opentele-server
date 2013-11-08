@@ -121,4 +121,8 @@ class ClinicianService {
         def user = (User)springSecurityService.currentUser
         return Clinician.findByUser(user)
     }
+
+    List<PatientGroup> getPatientGroupsForCurrentClinician() {
+        Clinician2PatientGroup.findAllByClinician(currentClinician).collect { it.patientGroup }.sort { it.name }
+    }
 }

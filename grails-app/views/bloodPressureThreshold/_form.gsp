@@ -12,53 +12,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr class="thresholds">
-        <th><g:message code="default.threshold.diastolic.label"/></th>
-        <td>
-            <g:field type="text" name="diastolicAlertHigh"
-                     value="${formatNumber(number: standardThresholdInstance.diastolicAlertHigh, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="diastolicWarningHigh"
-                     value="${formatNumber(number: standardThresholdInstance.diastolicWarningHigh, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="diastolicWarningLow"
-                     value="${formatNumber(number: standardThresholdInstance.diastolicWarningLow, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="diastolicAlertLow"
-                     value="${formatNumber(number: standardThresholdInstance.diastolicAlertLow, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-    </tr>
-    <tr class="thresholds">
-        <th><g:message code="default.threshold.systolic.label"/></th>
-        <td>
-            <g:field type="text" name="systolicAlertHigh"
-                     value="${formatNumber(number: standardThresholdInstance.systolicAlertHigh, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="systolicWarningHigh"
-                     value="${formatNumber(number: standardThresholdInstance.systolicWarningHigh, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="systolicWarningLow"
-                     value="${formatNumber(number: standardThresholdInstance.systolicWarningLow, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="systolicAlertLow"
-                     value="${formatNumber(number: standardThresholdInstance.systolicAlertLow, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-    </tr>
-
+    <tmpl:/bloodPressureThreshold/thresholds text="" threshold="${standardThresholdInstance}"/>
     </tbody>
 </table>
 <script lang="javascript">

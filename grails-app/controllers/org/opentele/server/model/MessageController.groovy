@@ -16,13 +16,13 @@ class MessageController {
     def sessionService
     def patientService
 
-    static allowedMethods = [save: "POST", update: "POST", delete: ["POST": "DELETE"]]
+    static allowedMethods = [save: "POST", update: "POST", delete: ["POST": "DELETE"], markAsRead: "POST"]
 
     /**
      * The following methods are used by the client:
      * list()
-     * - generateJson(..)
-     * -- messageAsJson(..)
+     * - createMessagesListResult(..)
+     * -- createMessageResult(..)
      * save()
      * show()
      * getClinicians()
@@ -33,24 +33,12 @@ class MessageController {
     @Secured([PermissionName.MESSAGE_READ, PermissionName.MESSAGE_READ_JSON])
     @SecurityWhiteListController
     def list() {
-        if (springSecurityService?.authentication?.isAuthenticated()) {
-            def user = springSecurityService?.currentUser
+        if (springSecurityService.authentication.isAuthenticated()) {
+            def user = springSecurityService.currentUser
+            def patient = Patient.findByUser(user)
+            def messages = Message.findAllByPatient(patient)
 
-            def p = Patient.findByUser(user)
-
-            def messages = Message.findAllByPatient(p)
-
-            withFormat {
-                json {
-                    response.status = 200
-                    ArrayList results = generateJson(messages)
-                    render results as JSON
-                }
-                xml {
-                }
-                html {
-                }
-            }
+            render createMessagesListResult(messages) as JSON
         } else {
             withFormat {
                 json {
@@ -66,50 +54,21 @@ class MessageController {
         }
     }
 
-    def messageAsJson(Message message) {
-        def msg
-        if (message.sentByPatient) {
-            msg = ["id": message.id,
-                    "title": message.title,
-                    "text": message.text,
-                    to: ["id": message.department.id, "name": message.department.name],
-                    from: ["id": message.patient.id, "name": message.patient.name()],
-                    "isRead": message.isRead,
-                    "sendDate": message.sendDate,
-                    "readDate": message.readDate]
-        } else {
-            msg =  ["id": message.id,
-                    "title": message.title,
-                    "text": message.text,
-                    to: ["id": message.patient.id, "name": message.patient.name()],
-                    from: ["id": message.department.id, "name": message.department.name],
-                    "isRead": message.isRead,
-                    "sendDate": message.sendDate,
-                    "readDate": message.readDate]
+    @Secured([PermissionName.MESSAGE_WRITE,PermissionName.MESSAGE_WRITE_JSON ])
+    @SecurityWhiteListController
+    def markAsRead() {
+        def user = springSecurityService.currentUser
+        def patient = Patient.findByUser(user)
+        def ids = request.JSON.collect { it as long }
 
-        }
-        msg
-    }
-
-    private ArrayList generateJson(Collection<Message> messages) {
-        def results = []
-        if (messages?.size() > 0) {
-            results << ["result": "OK"]
-
-            def unread = 0
-
-            results += messages?.collect { message ->
-                if (!message.isRead) {
-                    unread++
-                }
-                messageAsJson(message)
+        if (!ids.empty) {
+            def messages = Message.findAllByPatientAndIdInList(patient, ids)
+            messages.each {
+                messageService.setRead(it);
             }
-            results.add(1, ["unread" : unread])
-        } else {
-            results << ["result": "No messages"]
         }
 
-        results
+        render ""
     }
 
     /**
@@ -132,7 +91,6 @@ class MessageController {
         render departments.collect {
             createJsonForDepartments(it)
         } as JSON
-
     }
 
     private createJsonForDepartments(Department department) {
@@ -171,7 +129,8 @@ class MessageController {
     @Secured([PermissionName.MESSAGE_WRITE])
     def reply() {
         def msg = Message.get(params.id)
-        def newMessage = new Message(patient:msg.patient, department: msg.department, title: ( msg.title ? msg.title[0..2].equals("Re:") ? msg?.title  : "Re: " + msg?.title : "Re: "), inReplyTo: msg)
+
+        def newMessage = new Message(patient:msg.patient, department: msg.department, title: replyTitle(msg.title), inReplyTo: msg)
         messageService.setRead(msg)
         sessionService.setPatient(session, msg.patient)
         [messageInstance:newMessage, oldMessage:msg]
@@ -212,7 +171,7 @@ class MessageController {
                 }
                 json {
                     response.status = SC_OK
-                    render messageAsJson(messageInstance) as JSON
+                    render createMessageResult(messageInstance) as JSON
                 }
                 xml {
                     response.status = SC_OK
@@ -282,7 +241,7 @@ class MessageController {
                 }
                 json {
                     response.status = SC_OK
-                    render messageAsJson(messageInstance) as JSON
+                    render createMessageResult(messageInstance) as JSON
                 }
                 xml {
                     response.status = SC_OK
@@ -296,7 +255,7 @@ class MessageController {
                 }
                 json {
                     response.status = SC_BAD_REQUEST
-                    render messageAsJson(messageInstance) as JSON
+                    render createMessageResult(messageInstance) as JSON
                 }
                 xml {
                     response.status = SC_BAD_REQUEST
@@ -312,51 +271,15 @@ class MessageController {
         } else {
             withFormat {
                 html { [messageInstance: messageInstance] }
-                xml { render messageAsJson(messageInstance) as XML }
-                json { render messageAsJson(messageInstance) as JSON }
+                xml { render createMessageResult(messageInstance) as XML }
+                json { render createMessageResult(messageInstance) as JSON }
             }
 
         }
 
     }
 
-    @Secured([PermissionName.MESSAGE_READ,PermissionName.MESSAGE_READ_JSON ])
-    def show() {
-        def user = springSecurityService.currentUser
-        def messageInstance = Message.get(params.id)
-
-        sessionService.setPatient(session,messageInstance.patient)
-
-        //Set isRead automatically - except if the last action was to mark the
-        //messsage as unread.
-        if (!(flash.lastController == 'message' && flash.lastAction == 'unread') && !(messageInstance.isRead)) {
-            if (user.isPatient() && !messageInstance.sentByPatient) {
-                messageService.setRead(messageInstance)
-            } else if (user.isClinician() && messageInstance.sentByPatient) {
-                messageService.setRead(messageInstance)
-            }
-        }
-
-        def currentMsg = messageInstance
-        def chain = []
-        while(currentMsg.inReplyTo != null) {
-            chain <<  currentMsg.inReplyTo
-            currentMsg = currentMsg.inReplyTo
-        }
-
-        if (!messageInstance) {
-            withFormat renderNotFound
-        } else {
-            withFormat {
-                html { [messageInstance: messageInstance, messageChain: chain] }
-                xml { render messageAsJson(messageInstance) as XML }
-                json { render messageAsJson(messageInstance) as JSON }
-            }
-
-        }
-    }
-
-    def renderNotFound = {
+    private renderNotFound = {
         html {
             flash.message = "${message(code: 'default.not.found.message', args: [message(code: 'message.label', default: 'Message')])}"
             list()
@@ -376,18 +299,41 @@ class MessageController {
         }
     }
 
+    private String replyTitle(String title) {
 
-    def render409orEdit = { messageInstance ->
-        form {
-            render(view: "edit", model: [messageInstance: messageInstance])
+        if (title) {
+            title.startsWith("Re:") ? title  : "Re: " + title
+        } else {
+            "Re: "
         }
-        xml {
-            response.status = SC_CONFLICT
-            render messageInstance.errors.allErrors as XML
-        }
-        json {
-            response.status = SC_CONFLICT
-            render messageInstance.errors.allErrors as JSON
-        }
+    }
+
+    private createMessagesListResult(Collection<Message> messages) {
+        def items = messages.collect { createMessageResult(it) }
+        def unread = messages.count { !it.sentByPatient && !it.isRead }
+
+        [
+            unread: unread,
+            messages: items
+        ]
+    }
+
+    private createMessageResult(Message message) {
+        def patient = [type: 'Patient', id: message.patient.id, name: message.patient.name]
+        def department = [type: 'Department', id: message.department.id, name: message.department.name]
+
+        def from = message.sentByPatient ? patient : department
+        def to = message.sentByPatient ? department : patient
+
+        [
+            id: message.id,
+            title: message.title,
+            text: message.text,
+            to: to,
+            from: from,
+            isRead: message.isRead,
+            sendDate: message.sendDate,
+            readDate: message.readDate
+        ]
     }
 }

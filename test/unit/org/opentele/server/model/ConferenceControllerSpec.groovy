@@ -9,7 +9,7 @@ import spock.lang.Specification
 import grails.test.mixin.*
 
 @TestFor(ConferenceController)
-@Build([PendingConference, Patient, Clinician, Conference, ConferenceLungFunctionMeasurementDraft, ConferenceBloodPressureMeasurementDraft])
+@Build([PendingConference, Patient, Clinician, Conference, ConferenceLungFunctionMeasurementDraft, ConferenceBloodPressureMeasurementDraft, ConferenceSaturationMeasurementDraft])
 class ConferenceControllerSpec extends Specification {
     // Interface of VideoConferenceService (since we don't necessarily have access to VideoConferenceService
     // when testing
@@ -94,6 +94,22 @@ class ConferenceControllerSpec extends Specification {
 
         when:
         def model = controller.show()
+
+        then:
+        model.unfinishedConferences == [conference1, conference2]
+        model.clinician == clinician
+    }
+
+    def 'finds list of unfinished video conferences for conferenceEnded view'() {
+        setup:
+        videoConferenceService.userIsAlreadyPresentInOwnRoom('user', 'pass') >> false
+        def conference1 = new Conference(patient: patientInContext, clinician: clinician)
+        def conference2 = new Conference(patient: patientInContext, clinician: Clinician.build())
+        def conferenceOnOtherPatient = new Conference(patient: Patient.build(), clinician: clinician)
+        [conference1, conference2, conferenceOnOtherPatient]*.save(failOnError: true)
+
+        when:
+        def model = controller.conferenceEnded()
 
         then:
         model.unfinishedConferences == [conference1, conference2]
@@ -395,23 +411,51 @@ class ConferenceControllerSpec extends Specification {
         pendingBloodPressureMeasurement.meanArterialPressure == 100
     }
 
-    def 'complains when receiving measurement for which no pending measurements exist'() {
+    def 'can receive saturation measurement'() {
         setup:
         setPatientAsUser()
         def conference = Conference.build(clinician: clinician, patient: patient)
-        conference.addToMeasurementDrafts(ConferenceLungFunctionMeasurementDraft.build(automatic: false))
+        def pendingSaturationMeasurement = ConferenceSaturationMeasurementDraft.build(automatic: true, waiting: true)
+        conference.addToMeasurementDrafts(pendingSaturationMeasurement)
+        conference.addToMeasurementDrafts(ConferenceSaturationMeasurementDraft.build(automatic: false))
 
         when:
         request.JSON = [
-            type:'LUNG_FUNCTION_MEASUREMENT',
+            type: 'SATURATION',
+            deviceId: 'abc.123',
             measurement: [
-                fev1: 3.6
+                saturation: 98,
+                pulse: 57,
             ]
         ]
         controller.measurementFromPatient()
 
         then:
-        thrown(IllegalArgumentException)
+        response.status == 200
+        pendingSaturationMeasurement.automatic
+        !pendingSaturationMeasurement.waiting
+        pendingSaturationMeasurement.deviceId == 'abc.123'
+        pendingSaturationMeasurement.saturation == 98
+        pendingSaturationMeasurement.pulse == 57
+    }
+
+    def 'does not complain when receiving measurement for which no pending measurements exist'() {
+        setup:
+        setPatientAsUser()
+        def conference = Conference.build(clinician: clinician, patient: patient)
+
+        when:
+        request.JSON = [
+            type:'LUNG_FUNCTION',
+            measurement: [
+                fev1: 3.6
+            ]
+        ]
+        controller.measurementFromPatient()
+        conference.refresh()
+
+        then:
+        conference.measurementDrafts.empty
     }
 
     def 'complains when receiving measurement of unknown type'() {

@@ -1,6 +1,6 @@
 package org.opentele.server.model
-
 import grails.validation.Validateable
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.opentele.server.model.types.GlucoseInUrineValue
 import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.ProteinValue
@@ -73,61 +73,46 @@ class CreatePatientCommand extends AbstractObject {
         }
 
         this.thresholdSetWasReduced = standardThresholds.size() < initialNumberOfStandardThresholds
-
     }
 
-   boolean thresholdSetWasReduced() { //It _is_ used from the views..
-        return this.thresholdSetWasReduced
-    }
-
-    def updateThresholds(def params) {
+    def updateThresholds(GrailsParameterMap params) {
         //It is not possible to add more thresholds to the patient during the flow
         //thus we can assume only the thresholds in this.thresholds need to be updated
-        this.thresholds.each {Threshold t ->
-            switch (t.type.name) {
+        this.thresholds.each {Threshold threshold ->
+            switch (threshold.type.name) {
                 case MeasurementTypeName.BLOOD_PRESSURE:
-                    List newThreshold = params[MeasurementTypeName.BLOOD_PRESSURE.toString()]
+                    def newThreshold = params[MeasurementTypeName.BLOOD_PRESSURE.toString()]
                     if (newThreshold) {
-                        t.diastolicAlertHigh = parseNumericThreshold(newThreshold[0], "diastolicAlertHigh", t)
-                        t.diastolicWarningHigh = parseNumericThreshold(newThreshold[1], "diastolicWarningHigh", t)
-                        t.diastolicWarningLow = parseNumericThreshold(newThreshold[2], "diastolicWarningLow", t)
-                        t.diastolicAlertLow = parseNumericThreshold(newThreshold[3], "diastolicAlertLow", t)
-
-                        t.systolicAlertHigh  = parseNumericThreshold(newThreshold[4], "systolicAlertHigh", t)
-                        t.systolicWarningHigh = parseNumericThreshold(newThreshold[5], "systolicWarningHigh", t)
-                        t.systolicWarningLow = parseNumericThreshold(newThreshold[6], "systolicWarningLow", t)
-                        t.systolicAlertLow = parseNumericThreshold(newThreshold[7], "systolicAlertLow", t)
+                        threshold.properties = newThreshold
                     }
                     break;
                 case MeasurementTypeName.URINE:
-                    List newThreshold = params[MeasurementTypeName.URINE.toString()]
+                    def newThreshold = params[MeasurementTypeName.URINE.toString()]
                     if (newThreshold) {
-                            t.alertHigh = parseUrineThreshold(newThreshold[0], "alertHigh", t)
-                            t.warningHigh = parseUrineThreshold(newThreshold[1], "warningHigh", t)
-                            t.warningLow = parseUrineThreshold(newThreshold[2], "warningLow", t)
-                            t.alertLow = parseUrineThreshold(newThreshold[3], "alertLow", t)
+                        threshold.alertHigh = parseUrineThreshold(newThreshold.alertHigh, "alertHigh", threshold)
+                        threshold.warningHigh = parseUrineThreshold(newThreshold.warningHigh, "warningHigh", threshold)
+                        threshold.warningLow = parseUrineThreshold(newThreshold.warningLow, "warningLow", threshold)
+                        threshold.alertLow = parseUrineThreshold(newThreshold.alertLow, "alertLow", threshold)
                     }
                     break;
 
                 case MeasurementTypeName.URINE_GLUCOSE:
-                    List newThreshold = params[MeasurementTypeName.URINE_GLUCOSE.toString()]
+                    def newThreshold = params[MeasurementTypeName.URINE_GLUCOSE.toString()]
                     if (newThreshold) {
-                        t.alertHigh = parseUrineGlucoseThreshold(newThreshold[0], "alertHigh", t)
-                        t.warningHigh = parseUrineGlucoseThreshold(newThreshold[1], "warningHigh", t)
-                        t.warningLow = parseUrineGlucoseThreshold(newThreshold[2], "warningLow", t)
-                        t.alertLow = parseUrineGlucoseThreshold(newThreshold[3], "alertLow", t)
+                        threshold.alertHigh = parseUrineGlucoseThreshold(newThreshold.alertHigh, "alertHigh", threshold)
+                        threshold.warningHigh = parseUrineGlucoseThreshold(newThreshold.warningHigh, "warningHigh", threshold)
+                        threshold.warningLow = parseUrineGlucoseThreshold(newThreshold.warningLow, "warningLow", threshold)
+                        threshold.alertLow = parseUrineGlucoseThreshold(newThreshold.alertLow, "alertLow", threshold)
                     }
                     break;
                 default: //Is Numeric
-                    List newThreshold = params[t.type.name.toString()]
+                    def newThreshold = params[threshold.type.name.toString()]
                     if (newThreshold) {
-                        t.alertHigh = parseNumericThreshold(newThreshold[0], "alertHigh", t)
-                        t.warningHigh = parseNumericThreshold(newThreshold[1], "warningHigh", t)
-                        t.warningLow = parseNumericThreshold(newThreshold[2], "warningLow", t)
-                        t.alertLow = parseNumericThreshold(newThreshold[3], "alertLow", t)
+                        threshold.properties = newThreshold
                     }
                     break;
             }
+            threshold.validate()
         }
     }
 

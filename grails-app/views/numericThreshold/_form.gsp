@@ -9,28 +9,7 @@
     </tr>
     </thead>
     <tbody>
-    <tr class="thresholds">
-        <td>
-            <g:field type="text" name="alertHigh"
-                     value="${formatNumber(number: standardThresholdInstance.alertHigh, format: "0.0")}"/>
-            <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="warningHigh"
-                     value="${formatNumber(number: standardThresholdInstance.warningHigh, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="warningLow"
-                     value="${formatNumber(number: standardThresholdInstance.warningLow, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-        <td>
-            <g:field type="text" name="alertLow"
-                     value="${formatNumber(number: standardThresholdInstance.alertLow, format: "0.0")}"/>
-             <r:img uri="/images/remove-icon.png"/>
-        </td>
-    </tr>
+        <tmpl:/numericThreshold/threshold threshold="${standardThresholdInstance}" text=""/>
     </tbody>
 </table>
 <script lang="javascript">

@@ -277,7 +277,7 @@ class BloodPressureThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.systolicWarningLow = "40"
         controller.params.systolicAlertLow = "20"
 
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -314,7 +314,7 @@ class BloodPressureThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.systolicWarningLow = "40"
         controller.params.systolicAlertLow = "20"
 
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -351,7 +351,7 @@ class BloodPressureThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.systolicWarningLow = "40"
         controller.params.systolicAlertLow = "20"
 
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -388,7 +388,7 @@ class BloodPressureThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.systolicWarningLow = ""
         controller.params.systolicAlertLow = "20"
 
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -425,7 +425,7 @@ class BloodPressureThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.systolicWarningLow = "40"
         controller.params.systolicAlertLow = ""
 
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check

@@ -103,7 +103,7 @@ class NumericThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.warningHigh = "90"
         controller.params.warningLow = "40"
         controller.params.alertLow = "20"
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -128,7 +128,7 @@ class NumericThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.warningHigh = "90"
         controller.params.warningLow = "40"
         controller.params.alertLow = "20"
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -154,7 +154,7 @@ class NumericThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.warningHigh = ""
         controller.params.warningLow = "40"
         controller.params.alertLow = "20"
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -180,7 +180,7 @@ class NumericThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.warningHigh = "90"
         controller.params.warningLow = ""
         controller.params.alertLow = "20"
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check
@@ -206,7 +206,7 @@ class NumericThresholdControllerIntegrationTests extends GroovyTestCase {
         controller.params.warningHigh = "90"
         controller.params.warningLow = "40"
         controller.params.alertLow = ""
-        controller.params.id = testThreshold.id
+        controller.params.'threshold.id' = testThreshold.id
         controller.update()
 
         //Check

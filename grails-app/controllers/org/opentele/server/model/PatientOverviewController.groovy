@@ -71,7 +71,7 @@ class PatientOverviewController {
             patientsToCompletedQuestionnaires: patientsToCompletedQuestionnaires,
             questionPreferences: questionPreferencesForClinician(clinician),
             notes: patientsToNotes,
-            clinicianPatientGroups: Clinician2PatientGroup.findAllByClinician(clinician).collect { it.patientGroup }
+            clinicianPatientGroups: clinicianService.patientGroupsForCurrentClinician
         ]
     }
 

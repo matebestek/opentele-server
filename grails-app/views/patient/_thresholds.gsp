@@ -17,8 +17,8 @@
     <tbody>
     <g:each in="${thresholds.sort { it.refresh(); it.prettyToString() }}" status="i" var="threshold">
         <g:if test="${threshold.type.name == MeasurementTypeName.BLOOD_PRESSURE}">
-            <tmpl:/patient/thresholdRow threshold="${threshold}" field="diastolic" controllerName="bloodPressureThreshold" rowspan="2"/>
-            <tmpl:/patient/thresholdRow threshold="${threshold}" field="systolic" controllerName="bloodPressureThreshold" readonly="true"/>
+            <tmpl:/patient/thresholdRow threshold="${threshold}" field="systolic" controllerName="bloodPressureThreshold" rowspan="2"/>
+            <tmpl:/patient/thresholdRow threshold="${threshold}" field="diastolic" controllerName="bloodPressureThreshold" readonly="true"/>
 
             </g:if>
         <g:elseif test="${threshold.type.name == MeasurementTypeName.URINE}">

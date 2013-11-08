@@ -49,11 +49,11 @@ class MessageControllerTests extends AbstractControllerIntegrationTest {
 
 		def JSONresponse = controller.response.json
 
-		assert JSONresponse[2].to.id == p.id
-		assert JSONresponse[2].from.id == d.id
+		assert JSONresponse.messages[0].to.id == p.id
+		assert JSONresponse.messages[0].from.id == d.id
 
 		//Should now return all messages
-		assert JSONresponse.length() == 4
+		assert JSONresponse.messages.length() == 2
 	}
 
     @Test

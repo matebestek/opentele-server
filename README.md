@@ -18,6 +18,23 @@ from the command line. Run the unit, integration, and functional tests by issuin
 
 from the command line.
 
+Test set-up
+-----------
+Have a look in [BootStrap.groovy](grails-app/conf/BootStrap.groovy) for all details on the set-up when
+started in development mode. In short, a number of test clinicians are created (in method
+``createCliniciansForTest``):
+
+* Helle Andersen (user name ``HelleAndersen``, password ``HelleAndersen1``)
+* Jens Hansen (user name: ``JensHansen``, password: ``JensHansen1``)
+* Doktor Hansen (user name: ``DoktorHansen``, password: ``DoktorHansen1``)
+
+And a number of test patients are created (in method ``createTestPatients``), amongst others:
+
+* Nancy Ann Berggreen (user name ``NancyAnn``, password ``abcd1234``)
+* Linda Hansen (user name ``Linda``, password ``abcd1234``)
+* Erna Hansen (user name ``Erna``, password ``abcd1234``)
+* Else Nielsen (user name ``Else``, password ``abcd1234``)
+
 Included 3rd-party software
 ---------------------------
 OpenTele Server includes the following 3rd-party software:

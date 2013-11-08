@@ -4,7 +4,7 @@
     <div class="fieldcontain">
         <label><g:message code="questionnaireSchedule.reminderTime"/></label>
 
-        <div style="display: inline-block">
+        <div class="timeOfDayInlined">
             <tmpl:/schedule/timeOfDay name="reminderTime" value="${reminderTime}"/>
         </div>
     </div>
@@ -12,7 +12,7 @@
     <div class="fieldcontain ">
         <label><g:message code="questionnaireSchedule.blueAlarmTime"/></label>
 
-        <div style="display: inline-block">
+        <div class="timeOfDayInlined">
             <tmpl:/schedule/timeOfDay name="blueAlarmTime" value="${blueAlarmTime}"/>
         </div>
     </div>
@@ -20,7 +20,7 @@
 
     <div class="fieldcontain">
         <label><g:message code="questionnaireSchedule.introPeriodWeeks"/></label>
-        <g:select type="number" name="intoPeriodWeeks" from="${(1..8)}"
+        <g:select type="number" name="introPeriodWeeks" from="${(1..8)}"
                   valueMessagePrefix="questionnaireSchedule.introPeriodWeeks.week" value="${introPeriodWeeks}" class="span1"/>
     </div>
 
@@ -29,8 +29,8 @@
 
         <div id="weekdaysIntroPeriod" class="weekdays">
             <strong><g:message code="questionnaireSchedule.weekdaysIntroPeriod.label" /></strong><br/>
-            <input type="checkbox" id="allNone" class="narrow-checkbox">
-            <label for="allNone" style="width: auto"><g:message code="schedule.allNoDays.label"/></label>
+            <input type="checkbox" id="allNoneIntroPeriod" class="narrow-checkbox">
+            <label for="allNoneIntroPeriod" style="width: auto"><g:message code="schedule.allNoDays.label"/></label>
             <br/>
             <g:each in="${Weekday.values()}" var="day">
                 <g:checkBox name="weekdaysIntroPeriod" id="weekdaysIntroPeriod_${day}" type="checkbox" value="${day}"
@@ -40,10 +40,10 @@
             </g:each>
         </div>
 
-        <div style="display: inline-block" id="weekdaysSecondPeriod" class="weekdays">
+        <div id="weekdaysSecondPeriod" class="weekdays">
             <strong><g:message code="questionnaireSchedule.weekdaysSecondPeriod.label" /></strong><br/>
-            <input type="checkbox" id="allNone" class="narrow-checkbox">
-            <label for="allNone" style="width: auto"><g:message code="schedule.allNoDays.label"/></label>
+            <input type="checkbox" id="allNoneSecondPeriod" class="narrow-checkbox">
+            <label for="allNoneSecondPeriod" style="width: auto"><g:message code="schedule.allNoDays.label"/></label>
             <br/>
             <g:each in="${Weekday.values()}" var="day">
                 <g:checkBox name="weekdaysSecondPeriod" id="weekdaysSecondPeriod_${day}" type="checkbox" value="${day}"
@@ -56,9 +56,11 @@
 </div>
 <r:script>
     $('#weekdaysIntroPeriod').weekdays({
-        name: "weekdaysIntroPeriod"
+        name: "weekdaysIntroPeriod",
+        allNoneId: 'allNoneIntroPeriod'
     });
     $('#weekdaysSecondPeriod').weekdays({
-        name: "weekdaysSecondPeriod"
+        name: "weekdaysSecondPeriod" ,
+        allNoneId: 'allNoneSecondPeriod'
     });
 </r:script>

@@ -23,14 +23,23 @@ class StandardThresholdSet extends AbstractObject{
         thresholds cascade: "all-delete-orphan"
     }
 
-    /**
-     * This is really hard to do with normal "findBy*" because of the database modeling.
-     */
-    static StandardThresholdSet forThreshold(Threshold threshold) {
-        StandardThresholdSet.createCriteria().get {
+    @SuppressWarnings("GroovyAssignabilityCheck")
+    static namedQueries = {
+        forThreshold { Threshold threshold ->
             thresholds {
                 eq('id', threshold.id)
             }
         }
     }
+
+//    /**
+//     * This is really hard to do with normal "findBy*" because of the database modeling.
+//     */
+//    static StandardThresholdSet forThreshold(Threshold threshold) {
+//        StandardThresholdSet.createCriteria().get {
+//            thresholds {
+//                eq('id', threshold.id)
+//            }
+//        }
+//    }
 }

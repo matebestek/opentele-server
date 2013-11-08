@@ -1,9 +1,6 @@
 package org.opentele.server.model
-
-
-
-import org.junit.*
-import grails.test.mixin.*
+import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
 
 @TestFor(ScheduleWindowController)
 @Mock(ScheduleWindow)
@@ -13,7 +10,7 @@ class ScheduleWindowControllerTests {
     def populateValidParams(params) {
         assert params != null
         params["scheduleType"] = Schedule.ScheduleType.UNSCHEDULED
-        params["windowSizeMinutes"]= 0
+        params["windowSizeMinutes"]= 1
         params
     }
 

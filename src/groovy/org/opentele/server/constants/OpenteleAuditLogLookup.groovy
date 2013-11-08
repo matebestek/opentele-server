@@ -100,6 +100,7 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
             'alreadyCompleted': 'Allerede færdig med målingskladder',
             'loadForm': 'Opret ny målingskladde',
             'updateMeasurement': 'Opdater målingskladde',
+            'deleteMeasurement': 'Slet målingskladde',
             'loadAutomaticMeasurement': 'Opdater målingskladde fra klient',
             'confirm': 'Bekræft målingskladder',
             'finish': 'Færdiggør målingskladder',
@@ -155,8 +156,7 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
                 "messageAsJson": "Besked til afdeling fra klient",
                 "newMessages": "Nye beskeder til patient",
                 "read": "Marker besked som læst",
-                "render409orEdit": "Renderingsfejl",
-                "renderNotFound": "Renderingsfejl"
+                "markAsRead": "Marker beskeder som læst"
         ]
 
         lookup["meter"] = addStandardTexts("måler", "målere")

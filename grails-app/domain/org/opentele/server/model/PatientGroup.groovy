@@ -27,6 +27,6 @@ class PatientGroup extends AbstractObject {
 
 	@Override
 	String toString () {
-        "${name} (${department.name})"
+        "${name} (${department?.name})"
     }   // + (department name?)
 }

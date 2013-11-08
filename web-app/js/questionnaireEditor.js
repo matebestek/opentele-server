@@ -822,7 +822,7 @@ function updateStandardSchedule(standardSchedule) {
     $('input[name="dayInterval"]').val(standardSchedule.dayInterval || 30);
     $('input[name="startingDate_widget"]').datepicker('setDate', standardSchedule.startingDate).trigger('change');
     $('input[name="specificDate_widget"]').datepicker('setDate', standardSchedule.specificDate).trigger('change');
-    $('select[name="intoPeriodWeeks"]').val(standardSchedule.introPeriodWeeks);
+    $('select[name="introPeriodWeeks"]').val(standardSchedule.introPeriodWeeks);
 }
 function updateWeekdays(model, field) {
     $('input[name="'+field+'"]').removeAttr('checked');

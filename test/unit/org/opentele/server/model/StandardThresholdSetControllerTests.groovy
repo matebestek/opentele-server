@@ -3,11 +3,20 @@ package org.opentele.server.model
 import grails.buildtestdata.mixin.Build
 import grails.test.mixin.*
 import org.opentele.server.SessionService
+import org.opentele.server.ThresholdService
 import org.opentele.server.model.types.MeasurementTypeName
 
+@SuppressWarnings("GroovyAssignabilityCheck")
 @TestFor(StandardThresholdSetController)
 @Build([StandardThresholdSet, MeasurementType, BloodPressureThreshold, NumericThreshold, UrineThreshold, UrineGlucoseThreshold])
 class StandardThresholdSetControllerTests {
+    void setUp() {
+        defineBeans {
+            sessionService(SessionService)
+            thresholdService(ThresholdService)
+        }
+    }
+
     def populateValidParams(params) {
         assert params != null
     }

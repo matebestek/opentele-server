@@ -1,14 +1,16 @@
 package org.opentele.server.model
-
 import grails.buildtestdata.mixin.Build
-import grails.test.mixin.*
+import grails.test.mixin.TestFor
+import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.junit.Test
 import org.opentele.builders.PatientBuilder
 import org.opentele.server.SessionService
+import org.opentele.server.ThresholdService
 import org.opentele.server.model.types.MeasurementTypeName
 
+@SuppressWarnings("GroovyAccessibility")
 @TestFor(PatientController)
 @Build([Patient, Clinician, PatientGroup,Patient2PatientGroup,User, Role, UserRole, NextOfKinPerson, MonitoringPlan, Message, User])
 @TestMixin(DomainClassUnitTestMixin)
@@ -21,13 +23,15 @@ class PatientControllerUnitTests {
     // savePatient tested in PatientController + PatientService integration tests
 
     void setUp() {
+        defineBeans {
+            sessionService(SessionService)
+            thresholdService(ThresholdService)
+        }
     }
 
     @Test
     void patientShowReturnsPatient() {
-        defineBeans {
-            sessionService(SessionService)
-        }
+
         //Setup
         Patient patient = new PatientBuilder().build()
         patient.save()
@@ -79,9 +83,6 @@ class PatientControllerUnitTests {
 
     @Test
     void patientEditReturnsPatient() {
-        defineBeans {
-            sessionService(SessionService)
-        }
         //Setup
         Patient patient = new PatientBuilder().build()
         patient.save()
@@ -129,6 +130,7 @@ class PatientControllerUnitTests {
         assert model == null
     }
 
+    @SuppressWarnings("GroovyAccessibility")
     @Test
     void getPatientGroupsReturnsCorrectGroup() {
         //Setup
@@ -203,6 +205,7 @@ class PatientControllerUnitTests {
         Patient patient = new PatientBuilder().build()
         NextOfKinPerson nextOfKinPerson1 = NextOfKinPerson.build(firstName: 'goodNok1')
         NextOfKinPerson nextOfKinPerson2 = NextOfKinPerson.build(firstName: 'goodNok2')
+        //noinspection GroovyUnusedAssignment
         NextOfKinPerson nextOfKinPerson3 = NextOfKinPerson.build(firstName: 'badNok1')
         patient.addToNextOfKinPersons(nextOfKinPerson1)
         patient.addToNextOfKinPersons(nextOfKinPerson2)
@@ -220,6 +223,7 @@ class PatientControllerUnitTests {
         assert !(nextOfKinPersons[0].firstName == 'goodNok2' && nextOfKinPersons[1].firstName == 'goodNok2')
     }
 
+    @SuppressWarnings("GroovyAssignabilityCheck")
     @Test
     void removeNextOfKinReturnsExistingPatient() {
         //Setup
@@ -244,7 +248,7 @@ class PatientControllerUnitTests {
     void removeAllBluesRemovesBlueAlarms() {
         //Setup
         Patient patient = new PatientBuilder().build()
-        patient.blueAlarmQuestionnaireIDs = ['0', '1', '2']
+        patient.blueAlarmQuestionnaireIDs = ['0', '1', '2'] as Set<Long>
         patient.save(flush: true)
 
         //Execute
@@ -300,6 +304,7 @@ class PatientControllerUnitTests {
         assert responseJson.user.containsKey('changePassword')
     }
 
+    @SuppressWarnings("GroovyAssignabilityCheck")
     @Test
     void testCanUpdatePatientThresholdValueToEmptyBP() {
         //Setup
@@ -317,6 +322,7 @@ class PatientControllerUnitTests {
         assert controller.response.status == 200
     }
 
+    @SuppressWarnings("GroovyAssignabilityCheck")
     @Test
     void testCanUpdatePatientThresholdValueToEmptyURINE() {
         //Setup
@@ -335,6 +341,7 @@ class PatientControllerUnitTests {
         assert controller.response.status == 200
     }
 
+    @SuppressWarnings("GroovyAssignabilityCheck")
     @Test
     void testCanUpdatePatientThresholdValueToEmptyNUMERIC() {
         //Setup

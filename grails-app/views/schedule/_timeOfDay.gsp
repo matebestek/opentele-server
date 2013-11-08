@@ -1,4 +1,4 @@
-<div style="white-space: nowrap;" class="timeOfDay">
+<div class="timeOfDay">
      <g:field name="${name}.hour" type="number"
               value="${value?.hour?.toString()?.padLeft(2, '0')}" size="2" min="0" max="23"
               class="twoCharacterInput"

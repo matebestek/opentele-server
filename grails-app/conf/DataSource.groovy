@@ -38,7 +38,6 @@ environments {
 //            url = "jdbc:h2:mem:devDb;MVCC=TRUE;IGNORECASE=TRUE"
         }
     }
-
     test {
         dataSource {
 //            dbCreate = "create-drop"

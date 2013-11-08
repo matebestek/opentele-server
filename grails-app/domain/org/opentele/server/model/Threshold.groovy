@@ -27,7 +27,7 @@ abstract class Threshold extends AbstractObject {
     }
 
     String toString() {
-        type.name
+        type?.name
     }
 
     public abstract Threshold duplicate()

@@ -1,8 +1,6 @@
 package org.opentele.server.model
 
-import org.opentele.server.util.ThresholdValidationUtil
-
-class BloodPressureThreshold extends Threshold{
+class BloodPressureThreshold extends Threshold {
     Float diastolicAlertHigh
     Float diastolicWarningHigh
     Float diastolicWarningLow
@@ -14,42 +12,27 @@ class BloodPressureThreshold extends Threshold{
     Float systolicAlertLow
 
     static constraints = {
-        diastolicAlertHigh(nullable:true)
-        diastolicWarningHigh(nullable:true)
-        diastolicWarningLow(nullable:true)
-        diastolicAlertLow(nullable:true)
+        diastolicAlertHigh nullable: true, min: 0.0F, validator: { value, object ->
+            value == null || value > [object.diastolicWarningHigh, object.diastolicWarningLow, object.diastolicAlertLow].max()
+        }
+        diastolicWarningHigh nullable: true, min: 0.0F, validator: { value, object ->
+            value == null || value > [object.diastolicWarningLow, object.diastolicAlertLow].max()
+        }
+        diastolicWarningLow nullable: true, min: 0.0F, validator: { value, object ->
+            value == null || value > object.diastolicAlertLow
+        }
+        diastolicAlertLow nullable: true, min: 0.0F
 
-        systolicAlertHigh(nullable:true)
-        systolicWarningHigh(nullable:true)
-        systolicWarningLow(nullable:true)
-        systolicAlertLow(nullable:true)
-
-        diastolicAlertHigh(validator: {val, obj ->
-            ThresholdValidationUtil.validateAlertHigh(val, obj, ThresholdValidationUtil.bloodPressureThresholdValueProxy(obj)("diastolic"))
-        })
-        diastolicWarningHigh(validator: {val, obj ->
-            ThresholdValidationUtil.validateWarningHigh(val, obj, ThresholdValidationUtil.bloodPressureThresholdValueProxy(obj)("diastolic"))
-        })
-        diastolicWarningLow(validator: {val, obj ->
-            ThresholdValidationUtil.validateWarningLow(val, obj, ThresholdValidationUtil.bloodPressureThresholdValueProxy(obj)("diastolic"))
-        })
-        diastolicAlertLow(validator: {val, obj ->
-            ThresholdValidationUtil.validateAlertLow(val, obj, ThresholdValidationUtil.bloodPressureThresholdValueProxy(obj)("diastolic"))
-        })
-
-        systolicAlertHigh(validator: {val, obj ->
-            ThresholdValidationUtil.validateAlertHigh(val, obj, ThresholdValidationUtil.bloodPressureThresholdValueProxy(obj)("systolic"))
-        })
-        systolicWarningHigh(validator: {val, obj ->
-            ThresholdValidationUtil.validateWarningHigh(val, obj, ThresholdValidationUtil.bloodPressureThresholdValueProxy(obj)("systolic"))
-        })
-        systolicWarningLow(validator: {val, obj ->
-            ThresholdValidationUtil.validateWarningLow(val, obj, ThresholdValidationUtil.bloodPressureThresholdValueProxy(obj)("systolic"))
-        })
-        systolicAlertLow(validator: {val, obj ->
-            ThresholdValidationUtil.validateAlertLow(val, obj, ThresholdValidationUtil.bloodPressureThresholdValueProxy(obj)("systolic"))
-        })
-
+        systolicAlertHigh nullable: true, min: 0.0F, validator: { value, object ->
+            value == null || value > [object.systolicWarningHigh, object.systolicWarningLow, object.systolicAlertLow].max()
+        }
+        systolicWarningHigh nullable: true, min: 0.0F, validator: { value, object ->
+            value == null || value > [object.systolicWarningLow, object.systolicAlertLow].max()
+        }
+        systolicWarningLow nullable: true, min: 0.0F, validator: { value, object ->
+            value == null || value > object.systolicAlertLow
+        }
+        systolicAlertLow nullable: true, min: 0.0F
     }
 
     @Override

@@ -2,6 +2,7 @@ package org.opentele.server.model
 
 import grails.test.MockUtils
 import grails.test.mixin.support.GrailsUnitTestMixin
+import groovy.json.JsonOutput
 import org.opentele.util.CommandCanValidateSpecification
 import spock.lang.Shared
 import spock.lang.Unroll
@@ -19,7 +20,7 @@ class ScheduleCommandSpec extends CommandCanValidateSpecification {
     }
 
     @Unroll
-    def "when ScheduleCommand does not validate, validation errors sould be correct"() {
+    def "when ScheduleCommand does not validate, validation errors should be correct"() {
         setup:
         def command = new ScheduleCommand(type: type, daysInMonth: daysInMonth,
                 reminderStartMinutes: reminder, weekdays: weekdays, dayInterval: dayInterval,
@@ -60,6 +61,26 @@ class ScheduleCommandSpec extends CommandCanValidateSpecification {
         type << Schedule.ScheduleType.values()
     }
 
+    @Unroll
+    def 'can correctly clone schedule from JSON'() {
+        given:
+        def commandToClone = [
+                type: type, daysInMonth: [1],
+                reminderStartMinutes: 30, weekdays: [MONDAY], dayInterval: 2,
+                startingDate: jsonDate(date), specificDate: jsonDate(date), timesOfDay: [new Schedule.TimeOfDay()],
+                introPeriodWeeks: '4', weekdaysIntroPeriod: [MONDAY], weekdaysSecondPeriod: [MONDAY]
+        ]
+        def clonedCommand = new ScheduleCommand()
+        clonedCommand.cloneScheduleData(commandToClone)
+
+        expect:
+        clonedCommand.validate()
+
+        where:
+        type << Schedule.ScheduleType.values()
+
+    }
+
     def "when ScheduleCommand binds its data to a Schedule implementation all information should be moved to the Schedule implementation"() {
         given: "The command properties and a new command"
         def map = [type: MONTHLY, timesOfDay: [new Schedule.TimeOfDay(hour: 10, minute: 5), new Schedule.TimeOfDay(hour: 12, minute: 0)],
@@ -95,5 +116,9 @@ class ScheduleCommandSpec extends CommandCanValidateSpecification {
         0 * schedule._(* _)
     }
 
+    private jsonDate(Date date) {
+        def jsonDateIncludingOuterQuotes = JsonOutput.toJson(date)
+        jsonDateIncludingOuterQuotes[1..jsonDateIncludingOuterQuotes.length() - 2]
+    }
 }
 

@@ -3,8 +3,6 @@
 <head>
     <meta name="layout" content="conferenceMeasurements">
 
-    <title>Indtastning af målinger</title>
-
     <r:script>
     $(function() {
         $('#measurementDraftType').change(function() {
@@ -22,11 +20,19 @@
             });
         });
 
+        $('body').on('click', '.delete', function(element) {
+            var tableRow = $(this).closest('tr');
+            var measurementId = tableRow.find("input[name='id']").val();
+
+            $(this).remove();
+            addDeletionToUpdateQueue(measurementId);
+        });
+
         $('body').on('change', 'input', function() {
             var tr = $(this).parents('tr');
             var inputFields = $('input', tr);
 
-            addToUpdateQueue(inputFields);
+            addFieldUpdateToUpdateQueue(inputFields);
         });
 
         setTimeout(checkAutomaticMeasurements, 2000);
@@ -62,21 +68,39 @@
         var updateQueue = [];
         var updateInProgress = false;
 
-        function addToUpdateQueue(inputFields) {
-            updateQueue.push(inputFields);
+        function addFieldUpdateToUpdateQueue(inputFields) {
+            updateQueue.push({ type: 'fieldUpdate', inputFields: inputFields });
+            processUpdateQueue();
+        }
+
+        function addDeletionToUpdateQueue(measurementId) {
+            updateQueue.push({ type: 'deletion', measurementId: measurementId });
             processUpdateQueue();
         }
 
         function processUpdateQueue() {
             if (!updateInProgress && updateQueue.length > 0) {
-                var inputFields = updateQueue.shift();
                 setUpdateInProgress(true);
 
-                $.post('${createLink(action: 'updateMeasurement')}', inputFields.serializeArray(), function(data) {
-                    updateConferenceVersionEverywhere(data['conferenceVersion']);
-                    setFieldStyles(inputFields, data['warnings'], data['errors']);
-                }, 'json')
-                .fail(function() {
+                var job = updateQueue.shift();
+                var jobType = job.type;
+
+                var postAction;
+                if (jobType === 'fieldUpdate') {
+                    var inputFields = job.inputFields;
+                    postAction = $.post('${createLink(action: 'updateMeasurement')}', inputFields.serializeArray(), function(data) {
+                        updateConferenceVersionEverywhere(data['conferenceVersion']);
+                        setFieldStyles(inputFields, data['warnings'], data['errors']);
+                    }, 'json');
+                } else if (jobType === 'deletion') {
+                    var measurementId = job.measurementId;
+                    postAction = $.post('${createLink(action: 'deleteMeasurement')}', { id: measurementId }, function(data) {
+                        updateConferenceVersionEverywhere(data['conferenceVersion']);
+                        visualizeMeasurementAsDeleted(measurementId);
+                    }, 'json');
+                }
+
+                postAction.fail(function() {
                     alert('Noget er gået galt! Luk venligst vinduet og åbn det på ny.');
                 })
                 .always(function() {
@@ -115,6 +139,14 @@
             }
         }
 
+        function visualizeMeasurementAsDeleted(measurementId) {
+            var idFieldForMeasurement = $("input[name='id'][value='" + measurementId + "']");
+            var tableRow = idFieldForMeasurement.closest('tr');
+
+            tableRow.find('input').prop('disabled', true);
+            tableRow.find('td,div,span').css('text-decoration', 'line-through');
+        }
+
         function updateConferenceVersionEverywhere(newVersion) {
             $("input[name='conferenceVersion']").val(newVersion);
         }
@@ -137,6 +169,8 @@
         }
     });
     </r:script>
+
+    <title>Indtastning af målinger</title>
 </head>
 
 <body>
@@ -157,28 +191,30 @@
         <th>
             Medtages
         </th>
+        <th>
+        </th>
     </tr>
     </thead>
     <tbody id="measurements">
         <g:each in="${measurementDrafts.sort { it.id }}" var="measurementDraft">
             <tr>
                 <g:if test="${measurementDraft.type == ConferenceMeasurementDraftType.BLOOD_PRESSURE && !measurementDraft.automatic}">
-                    <g:render template="manualBloodPressure" model="[measurement: measurementDraft]"/>
+                    <g:render template="drafts/manualBloodPressure" model="[measurement: measurementDraft]"/>
                 </g:if>
                 <g:elseif test="${measurementDraft.type == ConferenceMeasurementDraftType.BLOOD_PRESSURE && measurementDraft.automatic}">
-                    <g:render template="automaticBloodPressure" model="[measurement: measurementDraft]"/>
+                    <g:render template="drafts/automaticBloodPressure" model="[measurement: measurementDraft]"/>
                 </g:elseif>
                 <g:elseif test="${measurementDraft.type == ConferenceMeasurementDraftType.LUNG_FUNCTION && !measurementDraft.automatic}">
-                    <g:render template="manualLungFunction" model="[measurement: measurementDraft]"/>
+                    <g:render template="drafts/manualLungFunction" model="[measurement: measurementDraft]"/>
                 </g:elseif>
                 <g:elseif test="${measurementDraft.type == ConferenceMeasurementDraftType.LUNG_FUNCTION && measurementDraft.automatic}">
-                    <g:render template="automaticLungFunction" model="[measurement: measurementDraft]"/>
+                    <g:render template="drafts/automaticLungFunction" model="[measurement: measurementDraft]"/>
                 </g:elseif>
                 <g:elseif test="${measurementDraft.type == ConferenceMeasurementDraftType.SATURATION && !measurementDraft.automatic}">
-                    <g:render template="manualSaturation" model="[measurement: measurementDraft]"/>
+                    <g:render template="drafts/manualSaturation" model="[measurement: measurementDraft]"/>
                 </g:elseif>
                 <g:elseif test="${measurementDraft.type == ConferenceMeasurementDraftType.WEIGHT && !measurementDraft.automatic}">
-                    <g:render template="manualWeight" model="[measurement: measurementDraft]"/>
+                    <g:render template="drafts/manualWeight" model="[measurement: measurementDraft]"/>
                 </g:elseif>
                 <g:else>
                     <td colspan="3">Ukendt målingstype: ${measurementDraft.type}</td>
@@ -188,9 +224,9 @@
     </tbody>
     <tfoot>
         <tr>
-            <td colspan="3">
+            <td colspan="4">
                 Tilføj måling:
-                <g:select name="measurementDraftType" valueMessagePrefix="conferenceMeasurements.measurementType" from="['MANUAL_BLOOD_PRESSURE', 'AUTOMATIC_BLOOD_PRESSURE', 'MANUAL_LUNG_FUNCTION', 'AUTOMATIC_LUNG_FUNCTION', 'MANUAL_SATURATION', 'MANUAL_WEIGHT']" noSelection="[null: '']"/>
+                <g:select name="measurementDraftType" valueMessagePrefix="conferenceMeasurements.measurementType" from="['MANUAL_BLOOD_PRESSURE', 'AUTOMATIC_BLOOD_PRESSURE', 'MANUAL_LUNG_FUNCTION', 'AUTOMATIC_LUNG_FUNCTION', 'MANUAL_SATURATION', 'AUTOMATIC_SATURATION', 'MANUAL_WEIGHT']" noSelection="[null: '']"/>
 
                 <g:form action="confirm">
                     <g:hiddenField name="id" value="${conference.id}"/>

@@ -15,5 +15,6 @@ class ScheduleWindow extends AbstractObject {
 
     static constraints = {
         scheduleType(unique: true)
+        windowSizeMinutes min: 1
     }
 }

@@ -148,6 +148,8 @@ class ConferenceController {
 
     @Secured(PermissionName.VIDEO_CALL)
     def conferenceEnded() {
+        def clinician = currentClinician()
+        [unfinishedConferences: findUnfinishedConferences(), clinician: clinician]
     }
 
     @Secured(PermissionName.JOIN_VIDEO_CALL)
@@ -166,7 +168,10 @@ class ConferenceController {
     def patientHasPendingMeasurement() {
         def patient = currentPatient()
 
-        def waitingConferenceMeasurementDraft = waitingConferenceMeasurementDraft(patient, ConferenceMeasurementDraftType.BLOOD_PRESSURE, ConferenceMeasurementDraftType.LUNG_FUNCTION)
+        def waitingConferenceMeasurementDraft = waitingConferenceMeasurementDraft(patient,
+                ConferenceMeasurementDraftType.BLOOD_PRESSURE,
+                ConferenceMeasurementDraftType.LUNG_FUNCTION,
+                ConferenceMeasurementDraftType.SATURATION)
         if (waitingConferenceMeasurementDraft != null) {
             def reply = [type: waitingConferenceMeasurementDraft.type.name()]
             render reply as JSON
@@ -181,10 +186,15 @@ class ConferenceController {
         def patient = currentPatient()
         def measurementDetails = request.JSON
         def measurementType = ConferenceMeasurementDraftType.find { it.name() == measurementDetails.type }
+        if (measurementType == null) {
+            throw new IllegalArgumentException("Unknown measurement type: '${measurementDetails.type}'")
+        }
 
         def waitingConferenceMeasurementDraft = waitingConferenceMeasurementDraft(patient, measurementType)
         if (waitingConferenceMeasurementDraft == null) {
-            throw new IllegalArgumentException('No matching, pending measurement')
+            // Don't update anything, and don't throw any exceptions
+            render ''
+            return
         }
 
         switch (measurementType) {
@@ -193,6 +203,9 @@ class ConferenceController {
                 break;
             case ConferenceMeasurementDraftType.BLOOD_PRESSURE:
                 fillOutBloodPressureMeasurement(waitingConferenceMeasurementDraft, measurementDetails.measurement)
+                break;
+            case ConferenceMeasurementDraftType.SATURATION:
+                fillOutSaturationMeasurement(waitingConferenceMeasurementDraft, measurementDetails.measurement)
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported automatic measurement type: '${measurementType}'")
@@ -204,14 +217,18 @@ class ConferenceController {
     }
 
     private ConferenceMeasurementDraft waitingConferenceMeasurementDraft(Patient patient, ConferenceMeasurementDraftType... types) {
-        def allUnfinishedConferences = Conference.findAllByPatientAndCompleted(patient, false)
+        def allUnfinishedConferences = Conference.findAllByPatientAndCompleted(patient, false, [sort: 'id'])
         def conferenceWithWaitingMeasurementDraft = allUnfinishedConferences.find {
             it.measurementDrafts.any { it.automatic && it.waiting && it.type in types }
         }
-        conferenceWithWaitingMeasurementDraft?.measurementDrafts?.find { it.automatic && it.waiting && it.type in types }
+        if (conferenceWithWaitingMeasurementDraft == null) {
+            return null
+        }
+        def sortedDrafts = conferenceWithWaitingMeasurementDraft.measurementDrafts.sort { it.id }
+        sortedDrafts.find { it.automatic && it.waiting && it.type in types }
     }
 
-    private fillOutLungFunctionMeasurement(ConferenceLungFunctionMeasurementDraft draft, def submittedMeasurement) {
+    private fillOutLungFunctionMeasurement(ConferenceLungFunctionMeasurementDraft draft, submittedMeasurement) {
         draft.fev1 = submittedMeasurement.fev1
         draft.fev6 = submittedMeasurement.fev6
         draft.fev1Fev6Ratio = submittedMeasurement.fev1Fev6Ratio
@@ -220,11 +237,16 @@ class ConferenceController {
         draft.softwareVersion = submittedMeasurement.softwareVersion
     }
 
-    private fillOutBloodPressureMeasurement(ConferenceBloodPressureMeasurementDraft draft, def submittedMeasurement) {
+    private fillOutBloodPressureMeasurement(ConferenceBloodPressureMeasurementDraft draft, submittedMeasurement) {
         draft.systolic = submittedMeasurement.systolic
         draft.diastolic = submittedMeasurement.diastolic
         draft.pulse = submittedMeasurement.pulse
         draft.meanArterialPressure = submittedMeasurement.meanArterialPressure
+    }
+
+    private fillOutSaturationMeasurement(ConferenceSaturationMeasurementDraft draft, submittedMeasurement) {
+        draft.saturation = submittedMeasurement.saturation
+        draft.pulse = submittedMeasurement.pulse
     }
 
     private findUnfinishedConferences() {

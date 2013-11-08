@@ -307,7 +307,7 @@ class QuestionnaireService {
                 Projections.projectionList()
                         .add(Projections.property("QN.id"))
                         .add(Projections.property("QN.text"))
-                        .add(Projections.property("QH.name"))
+                        .add(Projections.property("QH.name"))     // 2
                         .add(Projections.property("Q.startNode.id"))
                         .add(Projections.property("alternativeNext.id"))
                         .add(Projections.property("nextFail.id"))
@@ -318,15 +318,17 @@ class QuestionnaireService {
                         .add(Projections.property("Q.revision"))
         );
 
-        def questionnaireNodes = questionnaireNodesCriteria.list()
+        def questionnaireNodes = questionnaireNodesCriteria.list().unique()
         //We need to sort (order: Same as presented when answering questionnaire) and filter (only interested in MeasurementNode and InputNode)
         //(Query of all from DB is needed to sort)
         //Group by questionnaire
-        Map unsortedNodesPerQuestionnaire = questionnaireNodes.groupBy {"${it[2]} v. ${it[10]}"}
+
+        Map unsortedNodesPerQuestionnaire = questionnaireNodes.groupBy {"${it[2]} v. ${it[10]}"} // Group by name, version
         Map sortedFilteredNodesPerQuestionnaire = [:]
 
         //Sort by presented order
         unsortedNodesPerQuestionnaire.each {questionnaire, listNodes ->
+
             def sorted = sortNodes(listNodes)
 
             //Filter
@@ -518,7 +520,10 @@ class QuestionnaireService {
             nextNode = nextNode.predecessor
         }
 
-        if (!sortedNodes.size() == G.size()) {
+        sortedNodes.reverse(true)
+
+        if (!(sortedNodes.size() == G.size())) {
+
             //The questionnaire includes multiple paths - add the nodes we did not get with the sort
             G.each { GraphNode u ->
                 if (!sortedNodes.contains(u)) {
@@ -526,8 +531,7 @@ class QuestionnaireService {
                 }
             }
         }
-
-        sortedNodes.reverse()
+        sortedNodes
     }
 
 	@Transactional
@@ -886,6 +890,7 @@ class QuestionnaireService {
     private addQuestionnaireToMonitoringPlan(QuestionnaireGroup2HeaderCommand questionnaireGroup2HeaderCommand, MonitoringPlan monitoringPlan) {
         def questionnaireGroup2Header = questionnaireGroup2HeaderCommand.questionnaireGroup2Header
         def questionnaireSchedule = new QuestionnaireSchedule(monitoringPlan: monitoringPlan, questionnaireHeader: questionnaireGroup2HeaderCommand.questionnaireGroup2Header.questionnaireHeader)
+        questionnaireSchedule.save(failOnError: true)
         assignStandardScheduleToQuestionnaireSchedule(questionnaireGroup2Header.schedule, questionnaireSchedule)
         monitoringPlan.addToQuestionnaireSchedules(questionnaireSchedule)
         monitoringPlan.save(failOnError: true)
@@ -912,6 +917,11 @@ class QuestionnaireService {
             questionnaireSchedule.dayInterval = schedule.dayInterval
             questionnaireSchedule.specificDate = schedule.specificDate
             questionnaireSchedule.reminderStartMinutes = schedule.reminderStartMinutes
+            questionnaireSchedule.introPeriodWeeks = schedule.introPeriodWeeks
+            questionnaireSchedule.reminderTime = schedule.reminderTime
+            questionnaireSchedule.blueAlarmTime = schedule.blueAlarmTime
+            questionnaireSchedule.weekdaysIntroPeriod = schedule.weekdaysIntroPeriod
+            questionnaireSchedule.weekdaysSecondPeriod = schedule.weekdaysSecondPeriod
         }
     }
 

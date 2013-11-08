@@ -2,7 +2,7 @@ package org.opentele.server.model
 import grails.converters.JSON
 import grails.plugins.springsecurity.Secured
 import grails.util.Environment
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.opentele.server.ThresholdService
 import org.opentele.server.TimeFilter
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.constants.Constants
@@ -13,10 +13,8 @@ import org.opentele.server.exception.PatientException
 import org.opentele.server.exception.PatientNotFoundException
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.questionnaire.QuestionnaireNode
-import org.opentele.server.model.types.GlucoseInUrineValue
 import org.opentele.server.model.types.PatientState
 import org.opentele.server.model.types.PermissionName
-import org.opentele.server.model.types.ProteinValue
 import org.springframework.validation.Errors
 
 import static org.opentele.server.model.types.MeasurementTypeName.*
@@ -31,8 +29,10 @@ class PatientController {
     def passwordService
     def messageService
     def cprLookupService
+    def clinicianService
 
 	static allowedMethods = [index: "GET", save: "POST", update: "POST", delete: "POST", overview:["GET","POST"]]
+    ThresholdService thresholdService
 
     @Secured(PermissionName.PATIENT_READ_ALL)
 	def index() {
@@ -424,7 +424,7 @@ class PatientController {
                 patientList.reverse(true)
             }
 		}
-		[searchCommand: searchCommand, patients:patientList]
+		[searchCommand: searchCommand, patients:patientList, clinicianPatientGroups: clinicianService.patientGroupsForCurrentClinician]
 	}
 
 
@@ -756,57 +756,23 @@ class PatientController {
     def saveThresholdToPatient(Long id) {
         def patientInstance = Patient.get(id)
 
-        Threshold threshold
-
-        MeasurementType measurementType = MeasurementType.findByName(params.type)
-        params.type = measurementType
-        switch(measurementType.name) {
-            case BLOOD_PRESSURE:
-                threshold = new BloodPressureThreshold(params)
-                break;
-            case URINE:
-                threshold = createUrineThreshold(params)
-                break;
-
-            case URINE_GLUCOSE:
-                threshold = createUrineGlucoseThreshold()
-                break;
-            default: //Numeric
-                threshold = new NumericThreshold(params)
-                break;
-        }
+        Threshold threshold = thresholdService.createThreshold(params)
 
         //If the threshold is OK, then update the patient
-        if (threshold.validate() && threshold.save(flush: true)) {
+        if (threshold.validate()) {
             patientInstance.addToThresholds(threshold)
             if(!patientInstance.validate()) {
-                patientInstance.removeFromThresholds(threshold)
-                threshold.delete()
-                patientInstance.clearErrors()
-                patientInstance.errors.reject('patientThreshold.add.error', [threshold.prettyToString(), patientInstance.firstName] as Object[], 'Kunne ikke tilføje {0} til {1}: Der findes allerede en tærskelværdi af denne type for denne patient.')
                 render(view: "edit", model:  [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
             } else {
                 patientInstance.save(flush: true)
                 render(view:  "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
             }
         } else {
-            render(view: "addThreshold", model: [patientInstance: patientInstance, standardThresholdInstance: threshold, thresholdType: measurementType.name, notUsedThresholds: getUnusedThresholds(patientInstance)])
+            render(view: "addThreshold", model: [patientInstance: patientInstance, standardThresholdInstance: threshold, thresholdType: threshold.type.name, notUsedThresholds: getUnusedThresholds(patientInstance)])
         }
     }
 
-    private createUrineGlucoseThreshold() {
-        ['alertHigh', 'warningHigh', 'warningLow', 'alertLow'].inject(new UrineGlucoseThreshold(type: params.type)) { threshold, prop ->
-            threshold."$prop" = params."$prop" ? GlucoseInUrineValue.fromString(params."$prop") : null
-            return threshold
-        } as UrineGlucoseThreshold
-    }
 
-    private createUrineThreshold(GrailsParameterMap params) {
-        ['alertHigh', 'warningHigh', 'warningLow', 'alertLow'].inject(new UrineThreshold(type: params.type)) { threshold, prop ->
-            threshold."$prop" = params."$prop" ? ProteinValue.fromString(params."$prop") : null
-            return threshold
-        } as UrineThreshold
-    }
 
     @Secured(PermissionName.SET_PATIENT_RESPONSIBILITY)
     @SecurityWhiteListController

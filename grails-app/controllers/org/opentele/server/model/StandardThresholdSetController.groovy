@@ -1,8 +1,8 @@
 package org.opentele.server.model
 import grails.plugins.springsecurity.Secured
+import org.opentele.server.ThresholdService
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.model.types.PermissionName
-import org.opentele.server.util.ThresholdValidationUtil
 import org.springframework.dao.DataIntegrityViolationException
 
 import static org.opentele.server.model.types.MeasurementTypeName.*
@@ -14,6 +14,7 @@ class StandardThresholdSetController {
     static allowedMethods = [save: "POST", update: "POST", delete: "POST", addThreshold: "POST"]
 
     def sessionService
+    ThresholdService thresholdService
 
     @Secured(PermissionName.STANDARD_THRESHOLD_READ_ALL)
     def index() {
@@ -154,60 +155,17 @@ class StandardThresholdSetController {
     @Secured(PermissionName.STANDARD_THRESHOLD_WRITE)
     def saveThresholdToSet(Long id) {
         def standardThresholdSetInstance = StandardThresholdSet.get(id)
-        Threshold t
-        MeasurementType measurementType = MeasurementType.findByName(params.type)
+        Threshold threshold = thresholdService.createThreshold(params)
 
-        def propertiesBloodPressure = ['diastolicAlertHigh', 'diastolicAlertLow', 'diastolicWarningHigh', 'diastolicWarningLow','systolicAlertHigh', 'systolicAlertLow', 'systolicWarningHigh', 'systolicWarningLow']
-        def propertiesEverythingElse = ['alertHigh', 'alertLow', 'warningHigh', 'warningLow']
-
-        switch(measurementType.name) {
-            case BLOOD_PRESSURE:
-                t = new BloodPressureThreshold()
-
-                propertiesBloodPressure.each {
-                    ThresholdValidationUtil.validateFloatInput(params."${it}", t, it)
-                }
-
-                break;
-            case URINE:
-                t = new UrineThreshold()
-
-                propertiesEverythingElse.each {
-                    ThresholdValidationUtil.validateProtienInput(params."${it}", t, it)
-                }
-                break;
-            case URINE_GLUCOSE:
-                t = new UrineGlucoseThreshold()
-
-                propertiesEverythingElse.each {
-                    ThresholdValidationUtil.validateUrineGlucoseInput(params."${it}", t, it)
-                }
-                break;
-            default: //All numeric types, excluding BP
-                t = new NumericThreshold()
-
-                propertiesEverythingElse.each {
-                    ThresholdValidationUtil.validateFloatInput(params."${it}", t, it)
-                }
-
-                break;
-        }
-
-        t.type = measurementType
-
-        if (t.hasErrors() || !t.save(flush: true)) {
-            render(view:  "create", model: [standardThresholdSetInstance: standardThresholdSetInstance, standardThresholdInstance: t, thresholdType: measurementType.name, notUsedThresholds: getUnusedThresholds(standardThresholdSetInstance), patientGroup: standardThresholdSetInstance.patientGroup])
+        if (!threshold.validate()) {
+            render(view:  "create", model: [standardThresholdSetInstance: standardThresholdSetInstance, standardThresholdInstance: threshold, thresholdType: threshold.type.name, notUsedThresholds: getUnusedThresholds(standardThresholdSetInstance), patientGroup: standardThresholdSetInstance.patientGroup])
             return
         }
 
-        standardThresholdSetInstance.addToThresholds(t)
-        if(!standardThresholdSetInstance.validate()) {
-            standardThresholdSetInstance.removeFromThresholds(t)
-            standardThresholdSetInstance.clearErrors()
-            standardThresholdSetInstance.errors.reject('standardThresholdSet.add.error', [t.prettyToString(), standardThresholdSetInstance.patientGroup.name] as Object[], 'Kunne ikke tilføje {0} til gruppen {1}: Der findes allerede en tærskelværdi af denne type for denne gruppe.')
+        standardThresholdSetInstance.addToThresholds(threshold)
+        if(!standardThresholdSetInstance.save()) {
             render(view: "list", model:  [standardThresholdSetInstance: standardThresholdSetInstance, standardThresholdSetInstanceList: StandardThresholdSet.findAll()])
         } else {
-            standardThresholdSetInstance.save(flush: true)
             redirect(action:  "list", fragment: "${standardThresholdSetInstance.id}")
         }
     }

@@ -113,6 +113,12 @@ body, input, select, textarea {
     .ui-datepicker-opentele {
         display: inline-block;
     }
+
+    .vendor-ie .ui-datepicker-opentele {
+        zoom: 1;
+        *display: inline;
+    }
+
     .ui-datepicker-opentele select#datePicker_day {
         width:55px;
         height: 100%;
@@ -331,6 +337,8 @@ fieldset.buttons, div.pagination {
         display: inline-block;
         width: 25%;
         height: 25px;
+        zoom: 1;
+        *display: inline;
     }
 
     div.content div.fieldcontain li.buttons {
@@ -346,6 +354,8 @@ fieldset.buttons, div.pagination {
     div.fieldcontain div.inlined {
         margin-top: 4px;
         display: inline-block;
+        zoom: 1;
+        *display: inline;
     }
 
     div.content li.fieldcontain span.property-value,
@@ -361,7 +371,10 @@ fieldset.buttons, div.pagination {
         font-size: medium;
         margin-bottom: 10px;
         word-wrap: break-word;
+        zoom: 1;
+        *display: inline;
     }
+
 
     div.content li.fieldcontain span.property-value {
         width: auto;
@@ -378,6 +391,11 @@ fieldset.buttons, div.pagination {
         padding: 5px 0 5px 5px;
         height:100%;
     }
+
+    .vendor-ie div.content div.fieldcontain select {
+        height: auto;
+    }
+
 
     div.content div.talltextarea textarea {
         height: 200px;
@@ -671,7 +689,15 @@ table .actions {
     width: 130px;
 }
 
-th.sortable a:after {
+/* FIX for IE7: http://stackoverflow.com/questions/7157625/can-css-content-property-work-in-ie7 */
+th.sortable a {*zoom: expression( this.runtimeStyle.zoom="1", this.appendChild( document.createElement("i"), this.firstChild ).className="ie-after" );}
+th.sortable a .ie-after {*zoom: expression(this.runtimeStyle['zoom'] = '1', this.innerHTML = '&nbsp;');}​
+
+th.sortable a {
+    white-space: nowrap;
+}
+
+th.sortable a:after, th.sortable a i.ie-after {
     content:"";
     float:right;
     width:8px;
@@ -680,11 +706,11 @@ th.sortable a:after {
     background: url('../images/order.png') no-repeat 0 0;
 }
 
-th.sortable.desc a:after {
+th.sortable.desc a:after, th.sortable.desc a i.ie-after {
     background-position: -8px 0;
 }
 
-th.sortable.asc a:after {
+th.sortable.asc a:after,th.sortable.asc a i.ie-after  {
     background-position: -16px 0;
 }
 
@@ -732,6 +758,13 @@ html.vendor-ie tr.thresholds td img {
 .scheduleTypeSelector {
     display: inline-block;
 }
+
+.vendor-ie .scheduleTypeSelector {
+    zoom: 1;
+    *display: inline;
+}
+
+
 .scheduleTypeSelector input[type="radio"]{
     width: auto !important;
     height: 13px !important;
@@ -739,6 +772,7 @@ html.vendor-ie tr.thresholds td img {
 .scheduleTypeSelector label {
     width: auto !important;
 }
+
 
 .narrow-checkbox {
     width: auto !important;
@@ -748,8 +782,41 @@ html.vendor-ie tr.thresholds td img {
     width: 100px !important
 }
 
-.weekdays {
+.weekdays, .timeOfDayInlined, .timesOfDayAdd, .nthDayInterval {
     display: inline-block;
+    zoom: 1;
+    *display: inline;
+    margin-right: 20px;
+}
+
+.timesOfDayAdd, .nthDayInterval {
+    vertical-align: middle;
+}
+
+
+.vendor-ie .nthDayInterval input[name="dayInterval"] {
+    vertical-align: top;
+}
+
+.vendor-ie .nthDayInterval .inlined {
+    vertical-align: top;
+    padding-top: 5px;
+}
+.vendor-ie .nthDayInterval .ui-datepicker-opentele {
+    vertical-align: top;
+}
+
+.timesOfDayList .timeOfDay {
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.vendor-ie .timeOfDayInlined .timeOfDay {
+    vertical-align: top;
+}
+
+.vendor-ie .timesOfDayAdd {
+    vertical-align: top;
 }
 
 .weekdays label {

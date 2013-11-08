@@ -60,6 +60,10 @@ class UrlMappings {
             action = [GET:"messageRecipients"]
         }
 
+        "/rest/$controller/markAsRead"(parseRequest:true){
+            action = [POST:"markAsRead"]
+        }
+
         //For the meta controller
         "/currentVersion"(controller: "meta", action: "currentServerVersion")
         "/isAlive"(controller: "meta", action: "isAlive")

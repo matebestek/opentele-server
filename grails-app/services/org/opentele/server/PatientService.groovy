@@ -198,7 +198,7 @@ class PatientService {
     }
 
     List<Patient> searchPatient(PatientSearchCommand command) {
-        def clinician = Clinician.findByUser(springSecurityService.currentUser)
+        def clinician = Clinician.findByUser(springSecurityService.currentUser as User)
 
         def patientList = Patient.patientSearch(command).list()
 

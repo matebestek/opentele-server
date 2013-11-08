@@ -15,10 +15,6 @@
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'measurement_results_tables.css')}" type="text/css">
     <script type="text/javascript">
         $(document).ready(function() {
-            if(document.getElementById("resultTableContainer")) {
-                document.getElementById("resultTableContainer").focus();
-            }
-
             new QuestionnaireTableViewModel(${patientInstance.id},${questionPreferences}).init();
 
             $('a.acknowledge').click(function(event) {

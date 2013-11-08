@@ -138,7 +138,7 @@ class Patient extends AbstractObject {
                 if (searchCommand.status) {
                     eq("state", searchCommand.status)
                 }
-                if(searchCommand.patientGroup) {
+                if(searchCommand?.patientGroup?.id) {
                     createAlias('patient2PatientGroups', 'pg')
                     eq("pg.patientGroup", searchCommand.patientGroup)
                 }

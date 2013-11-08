@@ -140,7 +140,7 @@ class ScheduleCommand implements Schedule {
             this.weekdays = source.weekdays.collect { Weekday.valueOf(it as String) }
             this.reminderTime = parseTimeOfDay(source, 'reminderTime', hour: 10, minute: 0)
             this.blueAlarmTime = parseTimeOfDay(source, 'blueAlarmTime', hour: 23, minute: 59)
-            this.introPeriodWeeks = source.introPeriodWeeks ?: 4
+            this.introPeriodWeeks = source.introPeriodWeeks ? Integer.parseInt(source.introPeriodWeeks) : 4
             this.weekdaysIntroPeriod = source.weekdaysIntroPeriod?.collect { Weekday.valueOf(it as String) }
             this.weekdaysSecondPeriod = source.weekdaysSecondPeriod?.collect { Weekday.valueOf(it as String) }
             this.daysInMonth = source.daysInMonth.collect { it as Integer }

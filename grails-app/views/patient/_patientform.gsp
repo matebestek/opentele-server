@@ -33,8 +33,8 @@
                 <g:message code="patient.overview.form.type"/>
             </td>
             <td>
-                <g:select class="patientGroup" name="patientGroup.id" from="${PatientSearchCommand.allPatientGroups}"
-                          value="${searchCommand.patientGroup?.id}" noSelection="${['': "..."]}" optionKey="id"/>
+                <g:select class="patientGroup" name="patientGroup.id" from="${clinicianPatientGroups}"
+                          value="${searchCommand.patientGroup?.id}" noSelection="${[null: "..."]}" optionKey="id"/>
             </td>
         </tr>
         <tr>
