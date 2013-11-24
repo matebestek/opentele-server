@@ -22,7 +22,7 @@
                         <g:if test="${canSendMessages}">
                             <g:hiddenField name="id" value="${messageInstance?.id}" />
                             <g:link class="save" controller="message" action="create" params="[receipientId:patientInstance.id]">
-                                <g:message code="default.new.label" args="['besked']" />
+                                <g:message code="message.list.new" />
                             </g:link>
                         </g:if>
                         <g:else>
@@ -33,7 +33,7 @@
 
         </sec:ifAnyGranted>
         <div class="wrapTitle">
-            <div class="byHospitalHeader">Kliniker</div>
+            <div class="byHospitalHeader"><g:message code="messages.clinician"/></div>
             <div class="byPatientHeader">${patientInstance.name.encodeAsHTML()}</div>
         </div>
         <tmpl:/message/messagesPatientContext/>

@@ -17,7 +17,7 @@
     </g:link>
 
     <g:remoteLink controller="questionnaireSchedule"
-                  before="if(!confirm('${message(code: 'default.confirm.msg', args: ['på du vil fjerne spørgeskemaet'])}')) return false"
+                  before="if(!confirm('${message(code: 'questionnaireSchedule.confirmDelete')}')) return false"
                   action="del" onComplete="location.reload(true);"
                   id="${rowInstance.id}"
                   data-tooltip="${message(code: 'tooltip.patient.monitorPlan.questionnaire.remove')}">

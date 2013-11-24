@@ -24,21 +24,21 @@
                 <sec:ifAnyGranted roles="${PermissionName.MONITOR_KIT_READ_ALL}">
                     <li>
                         <a href="${createLink(controller: "monitorKit", action: "list")}">
-                            <g:message code="default.monitorKit.list.label" default="Kit"/>
+                            <g:message code="default.monitorKit.list.label"/>
                         </a>
                     </li>
                 </sec:ifAnyGranted>
                 <sec:ifAnyGranted roles="${PermissionName.METER_READ_ALL}">
                     <li>
                         <a href="${createLink(controller: "meter", action: "list")}">
-                            <g:message code="default.meter.list.label" default="Måler"/>
+                            <g:message code="default.meter.list.label"/>
                         </a>
                     </li>
                 </sec:ifAnyGranted>
                 <sec:ifAnyGranted roles="${PermissionName.CLINICIAN_READ_ALL}">
                     <li>
                         <a href="${createLink(controller: "clinician", action: "list")}">
-                            <g:message code="default.users.label" default="Brugere"/>
+                            <g:message code="default.users.label"/>
                         </a>
                     </li>
                 </sec:ifAnyGranted>
@@ -66,7 +66,7 @@
                 <sec:ifAnyGranted roles="${PermissionName.STANDARD_THRESHOLD_READ_ALL}">
                     <li>
                         <a href="${createLink(controller: "standardThresholdSet", action: "list")}">
-                            <g:message code="standardThreshold.label" default="Standard tærskelværdier"/>
+                            <g:message code="standardThreshold.label"/>
                         </a>
                     </li>
                 </sec:ifAnyGranted>

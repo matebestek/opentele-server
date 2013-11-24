@@ -19,10 +19,12 @@ class CompletedQuestionnaire extends AbstractObject {
     Date receivedDate
 
     Patient patient
-    
+
+    // Acknowledgement
     Clinician acknowledgedBy 
     Date acknowledgedDate
     String acknowledgedNote
+    Boolean showAcknowledgementToPatient
     
     Severity severity // Equals worst severity in questionnaire nodes..
 
@@ -40,6 +42,7 @@ class CompletedQuestionnaire extends AbstractObject {
         acknowledgedBy(nullable: true)
         acknowledgedDate(nullable: true)
         acknowledgedNote(nullable: true)
+        showAcknowledgementToPatient(nullable : true)
         severity(nullable: false)
 		questionnaireIgnoredReason(nullable:true)
 		questionnareIgnoredBy(nullable:true)

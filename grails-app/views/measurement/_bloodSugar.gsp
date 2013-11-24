@@ -1,10 +1,10 @@
 <g:if test="${bloodSugarData.empty}">
-    <h1 class="information">Der er ingen blodsukkermålinger i det valgte tidsinterval.</h1>
+    <h1 class="information"><g:message code="patient.bloodSugarTable.noMeasurements"/></h1>
 </g:if>
 <g:else>
     <table id="bloodsugartable">
         <thead>
-        <th>Dato</th>
+        <th><g:message code="patient.bloodSugarTable.date"/></th>
         <th>00.00-04.59</th>
         <th>05.00-10.59</th>
         <th>11.00-16.59</th>

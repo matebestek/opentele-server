@@ -3,12 +3,11 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<g:set var="entityName" value="${message(code: 'passiveInterval.label', default: 'PassiveInterval')}" />
-		<title><g:message code="default.create.label" args="[entityName]" /></title>
+		<title><g:message code="passiveInterval.create" /></title>
 	</head>
 	<body>
 		<div id="create-passiveInterval" class="content scaffold-create" role="main">
-			<h1><g:message code="default.create.label" args="[entityName]" /></h1>
+			<h1><g:message code="passiveInterval.create" /></h1>
 			<g:if test="${flash.message}">
 			<div class="message" role="status">${flash.message}</div>
 			</g:if>
@@ -24,7 +23,7 @@
 					<g:render template="form"/>
 				</fieldset>
 				<fieldset class="buttons">
-					<g:submitButton name="create" class="save" value="${message(code: 'default.button.create.label', default: 'Create')}" />
+					<g:submitButton name="create" class="save" value="${message(code: 'default.button.create.label')}" />
 				</fieldset>
 			</g:form>
 		</div>

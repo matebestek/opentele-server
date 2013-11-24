@@ -3,7 +3,7 @@
 
 <div class="fieldcontain ${hasErrors(bean: passiveIntervalInstance, field: 'intervalStartDate', 'error')} required">
     <label for="intervalStartDate">
-        <g:message code="passiveInterval.intervalStartDate.label" default="Interval Start Date" />
+        <g:message code="passiveInterval.intervalStartDate.label" />
         <span class="required-indicator">*</span>
     </label>
         <jq:datePicker default="none" name="intervalStartDate" precision="day" years="${2013..2050}" value="${passiveIntervalInstance?.intervalStartDate}"/>
@@ -11,7 +11,7 @@
 
 <div class="fieldcontain ${hasErrors(bean: passiveIntervalInstance, field: 'intervalEndDate', 'error')} required">
 	<label for="intervalEndDate">
-		<g:message code="passiveInterval.intervalEndDate.label" default="Interval End Date" />
+		<g:message code="passiveInterval.intervalEndDate.label" />
 		<span class="required-indicator">*</span>
 	</label>
         <jq:datePicker default="none" name="intervalEndDate" precision="day" years="${2013..2050}" value="${passiveIntervalInstance?.intervalEndDate}"/>
@@ -19,7 +19,7 @@
 
 <div class="fieldcontain ${hasErrors(bean: passiveIntervalInstance, field: 'comment', 'error')} ">
     <label for="comment">
-        <g:message code="passiveInterval.comment.label" default="i18n Missing"/>
+        <g:message code="passiveInterval.comment.label"/>
     </label>
     <g:textArea name="comment" value="${passiveIntervalInstance?.comment}"/>
 </div>

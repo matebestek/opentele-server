@@ -19,7 +19,7 @@
 
             $('a.acknowledge').click(function(event) {
                 event.preventDefault();
-                var message = '${g.message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.questionnaire')]).encodeAsJavaScript()}';
+                var message = '${g.message(code: 'questionnaire.confirmAcknowledgement').encodeAsJavaScript()}';
                 if (confirm(message)) {
                     var automessage = $(this).attr('data-automessage');
                     var questionnaireId = $(this).attr('data-questionnaire-id');
@@ -53,7 +53,7 @@
                     <sec:ifAnyGranted roles="${PermissionName.QUESTIONNAIRE_ACKNOWLEDGE}">
                         <div class="acknowledgeAll" style="margin: 0 1em; padding: 0 0.25em;">
                             <span>
-                                <g:message code="patientOverview.questionnaire.acknowledge.green.label"/>
+                                <g:message code="patient.questionnaire.acknowledge.green.label"/>
                             </span><cq:renderAcknowledgeAllGreenButtons
                                 completedQuestionnaires="${greenCompletedAndUnacknowledgedQuestionnaires}"
                                 patient="${patientInstance}"/>
@@ -69,9 +69,11 @@
 
                     <div display="hidden" id="patientPrefs" value=${questionPreferences}></div>
                     <cq:renderResultTableForPatient patientID="${patientInstance.id}" withPrefs="${true}" completedQuestionnaireResultModel="${completedQuestionnaireResultModel}" />
-                    <fieldset class="buttons">
-                        <g:submitButton name="savePrefs" class="save" value="Gem foretrukne felter" />
-                    </fieldset>
+                    <g:if test="${completedQuestionnaireResultModel.results.size() > 0}">
+                        <fieldset class="buttons">
+                            <g:submitButton name="savePrefs" class="save" value="${g.message(code:'patient.questionnaire.savePreferredQuestions')}" />
+                        </fieldset>
+                    </g:if>
                 </g:form>
             </sec:ifAnyGranted>
 
@@ -91,7 +93,7 @@
 		<tr id="prefQuestion" class="prefQuestion" data-bind="attr: {'selectedQuestionID': $root.getQuestionID($data)}">
 			<td>
                 <div>
-                    <select data-bind="options: $root.questions, optionsText: 'text', value: $data.questionObj, optionsCaption: 'Vælg..'" data-tooltip="<g:message code="patient.questionnaire.preferredValue.tooltip" />"></select>
+                    <select data-bind="options: $root.questions, optionsText: 'text', value: $data.questionObj, optionsCaption: '${g.message(code:'patientOverview.questions.choose')}'" data-tooltip="<g:message code="patientOverview.questions.choose.tooltip" />"></select>
                     <!-- ko if: $root.notLastRow($data) -->
                         <button id="removeBtn" class="remove" data-bind="click: function(){ $data.remove(); }" data-tooltip="<g:message code="patient.questionnaire.preferredValue.remove.tooltip" />"><r:img uri='/images/cancel.png'/></button>
                     <!-- /ko -->

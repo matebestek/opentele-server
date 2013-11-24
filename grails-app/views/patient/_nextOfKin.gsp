@@ -9,7 +9,7 @@
             <sec:ifAnyGranted
                     roles="${PermissionName.PATIENT_WRITE},${PermissionName.NEXT_OF_KIN_WRITE},${PermissionName.NEXT_OF_KIN_DELETE}">
                 <th class="actions">
-                    <g:message code="default.threshold.action.label"/></th>
+                    <g:message code="patient.nextOfKin.action.label"/></th>
             </sec:ifAnyGranted>
         </g:unless>
     </tr>
@@ -74,7 +74,7 @@
                     <fieldset class="buttons">
                         <g:link controller="nextOfKinPerson" action="create"
                                 params="['patientId': patientInstance.id]">
-                            ${message(code: 'default.add.label', args: [message(code: 'patient.nextOfKin.label', default: 'Pårørende')])}
+                            ${message(code: 'patient.addNextOfKin')}
                         </g:link>
                     </fieldset>
                 </sec:ifAnyGranted>

@@ -5,15 +5,15 @@
 <table>
 	<thead>
 		<tr>
-			<th>${message(code: 'monitoringPlan.time.label', default: 'Tidx')}</th>
+			<th>${message(code: 'monitoringPlan.time.label')}</th>
 			<th>
-				<g:message code='monitoringPlan.questionnaire.label' default='Spørgeskema'/>
+				<g:message code='monitoringPlan.questionnaire.label'/>
             </th>
             <th>
-                <g:message code='monitoringPlan.questionnaire.status' default='Status'/>
+                <g:message code='monitoringPlan.questionnaire.status'/>
             </th>
             <th>
-				<g:message code='monitoringPlan.questionnaire.action' default='Handling'/>
+				<g:message code='monitoringPlan.questionnaire.action'/>
 			</th>
         </tr>
 	</thead>
@@ -35,7 +35,7 @@
                     <g:link class="create" controller="questionnaireSchedule"
                         action="create"
                         params="['monitoringPlan.id': monitoringPlanInstance?.id, 'addtoplan': 'true']">
-                        ${message(code: 'default.give.label', args: [message(code: 'questionnaireSchedule.label', default: 'QuestionnaireSchedule')])}
+                        ${message(code: 'monitoringPlan.assignQuestionnaire')}
                     </g:link>
 
                     <g:link class="create" controller="questionnaireSchedule"

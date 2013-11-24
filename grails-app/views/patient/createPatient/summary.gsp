@@ -1,12 +1,9 @@
-
 <%@ page
 	import="org.opentele.server.model.NextOfKinPerson; org.opentele.server.model.PatientGroup; org.opentele.server.model.types.MeasurementTypeName; org.opentele.server.constants.Constants; org.opentele.server.model.Patient; org.opentele.server.util.NumberFormatUtil"%>
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/html">
 <head>
 <meta name="layout" content="main">
-<g:set var="entityName"
-	value="${message(code: 'patient.label', default: 'Patient')}" />
 <title>
     <g:message code="default.patient.show.label" /> ${patientInstance.firstName.encodeAsHTML()} ${patientInstance.lastName.encodeAsHTML()}
 </title>
@@ -40,9 +37,9 @@
 
         <g:form>
             <fieldset class="buttons">
-                <g:submitButton name="save" class="save" value="${message(code: 'patient.create.flow.summary.save.label', default: 'Next')}" data-tooltip="${message(code: 'tooltip.patient.create.permanent')}"/>
+                <g:submitButton name="save" class="save" value="${message(code: 'patient.create.flow.summary.save.label')}" data-tooltip="${message(code: 'tooltip.patient.create.permanent')}"/>
                 <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label')}" data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
-                <g:submitButton name="quitNoSaving" class="cancel" value="${message(code: 'patient.create.flow.summary.cancel.label', default: 'Previous')}" />
+                <g:submitButton name="quitNoSaving" class="cancel" value="${message(code: 'patient.create.flow.summary.cancel.label')}" />
             </fieldset>
         </g:form>
 
@@ -73,7 +70,7 @@
                 <span class="property-label"></span>
                 <span class="property-value">
                     <g:form>
-                        <g:submitButton name="editAuth" class="edit" value="${message(code: 'patient.create.flow.button.edit.label', args: ['Brugeroplysninger'], default: 'Rediger')}" />
+                        <g:submitButton name="editAuth" class="edit" value="${message(code: 'patient.create.flow.button.editUserDetails')}" />
                     </g:form>
                 </span>
             </li>
@@ -81,7 +78,7 @@
 			<g:if test="${patientInstance.cpr}">
 				<li class="fieldcontain">
                     <span id="cpr-label" class="property-label">
-                        <g:message code="patient.cpr.label" default="Cpr" />
+                        <g:message code="patient.cpr.label" />
                     </span>
                     <span class="property-value" aria-labelledby="cpr-label">
                         <otformat:formatCPR cpr="${patientInstance.cpr.encodeAsHTML()}"/>
@@ -92,7 +89,7 @@
 			<g:if test="${patientInstance.firstName}">
 				<li class="fieldcontain">
                     <span id="firstName-label" class="property-label">
-                        <g:message code="patient.firstName.label" default="First Name" />
+                        <g:message code="patient.firstName.label" />
                     </span>
                     <span class="property-value" aria-labelledby="firstName-label">
                         <g:fieldValue bean="${patientInstance}" field="firstName" />
@@ -103,7 +100,7 @@
 			<g:if test="${patientInstance.lastName}">
 				<li class="fieldcontain">
                     <span id="lastName-label" class="property-label">
-                        <g:message code="patient.lastName.label" default="Last Name" />
+                        <g:message code="patient.lastName.label" />
                     </span>
                     <span class="property-value" aria-labelledby="lastName-label">
                         <g:fieldValue bean="${patientInstance}" field="lastName" />
@@ -114,7 +111,7 @@
 			<g:if test="${patientInstance?.sex}">
 				<li class="fieldcontain">
                     <span id="sex-label" class="property-label">
-                        <g:message code="patient.sex.label" default="Sex" />
+                        <g:message code="patient.sex.label" />
                     </span>
                     <span class="property-value" aria-labelledby="sex-label">
                         ${message(code:'enum.sex.'+fieldValue(bean: patientInstance, field: "sex"))}
@@ -125,7 +122,7 @@
 			<g:if test="${patientInstance.address}">
 				<li class="fieldcontain">
                     <span id="address-label" class="property-label">
-                        <g:message code="patient.address.label" default="Address" />
+                        <g:message code="patient.address.label" />
                     </span>
                     <span class="property-value" aria-labelledby="address-label">
                         <g:fieldValue bean="${patientInstance}" field="address" />
@@ -136,7 +133,7 @@
 			<g:if test="${patientInstance.postalCode}">
 				<li class="fieldcontain">
                     <span id="postalCode-label" class="property-label">
-                        <g:message code="patient.postalCode.label" default="Postal Code" />
+                        <g:message code="patient.postalCode.label" />
                     </span>
                     <span class="property-value" aria-labelledby="postalCode-label">
                         <g:fieldValue bean="${patientInstance}" field="postalCode" />
@@ -147,7 +144,7 @@
 			<g:if test="${patientInstance.city}">
 				<li class="fieldcontain">
                     <span id="city-label" class="property-label">
-                        <g:message code="patient.city.label" default="City" />
+                        <g:message code="patient.city.label" />
                     </span>
                     <span class="property-value" aria-labelledby="city-label">
                         <g:fieldValue bean="${patientInstance}" field="city" />
@@ -158,7 +155,7 @@
 			<g:if test="${patientInstance.phone}">
 				<li class="fieldcontain">
                     <span id="phone-label" class="property-label">
-                        <g:message code="patient.phone.label" default="Phone" />
+                        <g:message code="patient.phone.label" />
                     </span>
                     <span class="property-value" aria-labelledby="phone-label">
                         <otformat:formatPhoneNumber message="${patientInstance.phone}" />
@@ -169,7 +166,7 @@
 			<g:if test="${patientInstance.mobilePhone}">
 				<li class="fieldcontain">
                     <span id="mobilePhone-label" class="property-label">
-                        <g:message code="patient.mobilePhone.label" default="Mobile Phone" />
+                        <g:message code="patient.mobilePhone.label" />
                     </span>
                     <span class="property-value" aria-labelledby="mobilePhone-label">
                         <otformat:formatPhoneNumber message="${patientInstance.mobilePhone}" />
@@ -180,7 +177,7 @@
 			<g:if test="${patientInstance.email}">
 				<li class="fieldcontain">
                     <span id="email-label" class="property-label">
-                        <g:message code="patient.email.label" default="Email" />
+                        <g:message code="patient.email.label" />
                     </span>
                     <span class="property-value" aria-labelledby="email-label">
                         <g:fieldValue bean="${patientInstance}" field="email" />
@@ -192,16 +189,16 @@
                 <span class="property-label"></span>
                 <span class="property-value">
                     <g:form>
-                        <g:submitButton name="editBasic" class="edit" value="${message(code: 'patient.create.flow.button.edit.label', args: ['Stamdata'], default: 'Rediger')}" />
+                        <g:submitButton name="editBasic" class="edit" value="${message(code: 'patient.create.flow.button.editBasicInformation')}" />
                     </g:form>
                 </span>
             </li>
 
             <li class="fieldcontain">
                 <span id="comment-label" class="property-label">
-                    <g:message code="patient.comment.label" default="Comments" />
+                    <g:message code="patient.comment.label" />
                 </span>
-                <span class="property-value fullhight" aria-labelledby="comment-label">
+                <span class="property-value fullheight" aria-labelledby="comment-label">
                     <g:fieldValue bean="${patientInstance}" field="comment" />
                 </span>
             </li>
@@ -210,14 +207,14 @@
                 <span class="property-label"></span>
                 <span class="property-value">
                     <g:form>
-                        <g:submitButton name="editComment" class="edit" value="${message(code: 'patient.create.flow.button.edit.label', args: ['Kommentar'], default: 'Rediger')}" />
+                        <g:submitButton name="editComment" class="edit" value="${message(code: 'patient.create.flow.button.editComment')}" />
                     </g:form>
                 </span>
             </li>
 
             <g:if test="${patientInstance.groupIds}">
                 <li class="fieldcontain">
-                    <span id="group-label" class="property-label">Patientgrupper:</span>
+                    <span id="group-label" class="property-label"><g:message code="patient.patientGroups"/>:</span>
                     <span class="property-value fullheight" aria-labelledby="comment-label">
                         <g:each in="${patientInstance.groupIds.collect{PatientGroup.findById(it)}}" var="group">
                             ${group}<br />
@@ -230,17 +227,17 @@
                 <span class="property-label"></span>
                 <span class="property-value">
                     <g:form>
-                        <g:submitButton name="editPG" class="edit" value="${message(code: 'patient.create.flow.button.edit.label', args: ['Patientgrupper'], default: 'Rediger')}" />
+                        <g:submitButton name="editPG" class="edit" value="${message(code: 'patient.create.flow.button.editPatientGroups')}" />
                     </g:form>
                 </span>
             </li>
 
             <g:if test="${patientInstance.nextOfKins}">
                 <li class="fieldcontain">
-                    <span id="nextOfKin-label" class="property-label">Pårørende:</span>
+                    <span id="nextOfKin-label" class="property-label"><g:message code="patient.nextOfKin"/>:</span>
                     <span class="property-value" aria-labelledby="comment-label">
                         <g:each in="${patientInstance.nextOfKins}" var="nok">
-                            <g:link controller="nextOfKinPerson" action="show" id="${nok.id}">${nok.nameAndRelation?.encodeAsHTML()} Telefon: ${nok.phone?.encodeAsHTML()}<br /></g:link>
+                            <g:link controller="nextOfKinPerson" action="show" id="${nok.id}">${nok.nameAndRelation?.encodeAsHTML()} <g:message code="nextOfKinPerson.phone.label"/>: ${nok.phone?.encodeAsHTML()}<br /></g:link>
                         </g:each>
                     </span>
                 </li>
@@ -250,7 +247,7 @@
                 <span class="property-label"></span>
                 <span class="property-value">
                     <g:form>
-                        <g:submitButton name="editNok" class="edit" value="${message(code: 'patient.create.flow.button.edit.label', args: ['Pårørende'], default: 'Rediger')}" />
+                        <g:submitButton name="editNok" class="edit" value="${message(code: 'patient.create.flow.button.editNextOfKin')}" />
                     </g:form>
                 </span>
             </li>
@@ -258,25 +255,25 @@
 			<table>
 				<thead>
 					<tr>
-						<g:sortableColumn property="type" title="${message(code: 'default.threshold.type.label', default: 'Type')}" />
-						<g:sortableColumn property="alertHigh" title="${message(code: 'default.threshold.alertHigh.label', default: 'Alert High')}" />
-						<g:sortableColumn property="warningHigh" title="${message(code: 'default.threshold.warningHigh.label', default: 'Warning High')}" />
-						<g:sortableColumn property="warningLow" title="${message(code: 'default.threshold.warningLow.label', default: 'Warning Low')}" />
-						<g:sortableColumn property="alertLow" title="${message(code: 'default.threshold.alertLow.label', default: 'Alert Low')}" />
+						<g:sortableColumn property="type" title="${message(code: 'threshold.type')}" />
+						<g:sortableColumn property="alertHigh" title="${message(code: 'threshold.alertHigh')}" />
+						<g:sortableColumn property="warningHigh" title="${message(code: 'threshold.warningHigh')}" />
+						<g:sortableColumn property="warningLow" title="${message(code: 'threshold.warningLow')}" />
+						<g:sortableColumn property="alertLow" title="${message(code: 'threshold.alertLow')}" />
 					</tr>
 				</thead>
 				<tbody>
-                    <g:each in="${patientInstance.thresholds.sort { it.prettyToString() } }" status="i" var="threshold">
+                    <g:each in="${patientInstance.thresholds.sort { g.message(code: 'threshold.' + it.type) } }" status="i" var="threshold">
                         <g:if test="${threshold.type.equals(MeasurementTypeName.BLOOD_PRESSURE)}">
                             <tr>
-                            <td class="table-label-td buttons">${patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE).prettyToString()} diastolisk</td>
+                            <td class="table-label-td buttons"><g:message code="threshold.BLOOD_PRESSURE"/> <g:message code="threshold.BLOOD_PRESSURE.diastolic"/></td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE), field: "diastolicAlertHigh")}</td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE), field: "diastolicWarningHigh")}</td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE), field: "diastolicWarningLow")}</td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE), field: "diastolicAlertLow")}</td>
                             </tr>
                             <tr>
-                            <td class="table-label-td buttons">${patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE).prettyToString()} systolisk</td>
+                            <td class="table-label-td buttons"><g:message code="threshold.BLOOD_PRESSURE"/> <g:message code="threshold.BLOOD_PRESSURE.systolic"/></td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE), field: "systolicAlertHigh")}</td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE), field: "systolicWarningHigh")}</td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.BLOOD_PRESSURE), field: "systolicWarningLow")}</td>
@@ -285,7 +282,7 @@
                         </g:if>
                         <g:elseif test="${threshold.type.equals(MeasurementTypeName.URINE)}">
                             <tr>
-                            <td class="table-label-td buttons">${patientInstance.getThreshold(MeasurementTypeName.URINE).prettyToString()}</td>
+                            <td class="table-label-td buttons"><g:message code="threshold.URINE"/></td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.URINE), field: "alertHigh")}</td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.URINE), field: "warningHigh")}</td>
                             <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.URINE), field: "warningLow")}</td>
@@ -294,7 +291,7 @@
                         </g:elseif>
                         <g:elseif test="${threshold.type.equals(MeasurementTypeName.URINE_GLUCOSE)}">
                             <tr>
-                                <td class="table-label-td buttons">${patientInstance.getThreshold(MeasurementTypeName.URINE_GLUCOSE).prettyToString()}</td>
+                                <td class="table-label-td buttons"><g:message code="threshold.URINE_GLUCOSE"/></td>
                                 <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.URINE_GLUCOSE), field: "alertHigh")}</td>
                                 <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.URINE_GLUCOSE), field: "warningHigh")}</td>
                                 <td>${fieldValue(bean: patientInstance.getThreshold(MeasurementTypeName.URINE_GLUCOSE), field: "warningLow")}</td>
@@ -303,7 +300,7 @@
                         </g:elseif>
                         <g:else>
                             <tr>
-                                <td class="table-label-td buttons">${threshold.prettyToString()}</td>
+                                <td class="table-label-td buttons"><g:message code="threshold.${threshold.type}"/></td>
                                 <td>${fieldValue(bean: threshold, field: "alertHigh")}</td>
                                 <td>${fieldValue(bean: threshold, field: "warningHigh")}</td>
                                 <td>${fieldValue(bean: threshold, field: "warningLow")}</td>
@@ -317,7 +314,7 @@
                 <span class="property-label"></span>
                 <span class="property-value">
                     <g:form>
-                        <g:submitButton name="editThresholds" class="edit" value="${message(code: 'patient.create.flow.button.edit.label', args: ['Tærskelværdier'], default: 'Rediger')}" />
+                        <g:submitButton name="editThresholds" class="edit" value="${message(code: 'patient.create.flow.button.editThresholds')}" />
                     </g:form>
                 </span>
             </li>

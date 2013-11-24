@@ -38,7 +38,7 @@
 			</fieldset>
 			<fieldset class="buttons">
 
-                <g:actionSubmit class="save" action="updateDataResponsible" value="${message(code: 'default.button.update.label')}" />
+                <g:actionSubmit class="save" action="updateDataResponsible" value="${message(code: 'default.update')}" />
 			</fieldset>
 		</g:form>
 

@@ -45,7 +45,7 @@ class CompletedQuestionnaireTagLib {
                         tr {
                             // Upper-left
                             buildOuterCellHeader(builder, "staticHeader", {
-                                builder.th(g.message(code: "default.questions", default: "Spørgsmål"))
+                                builder.th(g.message(code: "default.questions"))
                             })
                             // Upper-right
                             buildOuterCellHeader(builder, "headerContainer", {
@@ -267,7 +267,7 @@ class CompletedQuestionnaireTagLib {
     private void renderHeaderForConference(MarkupBuilder builder, OverviewColumnHeader columnHeader) {
         builder.div(columnHeader.uploadDate.toCalendar().format(g.message(code:"default.date.format.short"))) {
             builder.br()
-            def conference_image = """<img src=${g.resource(dir: 'images', file: 'conferenceshow.png')} data-tooltip="Målinger foretaget under video-konference"/>"""
+            def conference_image = """<img src=${g.resource(dir: 'images', file: 'conferenceshow.png')} data-tooltip="${g.message(code: 'patientOverview.measurementsFromConference')}"/>"""
             builder.getMkp().yieldUnescaped(g.link(controller:"patient", action:"conference", id:columnHeader.id, conference_image))
         }
     }
@@ -276,16 +276,16 @@ class CompletedQuestionnaireTagLib {
         builder.div(columnHeader.uploadDate.toCalendar().format(g.message(code:"default.date.format.short"))) {
             builder.br()
             builder.img(src: g.resource(dir: "images", file: columnHeader.severity.icon()))
-            def img_edit = """<img src=${g.resource(dir: "images", file: "edit.png")} data-tooltip="Se spørgeskema / ignorer besvarelser / tilføj kommentarer"/>"""
+            def img_edit = """<img src=${g.resource(dir: "images", file: "edit.png")} data-tooltip="${g.message(code:'patientOverview.edit')}"/>"""
             builder.getMkp().yieldUnescaped(g.link(controller:"patient", action:"questionnaire", id:columnHeader.id, img_edit))
 
             if (columnHeader.acknowledgedBy) {
-                def tooltip = g.message(code:"completedQuestionnaire.acknowledged.label", args: [columnHeader.acknowledgedBy, columnHeader.acknowledgedDate.format(message(code: "default.date.format")).toString()]) + (columnHeader.acknowledgedNote? "\\nNote: " + columnHeader.acknowledgedNote:"")
+                def tooltip = g.message(code:"patientOverview.acknowledgedBy", args: [columnHeader.acknowledgedBy, columnHeader.acknowledgedDate.format(message(code: "default.date.format")).toString()]) + (columnHeader.acknowledgedNote? "\\n${g.message(code: 'patientOverview.note', args: [columnHeader.acknowledgedNote])}" : "")
                 builder.img(src: g.resource(dir: "images", file: "acknowledged.png"), 'data-tooltip': tooltip)
 
             } else {
                 builder.a(href: "#", class: "acknowledge", 'data-automessage': "false", 'data-questionnaire-id': columnHeader.id) {
-                    builder.img(src: g.resource(dir: "images", file: "unacknowledged.png"), 'data-tooltip': "Kvittér")
+                    builder.img(src: g.resource(dir: "images", file: "unacknowledged.png"), 'data-tooltip': g.message(code: 'patientOverview.acknowledge'))
                 }
 
                 def autoMessageEnabledForPatient = messageService.autoMessageIsEnabledForCompletedQuestionnaire(columnHeader.id)
@@ -303,17 +303,17 @@ class CompletedQuestionnaireTagLib {
 
     private String getAutoMessageAllIcon(boolean autoMessageEnabledForPatient) {
         if (autoMessageEnabledForPatient) {
-            "<img src=${g.resource(dir: 'images', file: 'unacknowledgedWithAutoMessage.png')} data-tooltip='${message(code: 'tooltip.acknowledge.all.with.message')}'>"
+            "<img src=${g.resource(dir: 'images', file: 'unacknowledgedWithAutoMessage.png')} data-tooltip='${message(code: 'patientOverview.acknowledgeAllWithMessage')}'>"
         } else {
-            "<img src=${g.resource(dir: 'images', file: 'unacknowledgedWithAutoMessageDisabled.png')} data-tooltip='${message(code: 'tooltip.acknowledge.with.message.disabled')}'>"
+            "<img src=${g.resource(dir: 'images', file: 'unacknowledgedWithAutoMessageDisabled.png')} data-tooltip='${message(code: 'patientOverview.acknowledgeAllWithMessage.disabled')}'>"
         }
     }
 
     private void renderAutoMessageSingleIcon(MarkupBuilder builder, boolean autoMessageEnabledForPatient) {
         if (autoMessageEnabledForPatient) {
-            builder.img(src: g.resource(dir: 'images', file: 'unacknowledgedWithAutoMessage.png'), 'data-tooltip': message(code: 'tooltip.acknowledge.with.message'))
+            builder.img(src: g.resource(dir: 'images', file: 'unacknowledgedWithAutoMessage.png'), 'data-tooltip': message(code: 'patientOverview.acknowledgeWithMessage'))
         } else {
-            builder.img(src: g.resource(dir: 'images', file: 'unacknowledgedWithAutoMessageDisabled.png'), 'data-tooltip': message(code: 'tooltip.acknowledge.with.message.disabled'))
+            builder.img(src: g.resource(dir: 'images', file: 'unacknowledgedWithAutoMessageDisabled.png'), 'data-tooltip': message(code: 'patientOverview.acknowledgeAllWithMessage.disabled'))
         }
     }
 
@@ -397,9 +397,9 @@ class CompletedQuestionnaireTagLib {
             if (!result.type) {
                 //InputNodeResult
                 if (result.value.equals("false") || result.value == false) {
-                    prettyString = message(code: "default.yesno.false", default: "Nej")
+                    prettyString = message(code: "default.yesno.false")
                 } else if (result.value.equals("true") || result.value == true) {
-                    prettyString = message(code: "default.yesno.true", default: "Ja")
+                    prettyString = message(code: "default.yesno.true")
                 } else {
                     prettyString = result.value.toString().encodeAsHTML()
                 }
@@ -449,42 +449,42 @@ class CompletedQuestionnaireTagLib {
                 def imageIN
 
                 if (numberOfUnreadFromDepartment > 0) {
-                    def tooltip = message(code: "completedquestionnaires.messages.unreadFromDepartment",args: [numberOfUnreadFromDepartment, formatDate(date: oldestUnreadFromDepartment?.sendDate)])
+                    def tooltip = message(code: "patientOverview.unreadMessagesFromDepartment",args: [numberOfUnreadFromDepartment, formatDate(date: oldestUnreadFromDepartment?.sendDate)])
                     imageOUT = """<img src=${g.resource(dir: "/images", file: "outboxNew.png")} id="outboxIcon" data-tooltip="$tooltip"/>"""
                 } else {
-                    def tooltip =message(code: "completedequestionnaires.messages.noUnreadFromDepartment")
+                    def tooltip =message(code: "patientOverview.noUnreadMessagesFromDepartment")
                     imageOUT = """<img src=${g.resource(dir: "/images", file: "outbox.png")} id="outboxIcon" data-tooltip="$tooltip"/>"""
                 }
                 if (numberOfUnreadFromPatient > 0) {
-                    def tooltip=message(code: "completedquestionnaires.messages.unreadFromPatient", args: [numberOfUnreadFromPatient, formatDate(date: oldestUnreadFromPatient?.sendDate)])
+                    def tooltip=message(code: "patientOverview.unreadMessagesFromPatient", args: [numberOfUnreadFromPatient, formatDate(date: oldestUnreadFromPatient?.sendDate)])
                     imageIN = """<img src=${g.resource(dir: "/images", file: "inboxNew.png")} id="inboxIcon" data-tooltip="$tooltip"/>"""
                 } else {
-                    def tooltip=message(code: "completedequestionnaires.messages.noUnreadFromPatient")
+                    def tooltip=message(code: "patientOverview.noUnreadMessagesFromPatient")
                     imageIN = """<img src=${g.resource(dir: "/images", file: "inbox.png")} id="inboxIcon" data-tooltip="$tooltip"/>"""
                 }
                 mkp.yieldUnescaped(g.link(controller:"patient", action:"messages", id:patient.id, imageOUT))
                 mkp.yieldUnescaped(g.link(controller:"patient", action:"messages", id:patient.id, imageIN))
 
             } else {
-                def tooltip = message(code: "completedquestionnaires.messages.cannotSend")
+                def tooltip = message(code: "patientOverview.messagingDisabled")
                 builder.img(src: g.resource(dir: "/images", file: "outbox-dimmed.png"), id: "outboxIcon", 'data-tooltip': tooltip)
                 builder.img(src: g.resource(dir: "/images", file: "inbox-dimmed.png"), id: "inboxIcon", 'data-tooltip': tooltip)
             }
 
             // Third entry item: Patient name and CPR
-            builder.div('data-tooltip': message(code: 'patient.overview.goto.patient.tooltip')) {
+            builder.div('data-tooltip': message(code: 'patientOverview.goToPatient.tooltip')) {
                 builder.h2(class: "questionnaireListHeader", id: "patientName", "") {
                     mkp.yieldUnescaped(g.link(action: 'questionnaires', controller: 'patient', id: patient.id, patient.name))
                 }
             }
-            builder.div('data-tooltip': message(code: 'patient.overview.goto.patient.tooltip')) {
+            builder.div('data-tooltip': message(code: 'patientOverview.goToPatient.tooltip')) {
                 builder.h2(class: "questionnaireListHeader", id: "patientCPR", "") {
                     mkp.yieldUnescaped(g.link(action: 'questionnaires', controller: 'patient', id: patient.id, patient.formattedCpr))
                 }
             }
 
             // Fourth entry item: Expland/Collapse measurement table
-            def tooltip = "<strong>${numberOfUnacknowledgedQuestionnaires}</strong> ukvitterede besvarelser. Tryk for at se ukvitterede besvarelser for denne patient."
+            def tooltip = g.message(code: 'patientOverview.numberOfUnacknowledgedQuestionnaires', args: [numberOfUnacknowledgedQuestionnaires])
             builder.div('data-tooltip': tooltip) {
                 builder.img(src: g.resource(dir: "images", file: 'measurements_expand.png'), class: "measurementsIcon", style: "position:center")
             }
@@ -524,7 +524,7 @@ class CompletedQuestionnaireTagLib {
     }
 
     private String patientNoteToolTip(patientNotes, clinician) {
-        String tooltip = "Du har ingen ulæste noter til denne patient. Tryk for at gå til patientens noter."
+        String tooltip = g.message(code: 'patientOverview.noUnreadNotes').encodeAsHTML()
 
         def reminders = patientNotes.findAll{!it.seenBy.contains(clinician) && it.remindToday}
         def important = patientNotes.findAll{!it.seenBy.contains(clinician) && it.type == NoteType.IMPORTANT}
@@ -534,15 +534,15 @@ class CompletedQuestionnaireTagLib {
         def numUnread = unread.size()
 
         if (numUnread + numReminders + numImportant > 0) {
-            tooltip = "Du har ${numUnread} ulæste noter til denne patient (<strong>${numReminders} påmindelser </strong> og <strong>${numImportant} vigtige</strong>). Tryk for at gå til patientens noter."
+            tooltip = g.message(code: 'patientOverview.numberOfUnreadNotesAndReminders', args: [numUnread, numReminders, numImportant])
             if (numReminders > 0) {
-                tooltip = "${tooltip}<br/><strong>Påmindelser:</strong>"
+                tooltip = "${tooltip}<br/><strong>${g.message(code: 'patientOverview.reminders')}</strong>"
                 reminders.each {
                     tooltip = "${tooltip} <br/>${it.note}"
                 }
             }
             if (numImportant > 0) {
-                tooltip = "${tooltip}<br/><strong>Vigtige:</strong>"
+                tooltip = "${tooltip}<br/><strong>${g.message(code: 'patientOverview.importantReminders')}</strong>"
                 important.each {
                     tooltip = "${tooltip} <br/>${it.note}"
                 }
@@ -555,7 +555,7 @@ class CompletedQuestionnaireTagLib {
     def patientNoteMarkSeenButton = { attrs, body ->
         if (SpringSecurityUtils.ifAnyGranted(PermissionName.PATIENT_NOTE_MARK_SEEN)) {
             if(!patientService.isNoteSeenByUser(attrs['note'])) {
-                out << g.link(controller: "patientNote", action: "markSeen", id: attrs['id'], class: "acknowledge", g.message(code: "patientNote.markSeen.label"))
+                out << g.link(controller: "patientNote", action: "markSeen", id: attrs['id'], class: "acknowledge", g.message(code: "patientNote.markAsRead"))
             }
         }
     }
@@ -568,7 +568,7 @@ class CompletedQuestionnaireTagLib {
         def mkp = builder.getMkp()
         builder.div(class: "measurementsPlots") {
             mkp.yieldUnescaped("<![if gt IE 7]>")
-            builder.h2(message(code: "patient.overview.graphs.header", args:["30"], default: "Grafer"))
+            builder.h2(message(code: "patientOverview.graphs", args:["30"]))
 
             measurements.each { measurement ->
                 builder.div(id: "${measurement.type}-${patient.id}", class: "overviewGraph", style: "width:750px")
@@ -581,7 +581,7 @@ class CompletedQuestionnaireTagLib {
 	
 	private void writeRemoveBlueAlarmsButton(MarkupBuilder builder, patientID) {
         builder.div(id: "removeBlueButton") {
-            def tooltip = message(code:"completedQuestionnaire.overview.remove.blue.alarms")
+            def tooltip = message(code:"patientOverview.removeBlueAlarms")
             builder.getMkp().yieldUnescaped(
                 g.form(controller: "patient", action: "removeAllBlue",
                     """<fieldset class="buttons">
@@ -589,8 +589,7 @@ class CompletedQuestionnaireTagLib {
                         <input 	type="submit" name="_action_removeAllBlue"
                         data-tooltip="${tooltip}"
                         value="" class="removeBlueAlarms"
-                        onclick="return confirm('${message(	code: 'default.confirm.msg',
-                                args: [message(code: 'confirm.context.msg.remove.blue.alarms')], default: 'Are you sure?')}');" />
+                        onclick="return confirm('${message(code: 'patientOverview.removeBlueAlarms.confirm')}');" />
 				    </fieldset>"""
                 )
             )
@@ -603,13 +602,13 @@ class CompletedQuestionnaireTagLib {
         MarkupBuilder builder = new MarkupBuilder(out)
         if (idsOfGreenQuestionnaires) {
             def innerContent = {
-                def acknowledgeAllIcon = """<img src="${g.resource(dir: 'images', file: 'acknowledged.png')}" data-tooltip="${message(code: 'tooltip.acknowledge.all')}"/>"""
+                def acknowledgeAllIcon = """<img src="${g.resource(dir: 'images', file: 'acknowledged.png')}" data-tooltip="${message(code: 'patientOverview.acknowledgeAllForAll')}"/>"""
                 out << g.remoteLink(controller: 'patientOverview',
                         action: 'acknowledgeAll',
                         onComplete: 'location.reload(true);',
                         id: patient.id,
                         params:[ids:idsOfGreenQuestionnaires, withAutoMessage: 'false'],
-                        before: "return confirm('${message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.questionnaire.acknowledgeAllForAll')])}')", acknowledgeAllIcon)
+                        before: "return confirm('${message(code: 'patientOverview.acknowledgeAllForAll.confirm')}')", acknowledgeAllIcon)
 
                def withAutoMessageIcon = getAutoMessageAllIcon(messageService.clinicianCanSendMessagesToPatient(Clinician.findByUser(springSecurityService.currentUser), patient))
                out << g.remoteLink(controller: 'patientOverview',
@@ -617,7 +616,7 @@ class CompletedQuestionnaireTagLib {
                         onComplete: 'location.reload(true);',
                         id: patient.id,
                         params:[ids:idsOfGreenQuestionnaires, withAutoMessage: 'true'],
-                        before: "return confirm('${message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.questionnaire.acknowledgeAllForAll.and.send.messages')])}')", withAutoMessageIcon)
+                        before: "return confirm('${message(code: 'patientOverview.acknowledgeAllForAllWithMessage.confirm')}')", withAutoMessageIcon)
             }
 
             if (createDivWrapper) {
@@ -642,8 +641,8 @@ class CompletedQuestionnaireTagLib {
         builder.table {
             thead {
                 tr {
-                    th(message(code: "default.questions", default: "Spørgsmål"))
-                    th(message(code:"default.anwer"))
+                    th(message(code:"default.questions"))
+                    th(message(code:"default.answer"))
                     th(message(code:"default.severity"))
                     th(message(code:"default.ignored"))
                 }
@@ -689,22 +688,22 @@ class CompletedQuestionnaireTagLib {
                             }
                         }
                         td(class: "buttons") {
-                            def btnLabel = "Ignorer"
+                            def btnLabel = g.message(code: 'patient.questionnaire.ignore')
                             def btnIcon = "cancel"
                             if (answer?.ignored) {
                                 //I'll buy an ice-cream for whomever can tell me what the action of "un-ignoring" is called in danish.
                                 //Has to be in imperative form.
-                                btnLabel = "Ophæv ignorering"
+                                btnLabel = g.message(code: 'patient.questionnaire.undoIgnore')
                                 btnIcon = "acknowledge"
                             }
 
                             if (SpringSecurityUtils.ifAnyGranted(PermissionName.NODE_RESULT_IGNORE)) {
                                 if (answer != null) {
-                                    builder.div('data-tooltip': g.message(code: 'tooltip.patient.questionnaire.ignoreMeasurement'), "") {
+                                    builder.div('data-tooltip': g.message(code: 'patient.questionnaire.ignore.tooltip'), "") {
                                         mkp.yieldUnescaped(g.remoteLink(controller:"questionnaire", action:"toggleIgnoreNode", onComplete: "location.reload(true);", class: btnIcon, before:"", params:[resultID:answer.id, ignoreNavigation:'true'], btnLabel))
                                     }
                                 } else {
-                                    div('data-tooltip': g.message(code: 'questionnaire.show.question.answer.missing.ignorebutton.replacement.tooltip'), g.message(code: "questionnaire.show.question.answer.missing.ignorebutton.replacement"))
+                                    div('data-tooltip': g.message(code: 'patient.questionnaire.ignoreMeasurement.unavailable.tooltip'), g.message(code: "patient.questionnaire.ignoreMeasurement.unavailable"))
                                 }
                             }
                         }

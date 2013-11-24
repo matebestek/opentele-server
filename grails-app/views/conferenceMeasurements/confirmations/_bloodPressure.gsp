@@ -1,12 +1,12 @@
-<td>Blodtryksmåling</td>
+<td><g:message code="conferenceMeasurement.bloodPressure.confirmation.title"/></td>
 <td>
     <span>
         <div>
-            Systolisk: ${g.formatNumber(number: measurement.systolic, format: '0')} mmHg
+            <g:message code="conferenceMeasurement.bloodPressure.confirmation.systolic" args="[g.formatNumber(number: measurement.systolic, format: '0')]"/>
         </div>
 
         <div>
-            Diastolisk: ${g.formatNumber(number: measurement.diastolic, format: '0')} mmHg
+            <g:message code="conferenceMeasurement.bloodPressure.confirmation.diastolic" args="[g.formatNumber(number: measurement.diastolic, format: '0')]"/>
         </div>
     </span>
 </td>

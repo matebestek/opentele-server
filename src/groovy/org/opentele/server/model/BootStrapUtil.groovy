@@ -331,6 +331,7 @@ class BootStrapUtil {
                     PermissionName.QUESTIONNAIRE_UPLOAD,
                     PermissionName.QUESTIONNAIRE_DOWNLOAD,
                     PermissionName.QUESTIONNAIRE_READ_ALL,
+                    PermissionName.QUESTIONNAIRE_ACKNOWLEDGED_READ,
                     PermissionName.PATIENT_LOGIN,
 
                     PermissionName.MESSAGE_READ_JSON,

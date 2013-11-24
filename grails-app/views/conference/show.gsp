@@ -11,9 +11,7 @@
         <div id="list-patientNote" class="content" role="main">
             <g:render template="unfinishedConferences" model="[conferences: unfinishedConferences]"/>
 
-            <p>
-                Husk at ringe til patienten/borgeren inden du starter ny videosamtale.
-            </p>
+            <p><g:message code="conference.show.description"/></p>
             <g:form action="initializeCall">
                 <fieldset class="buttons">
                     <g:submitButton name="initialize" class="gonext" value="${message(code: 'conference.show.initializeCall')}" />

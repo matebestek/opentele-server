@@ -1,19 +1,19 @@
 <%@ page import="org.opentele.server.model.Schedule; org.opentele.server.model.types.Weekday" %>
 <div id="weekdaysOnceScheduleSetupContainer" class="scheduleType WEEKDAYS_ONCE">
 
-    <div class="fieldcontain">
-        <label><g:message code="questionnaireSchedule.reminderTime"/></label>
-
-        <div class="timeOfDayInlined">
-            <tmpl:/schedule/timeOfDay name="reminderTime" value="${reminderTime}"/>
-        </div>
-    </div>
-
     <div class="fieldcontain ">
-        <label><g:message code="questionnaireSchedule.blueAlarmTime"/></label>
+        <label data-tooltip="${message(code: 'questionnaireSchedule.blueAlarmTime.toolTip')}"><g:message code="questionnaireSchedule.blueAlarmTime"/></label>
 
         <div class="timeOfDayInlined">
             <tmpl:/schedule/timeOfDay name="blueAlarmTime" value="${blueAlarmTime}"/>
+        </div>
+    </div>
+
+    <div class="fieldcontain">
+        <label data-tooltip="${message(code: 'questionnaireSchedule.reminderTime.toolTip')}"><g:message code="questionnaireSchedule.reminderTime"/></label>
+
+        <div class="timeOfDayInlined">
+            <tmpl:/schedule/timeOfDay name="reminderTime" value="${reminderTime}"/>
         </div>
     </div>
     <tmpl:/schedule/scheduleWindow scheduleType="WEEKDAYS_ONCE"/>

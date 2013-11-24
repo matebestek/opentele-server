@@ -39,7 +39,7 @@ class MonitoringPlanController {
             return
         }
 
-        flash.message = message(code: 'default.created.message', args: [message(code: 'monitoringPlan.label', default: 'MonitoringPlan')])
+        flash.message = message(code: 'default.created.message', args: [message(code: 'monitoringPlan.label')])
         redirect(action: "show", id: p.id)
     }
 

@@ -8,7 +8,7 @@
 	</label>
 
 	<g:select name="dataResponsible" from="${patientInstance.patient2PatientGroups*.patientGroup?.flatten()}" optionKey="id"
-        noSelection="${['':'Vælg...']}"
+        noSelection="${['':g.message(code:'patient.responsible.choose')]}"
 		value="${patientInstance?.dataResponsible?.id}" />
 </div>
 

@@ -50,19 +50,19 @@
 					</td>
                     <td>
                         <g:link action="questionnaires" id="${patientInstance.id}"
-                                data-tooltip="${message(code: 'patient.overview.goto.patient.tooltip')}">
+                                data-tooltip="${message(code: 'patientOverview.goToPatient.tooltip')}">
                             ${fieldValue(bean: patientInstance, field: "firstName")}
                         </g:link>
                     </td>
                     <td>
                         <g:link action="questionnaires" id="${patientInstance.id}"
-                                data-tooltip="${message(code: 'patient.overview.goto.patient.tooltip')}">
+                                data-tooltip="${message(code: 'patientOverview.goToPatient.tooltip')}">
                             ${fieldValue(bean: patientInstance, field: "lastName")}
                         </g:link>
                     </td>
                     <td>
                         <g:link action="questionnaires" id="${patientInstance.id}"
-                                data-tooltip="${message(code: 'patient.overview.goto.patient.tooltip')}">
+                                data-tooltip="${message(code: 'patientOverview.goToPatient.tooltip')}">
 							${patientInstance.formattedCpr}
 						</g:link>
                     </td>

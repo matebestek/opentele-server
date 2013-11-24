@@ -45,10 +45,10 @@
                             <td class="buttons">
                                 <g:if test="${!meter?.monitorKit}">
                                     <g:remoteLink controller="patient"
-                                        before="if(!confirm('${message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.removemeter')])}')) return false;"
+                                        before="if(!confirm('${message(code: 'confirm.context.msg.removemeter')}')) return false;"
                                         action="removeMeter" id="${meter.id}"
                                         onSuccess="location.reload(true);"
-                                        class="delete"> Slet
+                                        class="delete"> <g:message code="meter.remove"/>
                                     </g:remoteLink>
                                 </g:if>
                             </td>
@@ -95,10 +95,10 @@
                         <sec:ifAnyGranted roles="${PermissionName.PATIENT_WRITE}">
                             <td class="buttons">
                                 <g:remoteLink controller="patient"
-                                    before="if(!confirm('${message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.removekit')])}')) return false;"
+                                    before="if(!confirm('${message(code: 'confirm.context.msg.removekit')}')) return false;"
                                     action="removeKit" id="${kit.id}"
                                     onSuccess="location.reload(true);"
-                                    class="delete"> Slet
+                                    class="delete"> <g:message code="monitorKit.remove"/>
                                 </g:remoteLink>
                             </td>
                         </sec:ifAnyGranted>

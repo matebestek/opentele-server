@@ -7,10 +7,10 @@
     <g:render template="popups"/>
 </head>
 <body>
-    <h1>Videokonference afsluttet</h1>
+    <h1><g:message code="conference.conferenceEnded.header"/></h1>
 
     <g:render template="unfinishedConferences" model="[conferences: unfinishedConferences]"/>
 
-    <p>Du kan nu påbegynde en ny videokonference.</p>
+    <p><g:message code="conference.conferenceEnded.description"/></p>
 </body>
 </html>

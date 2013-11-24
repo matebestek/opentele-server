@@ -11,7 +11,7 @@
 				${flash.message}
 			</div>
 		</g:if>
-		<h1><g:message code="patient.equipment.kit.list.label" /></h1>
+		<h1><g:message code="patient.equipment.kit.addToPatient" /></h1>
 		<g:if test="${kits.size() > 0}">
 			<table>
 				<thead>
@@ -44,7 +44,7 @@
 							</td>
 							<td>
                                 <g:remoteLink controller="patient"
-									before="if(!confirm('${message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.addkit')])}')) return false;"
+									before="if(!confirm('${message(code: 'confirm.context.msg.addkit')}')) return false;"
 									action="addKit" id="${kit.id}"
 									onSuccess="location.reload(true);">
 									<img src='${resource(dir: 'images/icons', file: 'database_add.png', plugin: 'famfamfam')}' />

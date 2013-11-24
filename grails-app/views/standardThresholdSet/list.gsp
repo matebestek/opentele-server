@@ -1,16 +1,14 @@
-
 <%@ page import="org.opentele.server.model.types.PermissionName; org.opentele.server.model.types.MeasurementTypeName; org.opentele.server.model.StandardThresholdSet" %>
 <!doctype html>
+
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<g:set var="entityName" value="${message(code: 'standardThresholdSet.label', default: 'StandardThresholdSet')}" />
-		<title><g:message code="default.show.label" args="[entityName]" /></title>
+		<title><g:message code="standardThresholdSet.show"/></title>
 	</head>
 	<body>
-	
 		<div id="show-standardThresholdSet" class="content scaffold-show" role="main">
-			<h1><g:message code="default.show.label" args="[entityName]" /></h1>
+			<h1><g:message code="standardThresholdSet.show" /></h1>
 			<g:if test="${flash.message}">
                 <div class="message" role="status">${flash.message}</div>
             </g:if>
@@ -26,7 +24,7 @@
                 <g:if test="${standardThresholdSetInstance.patientGroup}">
                     <div class="standardThresholdSet">
                         <h2>
-                            <g:message code="default.standardThresholdSet.patientGroup.label"
+                            <g:message code="standardThresholdSet.patientGroup"
                                        args="[standardThresholdSetInstance.patientGroup]"/><a
                                 name="${standardThresholdSetInstance.id}">&nbsp;</a>
                         </h2>
@@ -42,7 +40,7 @@
                                                         <g:hiddenField name="id" value="${standardThresholdSetInstance.id}"/>
                                                         <g:submitButton class="create"
                                                                         name="chooseThreshold"
-                                                                        value="${message(code: 'default.standardThresholdSet.add.label', default: 'Add')}"/>
+                                                                        value="${message(code: 'standardThresholdSet.add')}"/>
                                                     </g:form>
                                                 </sec:ifAnyGranted>
 
@@ -51,8 +49,8 @@
                                                         <g:hiddenField name="id" value="${standardThresholdSetInstance.id}"/>
                                                         <g:actionSubmit class="delete"
                                                                         action="delete"
-                                                                        value="${message(code: 'standardThresholdSet.delete.all.label')}"
-                                                                        onclick="return confirm('${message(code: 'standardThresholdSet.delete.all.confirm')}');"/>
+                                                                        value="${message(code: 'standardThresholdSet.deleteAll')}"
+                                                                        onclick="return confirm('${message(code: 'standardThresholdSet.confirmDeleteAll')}');"/>
                                                     </g:form>
                                                 </sec:ifAnyGranted>
                                             </fieldset>

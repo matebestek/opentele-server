@@ -33,7 +33,7 @@ class StandardSchedule implements Schedule {
     // SPECIFIC DATE
     Date specificDate = null
 
-    int reminderStartMinutes = 30
+    Integer reminderStartMinutes = 30
 
     // Otherwise Grails will create a standard_schedule in the database.
     // Could move to src/groovy, but that will create other problems with Hibernate
@@ -49,6 +49,7 @@ class StandardSchedule implements Schedule {
         internalWeekdaysIntroPeriod nullable: true, validator: ScheduleValidators.weekdays(WEEKDAYS_ONCE)
         internalWeekdaysSecondPeriod nullable: true, validator: ScheduleValidators.weekdays(WEEKDAYS_ONCE)
         internalDaysInMonth nullable: true, validator: ScheduleValidators.daysInMonth(MONTHLY)
+        reminderStartMinutes nullable : true
         startingDate nullable: false
         dayInterval nullable: false, min: 1
         specificDate nullable: true

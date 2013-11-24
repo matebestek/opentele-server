@@ -1,4 +1,3 @@
-
 <%@ page import="org.opentele.server.model.PassiveInterval" %>
 <!doctype html>
 <html>
@@ -15,9 +14,9 @@
 			<table>
 				<thead>
 					<tr>
-                        <g:sortableColumn property="intervalStartDate" title="${message(code: 'passiveInterval.intervalStartDate.label', default: 'Interval Start Date')}" />
-						<g:sortableColumn property="intervalEndDate" title="${message(code: 'passiveInterval.intervalEndDate.label', default: 'Interval End Date')}" />
-                        <g:sortableColumn property="comment" title="${message(code: 'passiveInterval.comment.label', default: 'i18n missing')}" />
+                        <g:sortableColumn property="intervalStartDate" title="${message(code: 'passiveInterval.intervalStartDate.label')}" />
+						<g:sortableColumn property="intervalEndDate" title="${message(code: 'passiveInterval.intervalEndDate.label')}" />
+                        <g:sortableColumn property="comment" title="${message(code: 'passiveInterval.comment.label')}" />
 					</tr>
 				</thead>
 				<tbody>
@@ -39,7 +38,7 @@
                 <fieldset class="buttons">
                     <sec:ifAnyGranted roles="${org.opentele.server.model.types.PermissionName.PASSIVE_INTERVAL_CREATE}">
                         <g:link class="create" action="create" params="[patientId: patient.id]">
-                            <g:message code="default.button.create.label" default="Create" />
+                            <g:message code="default.button.create.label" />
                         </g:link>
                     </sec:ifAnyGranted>
                 </fieldset>

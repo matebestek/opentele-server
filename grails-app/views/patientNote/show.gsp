@@ -19,7 +19,7 @@
             <g:if test="${patientNoteInstance?.note}">
                 <li class="fieldcontain">
                     <span id="note-label" class="property-label">
-                        <g:message code="patientNote.note.label" default="Note"/>
+                        <g:message code="patientNote.note.label"/>
                     </span>
 
                     <span class="property-value" aria-labelledby="note-label">
@@ -31,18 +31,18 @@
             <g:if test="${patientNoteInstance?.type}">
                 <li class="fieldcontain">
                     <span id="type-label" class="property-label">
-                        <g:message code="patientNote.type.label" default="Type"/>
+                        <g:message code="patientNote.type.label"/>
                     </span>
 
                     <span class="property-value" aria-labelledby="type-label">
-                        <g:fieldValue bean="${patientNoteInstance}" field="type"/>
+                        <g:message code="enum.patientnote.${patientNoteInstance.type.name()}"/>
                     </span>
                 </li>
             </g:if>
             <g:if test="${patientNoteInstance?.createdDate}">
                 <li class="fieldcontain">
                     <span id="created-label" class="property-label">
-                        <g:message code="patientNote.created.label" default="Oprettet"/>
+                        <g:message code="patientNote.created.label"/>
                     </span>
 
                     <span class="property-value" aria-labelledby="type-label">
@@ -53,7 +53,7 @@
             <g:if test="${patientNoteInstance.modifiedDate}">
                 <li class="fieldcontain">
                     <span id="modified-label" class="property-label">
-                        <g:message code="patientNote.modified.label" default="Redigeret"/>
+                        <g:message code="patientNote.modified.label"/>
                     </span>
 
                     <span class="property-value" aria-labelledby="type-label">
@@ -64,7 +64,7 @@
             <g:if test="${patientNoteInstance?.createdBy}">
                 <li class="fieldcontain">
                     <span id="createdBy-label" class="property-label">
-                        <g:message code="patientNote.createdBy.label" default="Oprettet af"/>
+                        <g:message code="patientNote.createdBy.label"/>
                     </span>
 
                     <span class="property-value" aria-labelledby="type-label">
@@ -75,7 +75,7 @@
             <g:if test="${patientNoteInstance?.reminderDate}">
                 <li class="fieldcontain">
                     <span id="reminder-label" class="property-label">
-                        <g:message code="patientNote.reminder.label" default="Reminder"/>
+                        <g:message code="patientNote.reminder.label"/>
                     </span>
 
                     <span class="property-value" aria-labelledby="type-label">
@@ -89,7 +89,7 @@
             <g:hiddenField name="id" value="${patientNoteInstance?.id}"/>
             <g:hiddenField name="comingFrom" value="${comingFrom}"/>
             <g:link class="edit" action="edit" id="${patientNoteInstance?.id}">
-                <g:message code="default.button.edit.label" default="Edit"/>
+                <g:message code="default.button.edit.label"/>
             </g:link>
             <sec:ifAnyGranted roles="${PermissionName.PATIENT_NOTE_DELETE}">
                 <g:actionSubmit

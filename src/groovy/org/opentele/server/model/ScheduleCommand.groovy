@@ -19,7 +19,7 @@ class ScheduleCommand implements Schedule {
     List<Schedule.TimeOfDay> timesOfDay = ListUtils.lazyList([], {
         new Schedule.TimeOfDay()
     } as org.apache.commons.collections.Factory)
-    int reminderStartMinutes = 30
+    Integer reminderStartMinutes = 30
 
     // MONTHLY
     List<Integer> daysInMonth = []

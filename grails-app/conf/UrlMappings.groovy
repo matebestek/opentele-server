@@ -60,6 +60,10 @@ class UrlMappings {
             action = [GET:"messageRecipients"]
         }
 
+        "/rest/$controller/acknowledgements"(parseRequest:true){
+            action = [GET:"acknowledgements"]
+        }
+
         "/rest/$controller/markAsRead"(parseRequest:true){
             action = [POST:"markAsRead"]
         }

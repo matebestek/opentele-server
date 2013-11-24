@@ -102,7 +102,7 @@
 
 			<li class="fieldcontain">
                 <span id="state-label" class="property-label">
-                    <g:message code="patient.state.label" />
+                    <g:message code="patient.status" />
                 </span>
                 <span class="property-value" aria-labelledby="state-label">
                     ${message(code:'enum.patientstate.'+patientInstance.getState())}
@@ -177,14 +177,16 @@
 
 			<g:if test="${nextOfKin.size() > 0}">
 				<li class="fieldcontain">
-                    <span id="nextOfKin-label" class="property-label">Pårørende:</span>
+                    <span id="nextOfKin-label" class="property-label">
+                        <g:message code="patient.nextOfKin"/>:
+                    </span>
                     <tmpl:nextOfKin readonly="true"/>
                 </li>
 			</g:if>
 
 			<g:if test="${groups.size() > 0}">
 				<li class="fieldcontain">
-                    <span id="group-label" class="property-label">Patientgrupper:</span>
+                    <span id="group-label" class="property-label"><g:message code="patient.patientGroups"/>:</span>
                     <span class="property-value fullheight" aria-labelledby="comment-label">
                         <g:each in="${groups}" var="group">
 							${group}<br />

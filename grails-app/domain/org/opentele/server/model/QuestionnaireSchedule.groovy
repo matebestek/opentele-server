@@ -35,7 +35,7 @@ class QuestionnaireSchedule extends AbstractObject implements Schedule {
     // SPECIFIC_DATE
     Date specificDate = null
 
-    int reminderStartMinutes = 30
+    Integer reminderStartMinutes = 30
 
     static constraints = {
         internalTimesOfDay nullable: true, validator: ScheduleValidators.timesOfDay(WEEKDAYS, MONTHLY, EVERY_NTH_DAY, SPECIFIC_DATE)

@@ -3,7 +3,6 @@
 <html>
 <head>
     <meta name="layout" content="main">
-    <g:set var="entityName" value="${message(code: 'patient.label', default: 'Patient')}" />
     <title>
         <g:message code="patient.create.flow.basicInfo.label" />
     </title>
@@ -35,10 +34,10 @@
 			</fieldset>
 
 			<fieldset class="buttons">
-				<g:submitButton name="next" class="gonext" value="${message(code: 'patient.create.flow.button.next.label', default: 'i18nMissing')}" />
+				<g:submitButton name="next" class="gonext" value="${message(code: 'patient.create.flow.button.next.label')}" />
                 <!-- ${grailsApplication.config.cpr.lookup.enabled} -->
                 <g:if test="${grailsApplication.config.cpr.lookup.enabled}">
-                    <g:submitButton name="lookupCPR" class="search" value="${message(code: 'patient.create.flow.button.CPRlookup.label', default: 'i18nMissing')}" />
+                    <g:submitButton name="lookupCPR" class="search" value="${message(code: 'patient.create.flow.button.CPRlookup.label')}" />
                 </g:if>
 			</fieldset>
 		</g:form>

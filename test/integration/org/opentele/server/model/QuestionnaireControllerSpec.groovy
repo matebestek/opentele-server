@@ -243,7 +243,7 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
                 value:[
                     measurements: [
                         [
-                            timeOfMeasurement: 'May 24, 2013 11:30:02 AM',
+                            timeOfMeasurement: '2013-05-24T11:30:02+02',
                             result: 5.6,
                             isBeforeMeal: true,
                             hasTemperatureWarning: false,
@@ -252,7 +252,7 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
                             isOutOfBounds: false
                         ],
                         [
-                            timeOfMeasurement: 'May 24, 2013 1:00:20 PM',
+                            timeOfMeasurement: '2013-05-24T13:00:20+02',
                             result: 6.5,
                             otherInformation: true,
                             isBeforeMeal: false,
@@ -294,12 +294,12 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
                     measurements: [
                         [
                             // Should be ignored since we already have the above measurement at this time
-                            timeOfMeasurement: 'May 24, 2013 11:30:02 AM',
+                            timeOfMeasurement: '2013-05-24T11:30:02+02',
                             result: 5.6,
                             isControlMeasurement: true
                         ],
                         [
-                            timeOfMeasurement: 'May 24, 2013 1:00:20 PM',
+                            timeOfMeasurement: '2013-05-24T13:00:20+02',
                             result: 6.5,
                             isControlMeasurement: true
                         ],

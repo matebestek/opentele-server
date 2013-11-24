@@ -5,7 +5,7 @@
     <title><g:message code="conference.noVideo.title"/></title>
 </head>
 <body>
-    <h1>Ingen videomulighed</h1>
-    <p>Systemet er ikke sat op med videomuligheder. Kontakt din systemadministrator.</p>
+    <h1><g:message code="conference.noVideo.header"/></h1>
+    <p><g:message code="conference.noVideo.description"/></p>
 </body>
 </html>

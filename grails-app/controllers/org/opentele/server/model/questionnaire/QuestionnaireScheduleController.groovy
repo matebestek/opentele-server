@@ -35,7 +35,7 @@ class QuestionnaireScheduleController {
         if (command.hasErrors()) {
             render(view: "create", model: modelWithErrors(command))
         } else {
-            flash.message = message(code: 'default.created.message', args: [message(code: 'questionnaireSchedule.label', default: 'QuestionnaireSchedule')])
+            flash.message = message(code: 'default.created.message', args: [message(code: 'questionnaireSchedule.label')])
             redirect(controller: "monitoringPlan", action: "show", id: command.monitoringPlan.patient.id)
         }
     }
@@ -44,7 +44,7 @@ class QuestionnaireScheduleController {
     def edit(Long id, QuestionnaireScheduleCommand command) {
         def questionnaireSchedule = QuestionnaireSchedule.get(id)
         if (!questionnaireSchedule) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'questionnaireSchedule.label', default: 'QuestionnaireSchedule')])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'questionnaireSchedule.label')])
             redirect(controller: "monitoringPlan", action: "show", id: session[SESSION_PATIENT_ID])
             return
         }

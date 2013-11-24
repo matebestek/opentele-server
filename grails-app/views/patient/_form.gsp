@@ -98,7 +98,7 @@ $(document).ready(function() {
 
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'state', 'error')} required" data-tooltip="${message(code: 'tooltip.patient.create.state')}">
 	<label for="state">
-        <g:message code="patient.state.label" />
+        <g:message code="patient.status" />
         <span class="required-indicator">*</span>
 	</label>
 	<g:select name="state"
@@ -153,7 +153,7 @@ $(document).ready(function() {
 </div>
 
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'group', 'error')} required" data-tooltip="${message(code: 'tooltip.patient.create.group')}">
-	<label for="group">
+	<label for="groupid">
         <g:message code="patient.group.label" />
 	</label>
 
@@ -180,7 +180,7 @@ $(document).ready(function() {
     <ul>
         <li class="buttons add">
             <g:link controller="patient" action="editResponsability" params="['id': patientInstance?.id]" data-tooltip="${message(code: 'tooltip.patient.responsible.group')}">
-                ${message(code: 'responsible.patient.group.edit.label', default: 'Skift dataansvarlig')}
+                ${message(code: 'responsible.patient.group.edit.label')}
             </g:link>
         </li>
     </ul>
@@ -189,7 +189,7 @@ $(document).ready(function() {
 <g:if test="${patientInstance.id}">
 	<div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'nextOfKin', 'error')} ">
 		<label>
-            <g:message code="patient.nextOfKin.label" default="Pårørende" />
+            <g:message code="patient.nextOfKin" />
 		</label>
         <tmpl:nextOfKin/>
 	</div>

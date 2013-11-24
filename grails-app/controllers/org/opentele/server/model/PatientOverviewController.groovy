@@ -101,10 +101,10 @@ class PatientOverviewController {
         def clinician = clinicianService.currentClinician
         checkAccessToPatient(patient)
 
-        completedQuestionnaireService.acknowledge(questionnaire, null)
-        if (withAutoMessage) {
-            completedQuestionnaireService.sendAcknowledgeAutoMessage(questionnaire)
-        }
+        completedQuestionnaireService.acknowledge(questionnaire, null, withAutoMessage)
+//        if (withAutoMessage) {
+//            completedQuestionnaireService.sendAcknowledgeAutoMessage(questionnaire)
+//        }
 
         def unacknowledgedQuestionnaires = CompletedQuestionnaire.findAllByPatientAndAcknowledgedDateIsNull(patient, [sort: 'uploadDate', order: 'desc'])
 
@@ -148,10 +148,6 @@ class PatientOverviewController {
                 flash.message = msg.join('<br/>')
             }
         }
-
-        println session.lastParams
-
-
         redirect(controller: session.lastController, action: session.lastAction, params: session.lastParams)
     }
 

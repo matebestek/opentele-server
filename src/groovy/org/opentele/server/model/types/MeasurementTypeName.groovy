@@ -31,17 +31,18 @@ enum MeasurementTypeName implements MessageSourceResolvable {
             null
         }
     }
-     String[] getCodes() {
-         ["thresholdtype.${name()}", "thresholdtype.${name().toLowerCase()}"] as String[]
-     }
 
-     Object[] getArguments() {
-         [] as Object[]
-     }
+    String[] getCodes() {
+        ["threshold.${name()}"] as String[]
+    }
 
-     String getDefaultMessage() {
-         return name()
-     }
+    Object[] getArguments() {
+        [] as Object[]
+    }
+
+    String getDefaultMessage() {
+        return name()
+    }
 
     static TABLE_CAPABLE_MEASUREMENT_TYPE_NAME =
         [BLOOD_PRESSURE, TEMPERATURE, PULSE, WEIGHT, HEMOGLOBIN, SATURATION, CRP, LUNG_FUNCTION]

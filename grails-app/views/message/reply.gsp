@@ -2,15 +2,13 @@
 <html>
 <head>
 <meta name="layout" content="main">
-<g:set var="entityName"
-	value="${message(code: 'message.label', default: 'Message')}" />
-<title><g:message code="default.show.label" args="[entityName]" /></title>
+<title><g:message code="messages.reply.title" /></title>
 </head>
 <body>
 	<%@ page import="org.opentele.server.model.Message"%>
 
 	<div id="create-message" class="content scaffold-create" role="main">
-		<h1><g:message code="default.create.label" args="[entityName]" /></h1>
+		<h1><g:message code="messages.reply.title" /></h1>
 		<g:if test="${flash.message}">
 			<div class="message" role="status">
 				${flash.message}
@@ -28,8 +26,8 @@
 		<g:form action="save">
 			<fieldset class="form">
 				<div class="fieldcontain ${hasErrors(bean: messageInstance, field: 'patient', 'error')} required">
-					<label for="to">
-                        <g:message code="message.to.label" default="To" />
+					<label>
+                        <g:message code="message.to.label" />
 					</label>
 					<g:if test="${messageInstance.inReplyTo.sentByPatient}">
 						${messageInstance.patient.name()}
@@ -40,19 +38,19 @@
 				</div>
 
 				<div class="fieldcontain ${hasErrors(bean: messageInstance, field: 'title', 'error')} ">
-					<label for="title"> <g:message code="message.title.label" default="Title" />
+					<label for="title"> <g:message code="message.title.label" />
 					</label>
 					<g:textField name="title" value="${messageInstance?.title}" />
 				</div>
 
 				<div class="fieldcontain ${hasErrors(bean: messageInstance, field: 'text', 'error')} ">
-					<label for="text"> <g:message code="message.text.label" default="Text" />
+					<label for="text"> <g:message code="message.text.label" />
 					</label>
 					<g:textArea name="text" cols="40" rows="5" maxlength="2000" value="${messageInstance?.text}" />
 				</div>
 			</fieldset>
 			<fieldset class="buttons">
-				<g:submitButton name="create" class="save" value="${message(code: 'default.button.reply.label', default: 'Send')}" />
+				<g:submitButton name="create" class="save" value="${message(code: 'messages.reply.label')}" />
 			</fieldset>
 			<g:hiddenField name="patient" value="${messageInstance?.patient.id}" />
 			<g:hiddenField name="department" value="${messageInstance?.department.id}" />

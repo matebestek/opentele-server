@@ -50,7 +50,7 @@
                             </td>
 							<td>
                                 <g:remoteLink controller="patient"
-									before="if(!confirm('${message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.addmeter')])}')) return false;"
+									before="if(!confirm('${message(code: 'confirm.context.msg.addmeter')}')) return false;"
 									action="addMeter" id="${meter.id}"
 									onSuccess="location.reload(true);">
 									<img src='${resource(dir: 'images/icons', file: 'database_add.png', plugin: 'famfamfam')}' />

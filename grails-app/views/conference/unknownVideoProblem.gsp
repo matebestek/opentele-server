@@ -5,7 +5,7 @@
     <title><g:message code="conference.unknownVideoProblem.title"/></title>
 </head>
 <body>
-    <h1>Ukendt problem med video</h1>
-    <p>Prøv igen. Fortsætter problemet, så kontakt din administrator.</p>
+    <h1><g:message code="conference.unknownVideoProblem.header"/></h1>
+    <p><g:message code="conference.unknownVideoProblem.description"/></p>
 </body>
 </html>

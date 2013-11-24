@@ -3,6 +3,7 @@ import grails.converters.JSON
 import grails.plugins.springsecurity.Secured
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.model.Clinician
+import org.opentele.server.model.Message
 import org.opentele.server.model.Patient
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.patientquestionnaire.NodeResult
@@ -22,6 +23,7 @@ class QuestionnaireController {
     def patientService
     def completedQuestionnaireService
     def clinicianService
+    def i18nService
 
     @Secured(PermissionName.QUESTIONNAIRE_READ_ALL)
 	def index() {
@@ -110,7 +112,7 @@ class QuestionnaireController {
 
 	/**
 	 * Acknowledges a questionnaire. The function checks, if the user has the sufficient rights. The result is redirected back to the overview.
-     * If params.withAutoMessage is set the method sends an automatic message to the patient with a confirmation of acknowledgement of measurements.
+     * If params.withAutoMessage is set, the questionnaire is marked with a showAcknowledgementToPatient flag.
 	 */
     @Secured(PermissionName.QUESTIONNAIRE_ACKNOWLEDGE)
 	def acknowledge() {
@@ -119,8 +121,8 @@ class QuestionnaireController {
         def withAutoMessage = (params.withAutoMessage != null && params.withAutoMessage.equals('true'))
 		def questionnaire = CompletedQuestionnaire.get(qId)
 		boolean errorOccured = false
-		
-		questionnaire = completedQuestionnaireService.acknowledge(questionnaire, note)
+
+		questionnaire = completedQuestionnaireService.acknowledge(questionnaire, note, withAutoMessage)
 
 		if (questionnaire.hasErrors()) {
 			def msg
@@ -131,11 +133,6 @@ class QuestionnaireController {
 			flash.error = msg
 		} else {
 			flash.message  = g.message(code: "completedquestionnaire.acknowledged", args: [questionnaire.patientQuestionnaire?.name, g.formatDate(date: questionnaire.acknowledgedDate)])
-
-            //Send message to patient with confirmation of measurments
-            if (withAutoMessage) {
-                completedQuestionnaireService.sendAcknowledgeAutoMessage(questionnaire)
-            }
 		}
 
 		redirect(controller: session.lastController, action: session.lastAction, id: session.lastParams?.id, ignoreNavigation: true)
@@ -290,4 +287,42 @@ class QuestionnaireController {
 		}
 		node?.save()
 	}
+
+    @Secured([PermissionName.QUESTIONNAIRE_ACKNOWLEDGED_READ])
+    def acknowledgements() {
+
+        def user = springSecurityService.currentUser
+        def patient = Patient.findByUser(user)
+
+        def thirtyDaysAgo = new Date() - 30;
+        def questionnaires = CompletedQuestionnaire.findAllByPatientAndShowAcknowledgementToPatientAndAcknowledgedDateGreaterThanEquals(patient, true, thirtyDaysAgo,[max: 20, sort: "acknowledgedDate", order: "desc"])
+
+        render createAcknowledgementsListResult(questionnaires) as JSON
+    }
+
+    private createAcknowledgementsListResult(Collection<CompletedQuestionnaire> completedQuestionnaires) {
+
+        def acknowledgements = completedQuestionnaires.collect { createAcknowledgementResult(it) }
+        [
+                acknowledgements: acknowledgements
+        ]
+    }
+
+    private createAcknowledgementResult(CompletedQuestionnaire completedQuestionnaire) {
+
+        def acknowledgedDate = completedQuestionnaire.acknowledgedDate
+        def receivedDate = completedQuestionnaire.receivedDate
+        def name = completedQuestionnaire.patientQuestionnaire?.name
+
+        def message = i18nService.message(code: 'completedquestionnaire.message.body',
+                args: [name,
+                        receivedDate.format(i18nService.message(code: 'default.date.format.notime.short')),
+                        receivedDate.format(i18nService.message(code: 'default.time.format.noseconds')),
+                        acknowledgedDate.format(i18nService.message(code: 'default.date.format.notime.short')),
+                        acknowledgedDate.format(i18nService.message(code: 'default.time.format.noseconds'))])
+        [
+            id: completedQuestionnaire.id,
+            message: message
+        ]
+    }
 }

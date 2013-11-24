@@ -14,4 +14,12 @@ class CPRPerson {
 
     boolean hasErrors
     String errorMessage
+
+    String getFirstNames() {
+        if (middleName != null && middleName.trim().length() > 0) {
+            firstName + " " + middleName
+        } else {
+            firstName
+        }
+    }
 }

@@ -2,10 +2,10 @@
 <table>
     <thead>
     <tr>
-        <th><g:message code="default.threshold.alertHigh.label" default="Alert High"/></th>
-        <th><g:message code="default.threshold.warningHigh.label" default="Warning High"/></th>
-        <th><g:message code="default.threshold.warningLow.label" default="Warning Low"/></th>
-        <th><g:message code="default.threshold.alertLow.label" default="Alert Low"/></th>
+        <th><g:message code="threshold.alertHigh" default="Alert High"/></th>
+        <th><g:message code="threshold.warningHigh" default="Warning High"/></th>
+        <th><g:message code="threshold.warningLow" default="Warning Low"/></th>
+        <th><g:message code="threshold.alertLow" default="Alert Low"/></th>
     </tr>
     </thead>
     <tbody>

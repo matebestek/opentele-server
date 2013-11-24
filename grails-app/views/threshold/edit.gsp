@@ -3,16 +3,15 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<g:set var="entityName" value="${command.threshold.prettyToString()}" />
-		<title><g:message code="default.edit.label" args="[entityName]" /></title>
+		<title><g:message code="threshold.edit.${command.threshold.type}" /></title>
 	</head>
 	<body>
 		<div id="edit-standardThreshold" class="content scaffold-edit" role="main">
             <g:if test="${patientGroup}">
-                <h1><g:message code="default.edit.label" args="[entityName]" /> for patientgruppe ${patientGroup.name}</h1>
+                <h1><g:message code="threshold.editForPatientGroup.${command.threshold.type}" args="[patientGroup.name]" /></h1>
             </g:if>
             <g:else>
-                <h1><g:message code="default.edit.label" args="[entityName]" /></h1>
+                <h1><g:message code="threshold.edit.${command.threshold.type}" /></h1>
             </g:else>
 			<g:if test="${flash.message}">
 			<div class="message" role="status">${flash.message}</div>
@@ -46,7 +45,7 @@
                     </g:else>
 				</fieldset>
 				<fieldset class="buttons">
-					<g:actionSubmit class="save" action="update" value="${message(code: 'default.button.update.label', default: 'Update')}" />
+					<g:actionSubmit class="save" action="update" value="${message(code: 'default.update')}" />
 				</fieldset>
 			</g:form>
 		</div>

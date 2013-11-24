@@ -5,7 +5,7 @@
     <title><g:message code="conference.notAuthorized.title"/></title>
 </head>
 <body>
-    <h1>Forkert video-brugernavn eller -password</h1>
-    <p>Kontakt din administrator.</p>
+    <h1><g:message code="conference.notAuthorized.header"/></h1>
+    <p><g:message code="conference.notAuthorized.description"/></p>
 </body>
 </html>

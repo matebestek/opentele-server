@@ -16,13 +16,13 @@
     <table>
         <thead>
             <tr>
-                <g:sortableColumn property="note" title="${message(code: 'patientNote.note.label', default: 'Note')}"/>
+                <g:sortableColumn property="note" title="${message(code: 'patientNote.note.label')}"/>
 
-                <g:sortableColumn property="type" title="${message(code: 'patientNote.type.label', default: 'Type')}"/>
+                <g:sortableColumn property="type" title="${message(code: 'patientNote.type.label')}"/>
 
-                <g:sortableColumn property="reminderDate" title="${message(code: 'patientNote.reminder.label', default: 'Reminder Date')}"/>
+                <g:sortableColumn property="reminderDate" title="${message(code: 'patientNote.reminder.label')}"/>
 
-                <g:sortableColumn property="isSeen" title="${message(code: 'patientNote.isSeen.label', default: 'Seen?')}"/>
+                <g:sortableColumn property="isSeen" title="${message(code: 'patientNote.isSeen.label')}"/>
             </tr>
         </thead>
         <tbody>
@@ -37,7 +37,7 @@
                 </g:else>
                 ${fieldValue(bean: patientNoteInstance, field: "note")}
                 </td>
-                <td>${fieldValue(bean: patientNoteInstance, field: "type")}</td>
+                <td><g:message code="enum.patientnote.${patientNoteInstance.type.name()}"/></td>
 
                 <td><g:formatDate date="${patientNoteInstance.reminderDate}"/></td>
 
@@ -51,7 +51,7 @@
             <g:hiddenField name="id" value="${patientNoteInstance?.id}" />
             <sec:ifAnyGranted roles="${PermissionName.PATIENT_NOTE_CREATE}">
                 <g:link class="create" action="create" id="${patientNoteInstance?.id}" params="[patientId: patient.id]">
-                    <g:message code="default.button.create.label" default="Create" />
+                    <g:message code="default.button.create.label" />
                 </g:link>
             </sec:ifAnyGranted>
         </fieldset>

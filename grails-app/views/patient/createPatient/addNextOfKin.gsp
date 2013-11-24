@@ -27,18 +27,18 @@
                 <ul class="one-to-many">
                     <g:each in="${patientInstance.nextOfKins}" var="nextOfKin">
                         <li>
-                            ${nextOfKin.nameAndRelation?.encodeAsHTML()} Telefon: ${nextOfKin.phone?.encodeAsHTML()}
+                            ${nextOfKin.nameAndRelation?.encodeAsHTML()} <g:message code="nextOfKinPerson.phone.label"/>: ${nextOfKin.phone?.encodeAsHTML()}
                         </li>
                     </g:each>
                 </ul>
         </fieldset>
 
         <fieldset class="buttons">
-            <g:submitButton name="previous" class="goback" value="${message(code: 'patient.create.flow.button.previous.label', default: 'Previous')}" />
-            <g:submitButton name="create" class="create" value="${message(code: 'patient.create.flow.button.createNextOfKin.label', default: 'Create')}" />
-            <g:submitButton name="next" class="gonext" value="${message(code: 'patient.create.flow.button.next.label', default: 'Next')}" />
-            <g:submitButton name="saveAndShow" class="save" value="${message(code: 'patient.create.flow.button.saveAndExit.label', default: 'Next')}" data-tooltip="${message(code: 'patient.create.flow.finish.tooltip')}"/>
-            <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label', default: 'Next')}" data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
+            <g:submitButton name="previous" class="goback" value="${message(code: 'patient.create.flow.button.previous.label')}" />
+            <g:submitButton name="create" class="create" value="${message(code: 'patient.create.flow.button.createNextOfKin.label')}" />
+            <g:submitButton name="next" class="gonext" value="${message(code: 'patient.create.flow.button.next.label')}" />
+            <g:submitButton name="saveAndShow" class="save" value="${message(code: 'patient.create.flow.button.saveAndExit.label')}" data-tooltip="${message(code: 'patient.create.flow.finish.tooltip')}"/>
+            <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label')}" data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
         </fieldset>
     </g:form>
 </div>

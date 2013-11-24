@@ -3,34 +3,27 @@
 <head>
     <meta name="layout" content="conferenceMeasurements">
 
-    <title>Bekræft målinger</title>
+    <title><g:message code="conferenceMeasurement.confirm.title"/></title>
 </head>
 
 <body>
-<h1>Målinger</h1>
+<h1><g:message code="conferenceMeasurement.confirm.header"/></h1>
 <p>
     <span id="patent_name">${session[Constants.SESSION_NAME]} </span>
     <span id="patient_cpr"><g:message code="main.SSN"/>: ${session[Constants.SESSION_CPR]} </span>
 </p>
-<p style="text-align: center">Følgende målinger vil blive oprettet på baggrund af de tidligere indtastede værdier.</p>
+<p style="text-align: center"><g:message code="conferenceMeasurement.confirm.description"/></p>
 <table>
     <thead>
     <tr>
-        <th>
-            Målingstype
-        </th>
-        <th>
-            Værdi(er)
-        </th>
+        <th><g:message code="conferenceMeasurement.type"/></th>
+        <th><g:message code="conferenceMeasurement.value"/></th>
     </tr>
     </thead>
     <tbody id="measurements">
         <g:if test="${measurementProposals.empty}">
             <tr>
-                <td colspan="2">
-                    Ingen målinger vil blive oprettet. Hvis dette ikke er hvad du ønsker, så kan du gå tilbage
-                    og redigere.
-                </td>
+                <td colspan="2"><g:message code="conferenceMeasurement.confirm.noMeasurements"/></td>
             </tr>
         </g:if>
         <g:else>
@@ -58,13 +51,13 @@
     <tfoot>
         <tr>
             <td>
-                <button onclick="window.location.href='${createLink(action:"show", id:"${conference.id}")}'">Gå tilbage og rediger</button>
+                <button onclick="window.location.href='${createLink(action:"show", id:"${conference.id}")}'"><g:message code="conferenceMeasurement.confirm.goBackAndEdit"/></button>
             </td>
             <td>
                 <g:form action="finish">
                     <g:hiddenField name="id" value="${conference.id}"/>
                     <g:hiddenField name="conferenceVersion" value="${conference.version}"/>
-                    <g:submitButton name="finish" value="Afslut"/>
+                    <g:submitButton name="finish" value="${g.message(code: 'conferenceMeasurement.confirm.finish')}"/>
                 </g:form>
             </td>
         </tr>

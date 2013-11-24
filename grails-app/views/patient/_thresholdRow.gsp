@@ -1,8 +1,7 @@
 <%@ page import="org.opentele.server.model.types.PermissionName; org.opentele.server.model.types.MeasurementTypeName" %>
 <tr>
     <td>
-        <g:message code="thresholdtype.${threshold.type.name}"/> <g:message
-                code="thresholdtype.${threshold.type.name}.${field}" default=""/>
+        <g:message code="threshold.${threshold.type.name}"/> <g:message code="threshold.${threshold.type.name}.${field}" default=""/>
     </td>
     <td><g:formatThreshold threshold="${threshold}" field="${field}" level="AlertHigh" /></td>
     <td><g:formatThreshold threshold="${threshold}" field="${field}" level="WarningHigh" /></td>

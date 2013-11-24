@@ -14,13 +14,6 @@ class MessageService {
 
     def springSecurityService
 	def clinicianService
-	/**
-	 * Stores a messag for a user
-	 * @param to
-	 * @param from
-	 * @param message
-	 * @return
-	 */
 
 	@Transactional
 	def saveMessage (Message msg) {

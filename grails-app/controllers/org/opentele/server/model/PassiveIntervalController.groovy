@@ -44,7 +44,7 @@ class PassiveIntervalController {
             render(view: "create", model: [passiveIntervalInstance: passiveIntervalInstance])
             return
         }
-        flash.message = message(code: 'default.created.message', args: [message(code: 'passiveInterval.label', default: 'PassiveInterval'), passiveIntervalInstance.id])
+        flash.message = message(code: 'default.created.message', args: [message(code: 'passiveInterval.label'), passiveIntervalInstance.id])
         redirect(action: "show", id: passiveIntervalInstance.id)
     }
 
@@ -52,7 +52,7 @@ class PassiveIntervalController {
     def show() {
         def passiveIntervalInstance = PassiveInterval.get(params.id)
         if (!passiveIntervalInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'passiveInterval.label', default: 'PassiveInterval'), params.id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'passiveInterval.label'), params.id])
             redirect(action: "list", id: session[Constants.SESSION_PATIENT_ID])
             return
         }
@@ -64,7 +64,7 @@ class PassiveIntervalController {
     def edit() {
         def passiveIntervalInstance = PassiveInterval.get(params.id)
         if (!passiveIntervalInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'passiveInterval.label', default: 'PassiveInterval'), params.id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'passiveInterval.label'), params.id])
             redirect(action: "list", id: session[Constants.SESSION_PATIENT_ID])
             return
         }
@@ -79,7 +79,7 @@ class PassiveIntervalController {
         sessionService?.setPatient(session, passiveIntervalInstance.patient)
 
         if (!passiveIntervalInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'passiveInterval.label', default: 'PassiveInterval'), params.id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'passiveInterval.label'), params.id])
             redirect(action: "list", id: session[Constants.SESSION_PATIENT_ID])
             return
         }
@@ -102,7 +102,7 @@ class PassiveIntervalController {
             return
         }
 
-        flash.message = message(code: 'default.updated.message', args: [message(code: 'passiveInterval.label', default: 'PassiveInterval'), passiveIntervalInstance.id])
+        flash.message = message(code: 'default.updated.message', args: [message(code: 'passiveInterval.label'), passiveIntervalInstance.id])
         redirect(action: "show", id: passiveIntervalInstance.id)
     }
 
@@ -116,18 +116,18 @@ class PassiveIntervalController {
         passiveIntervalInstance.patient.removeFromPassiveIntervals(passiveIntervalInstance)
 
         if (!passiveIntervalInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'passiveInterval.label', default: 'PassiveInterval'), params.id])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'passiveInterval.label'), params.id])
             redirect(action: "list", id: session[Constants.SESSION_PATIENT_ID])
             return
         }
 
         try {
             passiveIntervalInstance.delete(flush: true)
-            flash.message = message(code: 'default.deleted.message', args: [message(code: 'passiveInterval.label', default: 'PassiveInterval'), params.id])
+            flash.message = message(code: 'default.deleted.message', args: [message(code: 'passiveInterval.label'), params.id])
             redirect(action: "list", id: session[Constants.SESSION_PATIENT_ID])
         }
         catch (DataIntegrityViolationException e) {
-            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'passiveInterval.label', default: 'PassiveInterval'), params.id])
+            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'passiveInterval.label'), params.id])
             redirect(action: "show", id: params.id)
         }
     }

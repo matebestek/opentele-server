@@ -43,21 +43,21 @@
                 <!-- Show 'logged in as..' -->
                 <div id="loggedInAsLabel" class="nav">
                     <sec:ifLoggedIn>
-                        <g:message code="logged.in.as" />
+                        <g:message code="loggedInAs" />
                         <sec:username />
                     </sec:ifLoggedIn>
                 </div>
                 <!-- Logud knap - uafhaengigt af rolle -->
                 <div class="buttons nav">
                     <a class="buttons" style="float: right; width: 60px;" href="${createLink(controller: "logout", action:"index") }">
-                        <g:message code="default.logout.label" default="Log ud" />
+                        <g:message code="logOut" />
                     </a>
                 </div>
                 <!-- Edit user button -->
                 <sec:ifAnyGranted roles="${PermissionName.CLINICIAN_CHANGE_PASSWORD}">
                     <div class="buttons nav">
                         <g:link class="buttons" style="float: right; width: 60px;" controller="password" action="change">
-                            <g:message code="password.change.button.label" default="Profil" />
+                            <g:message code="editUserProfile" />
                         </g:link>
                     </div>
                 </sec:ifAnyGranted>

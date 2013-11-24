@@ -68,35 +68,33 @@
 </head>
 <body>
     <div id="fetchingEndpointId" class="informationText">
-        <h1>Starter videoklient...</h1>
-        <p>Klienten skal gerne starte op i løbet af få sekunder. Hvis det ikke sker, kan det skyldes flere ting:
+        <h1><g:message code="conference.startVideoClient.fetchingEndpointId.header"/></h1>
+        <p><g:message code="conference.startVideoClient.fetchingEndpointId.description1"/>
         <ul class="bullet-list">
-            <li>Video-klienten er ikke startet på din maskine.</li>
-            <li>Der er ikke installeret Java i din browser.</li>
+            <li><g:message code="conference.startVideoClient.fetchingEndpointId.bullet1"/></li>
+            <li><g:message code="conference.startVideoClient.fetchingEndpointId.bullet2"/></li>
         </ul>
-        Er du i tvivl, så kontakt din administrator.</p>
+        <g:message code="conference.startVideoClient.fetchingEndpointId.description2"/> </p>
     </div>
 
     <div id="clientNotRunning" class="informationText" style="display:none">
-        <h1>Video-klient kører ikke</h1>
-        <p>Video-klienten skal køre i baggrunden. Er du i tvivl om hvordan dette sikres, så kontakt din administrator.</p>
+        <h1><g:message code="conference.startVideoClient.clientNotRunning.header"/></h1>
+        <p><g:message code="conference.startVideoClient.clientNotRunning.description"/></p>
     </div>
 
     <div id="waitingForClient" class="informationText" style="display:none">
-        <h1>Venter på videoklient...</h1>
-        <p>Videoklienten er i gang med at forbinde. Dette går normalt hurtigt, men kan i enkelte tilfælde tage lidt
-        tid. Synes du det tager alt for lang tid, så kontakt din administrator</p>
+        <h1><g:message code="conference.startVideoClient.waitingForClient.header"/></h1>
+        <p><g:message code="conference.startVideoClient.waitingForClient.description"/></p>
     </div>
 
     <div id="waitingForJoiningConference" class="informationText" style="display:none">
-        <h1>Venter på videokonference...</h1>
-        <p>Er i gang med at starte selve mødet op. Dette går normalt hurtigt, men kan i enkelte tilfælde tage lidt
-        tid. Synes du det tager alt for lang tid, så kontakt din administrator</p>
+        <h1><g:message code="conference.startVideoClient.waitingForJoiningConference.header"/></h1>
+        <p><g:message code="conference.startVideoClient.waitingForJoiningConference.description"/></p>
     </div>
 
     <div id="clientError" class="informationText" style="display:none">
-        <h1>Fejl i video-klient</h1>
-        <p>Video-klienten er i en ukendt tilstand. Prøv at genstarte den. Fortsætter fejlen, så kontakt din administrator.</p>
+        <h1><g:message code="conference.startVideoClient.clientError.header"/></h1>
+        <p><g:message code="conference.startVideoClient.clientError.description"/></p>
     </div>
 
     <g:form action="finishSettingUpConference" name="finishSettingUpConferenceForm"/>

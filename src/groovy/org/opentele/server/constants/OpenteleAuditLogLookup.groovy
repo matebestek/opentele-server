@@ -43,7 +43,7 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
         lookup["password"] = [
                 "index": "Index",
                 "change": "Ændre adgangskode",
-                "changed": "Adgangdkode ændret",
+                "changed": "Adgangskode ændret",
                 "update": "Opdaterer adgangskoden"
         ]
 
@@ -206,6 +206,7 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
                 "toggleIgnoreQuestionnaire": "Ignorer spørgeskema",
                 "toggleIgnoreNode": "Ignorer måling",
                 "acknowledge": "Kvittér",
+                "acknowledgements": "Hent kvitteringer",
                 "sendAcknowledgeAutoMessage": "Send automatisk besked til patient om godkendt (grøn) måling",
                 "listing": "Spørgeskema liste",
         ]
@@ -321,6 +322,7 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
                 "conference": "Vis videokonference",
                 "questionnaires": "Målingsoverblik",
                 "search": "Patientsøgning",
+                "doSearch": "Udfør patientsøgning",
                 "resetSearch": "Nulstil patientsøgning",
                 "equipment": "Udstyr",
                 "measurements": "Vis grafer/alle målinger",

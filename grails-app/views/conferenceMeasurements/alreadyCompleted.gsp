@@ -3,12 +3,12 @@
 <head>
     <meta name="layout" content="conferenceMeasurements">
 
-    <title>Allerede afsluttet</title>
+    <title><g:message code="conferenceMeasurement.alreadyClosed.title"/></title>
 </head>
 
 <body>
-<h1>Allerede afsluttet</h1>
-<p>Data for konferencen er allerede afsluttet og kan derfor ikke redigeres videre.</p>
-<p><g:link action="close">Luk vindue.</g:link></p>
+<h1><g:message code="conferenceMeasurement.alreadyClosed.title"/></h1>
+<p><g:message code="conferenceMeasurement.alreadyClosed.description"/></p>
+<p><g:link action="close"><g:message code="conferenceMeasurement.alreadyClosed.closeWindow"/></g:link></p>
 </body>
 </html>

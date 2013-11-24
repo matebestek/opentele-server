@@ -3,12 +3,11 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<g:set var="entityName" value="${message(code: 'standardThresholdSet.label', default: 'StandardThresholdSet')}" />
-		<title><g:message code="default.edit.label" args="[entityName]" /></title>
+		<title><g:message code="standardThresholdSet.edit" /></title>
 	</head>
 	<body>
 		<div id="edit-standardThresholdSet" class="content scaffold-edit" role="main">
-			<h1><g:message code="default.edit.label" args="[entityName]" /> for patientgruppe ${patientGroup.name}</h1>
+			<h1><g:message code="standardThresholdSet.editForPatientGroup" args="[patientGroup.name]" /></h1>
 			<g:if test="${flash.message}">
 			    <div class="message" role="status">${flash.message}</div>
 			</g:if>
@@ -23,11 +22,6 @@
 			</ul>
 			</g:hasErrors>
 
-        %{--
-                        <fieldset class="form">
-                            <g:select name="thresholdtype" from="${org.opentele.server.model.MeasurementType.list()}" valueMessagePrefix="thresholdtype"/>
-                        </fieldset>
-        --}%
             <g:render template="/patient/thresholds"
                       model="[thresholds: standardThresholdSetInstance.thresholds, parent: standardThresholdSetInstance, writePermission: PermissionName.STANDARD_THRESHOLD_WRITE, deletePermission: PermissionName.STANDARD_THRESHOLD_DELETE]"/>
             <fieldset class="buttons">
@@ -35,11 +29,9 @@
                     <g:form method="post" action="addThreshold">
                         <g:hiddenField name="id" value="${standardThresholdSetInstance.id}"/>
                         <g:submitButton class="create" name="chooseThreshold"
-                                        value="${message(code: 'default.standardThresholdSet.add.label', default: 'Add')}"/>
-
+                                        value="${message(code: 'standardThresholdSet.add')}"/>
                     </g:form>
                 </sec:ifAnyGranted>
-
             </fieldset>
         </div>
 	</body>

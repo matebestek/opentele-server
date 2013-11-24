@@ -79,7 +79,7 @@
                 </sec:ifAnyGranted>
                 <sec:ifAnyGranted roles="${PermissionName.MONITOR_KIT_DELETE}">
                     <g:actionSubmit class="delete" action="delete" value="${message(code: 'default.button.delete.label')}"
-                        onclick="return confirm('${message(code: 'default.confirm.msg', args: ['på du vil fjerne kittet'], default: 'Are you sure?')}');"
+                        onclick="return confirm('${message(code: 'confirm.context.msg.removekit')}');"
                         data-tooltip="${message(code: 'tooltip.patient.meter.remove')}" />
                 </sec:ifAnyGranted>
                 <sec:ifAnyGranted roles="${PermissionName.MONITOR_KIT_WRITE}">

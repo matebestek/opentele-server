@@ -1,5 +1,5 @@
 <div class="waiting" style="display:${waitingDisplay}">
-    ${title}: Venter...
+    ${title}: <g:message code="conferenceMeasurement.waiting"/>
 </div>
 <div class="loaded" style="display:${loadedDisplay}">
     ${title}:

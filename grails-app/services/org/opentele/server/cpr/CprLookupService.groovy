@@ -22,7 +22,7 @@ class CprLookupService {
     def grailsApplication
 
     /**
-     * Returns a CPR Person containing the persons name (first,middle,lastname) and the persons adress
+     * Returns a CPR Person containing the persons name (first,middle,lastname) and the persons address
      * @param cpr The PersonCivilRegistrationIdentifier of the person to fetch.
      * @return a CPR Person containing the information
      */

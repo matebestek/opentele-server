@@ -1,5 +1,5 @@
 <tr class="thresholds">
-    <th>${text ?: ''} <g:message code="default.threshold.systolic.label"/></th>
+    <th>${text ?: ''} <g:message code="bloodPressureThreshold.systolic"/></th>
     <td>
         <g:field type="text" name="${prefix ? "${prefix}." : ''}systolicAlertHigh"
                  value="${formatNumber(number: threshold.systolicAlertHigh, format: "0.0")}"/>
@@ -22,7 +22,7 @@
     </td>
 </tr>
 <tr class="thresholds">
-    <th>${text ?: ''} <g:message code="default.threshold.diastolic.label"/></th>
+    <th>${text ?: ''} <g:message code="bloodPressureThreshold.diastolic"/></th>
     <td>
         <g:field type="text" name="${prefix ? "${prefix}." : ''}diastolicAlertHigh"
                  value="${formatNumber(number: threshold.diastolicAlertHigh, format: "0.0")}"/>

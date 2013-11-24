@@ -62,6 +62,12 @@ GO
 ALTER TABLE questionnaire_group2questionnaire_header ADD standard_schedule_intro_period_weeks nvarchar(1024)
 GO
 
+-- Fix to KIH-942.. Making sure no data are inconsistent
+update questionnaire_group2questionnaire_header
+set standard_schedule_intro_period_weeks = 4
+where standard_schedule_intro_period_weeks is null
+GO
+
 
 -- QUESTIONNAIRE_SCHEDULE
 ALTER TABLE questionnaire_schedule ADD BLUE_ALARM_TIME nvarchar(1024)

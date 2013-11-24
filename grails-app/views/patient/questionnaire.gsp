@@ -58,6 +58,11 @@
                 </span>
                 <span class="property-value" aria-labelledby="user-label">
                     <g:formatDate formatName="default.date.format" date="${completedQuestionnaire.acknowledgedDate}" />
+                    <g:if test="${completedQuestionnaire.showAcknowledgementToPatient}">
+                        <span class="property-value" aria-labelledby="user-label">
+                            (<g:message code="patient.acknowledgement.sent.to.patient" />)
+                        </span>
+                    </g:if>
                 </span>
             </li>
 			<li class="fieldcontain">

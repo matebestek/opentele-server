@@ -3,15 +3,12 @@
 <html>
 <head>
 <meta name="layout" content="main">
-<g:set var="entityName"
-	value="${message(code: 'message.label', default: 'Message')}" />
-<title><g:message code="message.list.button.create"
-		args="[entityName]" /></title>
+<title><g:message code="message.create" /></title>
 </head>
 <body>
 	<div id="create-message" class="content scaffold-create" role="main">
 		<h1>
-			<g:message code="message.list.button.create" args="[entityName]" />
+			<g:message code="message.create" />
 		</h1>
 		<g:if test="${flash.message}">
 			<div class="message" role="status">

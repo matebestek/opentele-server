@@ -1,6 +1,5 @@
 package org.opentele.server.kihdb
 
-import  dk.sosi.seal.SOSIFactory
 import dk.sosi.seal.model.Request
 
 import org.opentele.server.dgks.monitoringdataset.version1_0_1.CreateMonitoringDataset
@@ -14,15 +13,11 @@ import org.opentele.server.dgks.monitoringdataset.version1_0_1.generated.ObjectF
 import org.opentele.server.dgks.monitoringdataset.version1_0_1.generated.SelfMonitoredSampleType
 
 import org.opentele.server.model.Measurement
-import org.opentele.server.model.MeasurementType
 import org.opentele.server.model.types.IupacCode
 import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.Unit
-import org.opentele.server.util.SosiUtil
 import org.opentele.server.util.XmlConverterUtil
 import wslite.soap.SOAPClient
-
-import java.text.SimpleDateFormat
 
 class KihDbWebServiceClientService {
 

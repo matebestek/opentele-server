@@ -1,8 +1,8 @@
-<td>Spirometri</td>
+<td><g:message code="conferenceMeasurement.lungFunction.confirmation.title"/></td>
 <td>
     <span>
         <div>
-            FEV1: ${g.formatNumber(number: measurement.value, format:'0.00', locale: 'DA')} L
+            <g:message code="conferenceMeasurement.lungFunction.confirmation.fev1" args="[g.formatNumber(number: measurement.value, format:'0.00')]"/>
         </div>
     </span>
 </td>

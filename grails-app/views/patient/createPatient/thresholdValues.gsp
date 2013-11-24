@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta name="layout" content="main">
-    <g:set var="entityName" value="${message(code: 'patient.label', default: 'Patient')}"/>
+    <g:set var="entityName" value="${message(code: 'patient.label')}"/>
     <title>
         <g:message code="patient.create.flow.thresholdValues.label"/></title>
 </head>
@@ -28,7 +28,7 @@
             <g:hasErrors bean="${threshold}">
                 <g:eachError bean="${threshold}" var="error">
                     <li>
-                        ${threshold.prettyToString()}: <g:message error="${error}"/>
+                        <g:message code="threshold.${threshold.type}"/>: <g:message error="${error}"/>
                     </li>
                 </g:eachError>
             </g:hasErrors>
@@ -39,31 +39,31 @@
         <table>
             <thead>
             <tr>
-                <th>${message(code: 'default.threshold.type.label', default: 'Type')}</th>
-                <th>${message(code: 'default.threshold.alertHigh.label', default: 'Alert High')}</th>
-                <th>${message(code: 'default.threshold.warningHigh.label', default: 'Warning High')}</th>
-                <th>${message(code: 'default.threshold.warningLow.label', default: 'Warning Low')}</th>
-                <th>${message(code: 'default.threshold.alertLow.label', default: 'Alert Low')}</th>
+                <th>${message(code: 'threshold.type')}</th>
+                <th>${message(code: 'threshold.alertHigh')}</th>
+                <th>${message(code: 'threshold.warningHigh')}</th>
+                <th>${message(code: 'threshold.warningLow')}</th>
+                <th>${message(code: 'threshold.alertLow')}</th>
             </tr>
             </thead>
             <tbody>
-            <g:each in="${patientInstance.thresholds.sort { it.prettyToString() }}" var="threshold">
+            <g:each in="${patientInstance.thresholds.sort { g.message(code: 'threshold.' + it.type) }}" var="threshold">
                 <g:if test="${threshold.type.name == MeasurementTypeName.BLOOD_PRESSURE}">
                     <tmpl:/bloodPressureThreshold/thresholds threshold="${threshold}"
-                                                             text="${threshold.prettyToString()}"
+                                                             text="${g.message(code: 'threshold.' + threshold.type)}"
                                                              prefix="${threshold.type.name}"/>
                 </g:if>
                 <g:elseif test="${threshold.type.name == MeasurementTypeName.URINE}">
-                    <tmpl:/urineThreshold/threshold threshold="${threshold}" text="${threshold.prettyToString()}"
+                    <tmpl:/urineThreshold/threshold threshold="${threshold}" text="${g.message(code: 'threshold.' + threshold.type)}"
                                                     prefix="${threshold.type.name}"/>
 
                 </g:elseif>
                 <g:elseif test="${threshold.type.name == MeasurementTypeName.URINE_GLUCOSE}">
-                    <tmpl:/urineGlucoseThreshold/threshold threshold="${threshold}" text="${threshold.prettyToString()}"
+                    <tmpl:/urineGlucoseThreshold/threshold threshold="${threshold}" text="${g.message(code: 'threshold.' + threshold.type)}"
                                                            prefix="${threshold.type.name}"/>
                 </g:elseif>
                 <g:else>
-                    <tmpl:/numericThreshold/threshold threshold="${threshold}" text="${threshold.prettyToString()}"
+                    <tmpl:/numericThreshold/threshold threshold="${threshold}" text="${g.message(code: 'threshold.' + threshold.type)}"
                                                       prefix="${threshold.type.name}"/>
                 </g:else>
             </g:each>
@@ -96,14 +96,14 @@
 
         <fieldset class="buttons">
             <g:submitButton name="previous" class="goback"
-                            value="${message(code: 'patient.create.flow.button.previous.label', default: 'Previous')}"/>
+                            value="${message(code: 'patient.create.flow.button.previous.label')}"/>
             <g:submitButton name="next" class="gonext"
-                            value="${message(code: 'patient.create.flow.button.next.label', default: 'Next')}"/>
+                            value="${message(code: 'patient.create.flow.button.next.label')}"/>
             <g:submitButton name="saveAndShow" class="save"
-                            value="${message(code: 'patient.create.flow.button.saveAndExit.label', default: 'Next')}"
+                            value="${message(code: 'patient.create.flow.button.saveAndExit.label')}"
                             data-tooltip="${message(code: 'patient.create.flow.finish.tooltip')}"/>
             <g:submitButton name="saveAndGotoMonplan" class="save"
-                            value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label', default: 'Next')}"
+                            value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label')}"
                             data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
         </fieldset>
     </g:form>

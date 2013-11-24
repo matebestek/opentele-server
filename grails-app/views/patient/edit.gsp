@@ -5,13 +5,13 @@
 <meta name="layout" content="main">
 <g:set var="entityName"
 	value="${message(code: 'patient.label', default: 'Patient')}" />
-<title><g:message code="default.edit.label" args="[entityName]" /></title>
+<title><g:message code="default.edit" args="[entityName]" /></title>
     <link href="${resource(dir: 'css', file: 'jquery-ui.custom.css')}" rel="stylesheet">
 </head>
 
 <body>
 	<div id="edit-patient" class="content scaffold-edit" role="main">
-		<h1><g:message code="default.edit.label" args="[entityName]" /></h1>
+		<h1><g:message code="default.edit" args="[entityName]" /></h1>
 		<g:if test="${flash.message}">
 			<div class="message" role="status">
 				${flash.message}
@@ -56,7 +56,7 @@
             </g:javascript>
 
             <fieldset class="buttons">
-				<g:actionSubmit class="save" action="update" value="${message(code: 'default.button.update.label')}" />
+				<g:actionSubmit class="save" action="update" value="${message(code: 'default.update')}" />
 			</fieldset>
 		</g:form>
 

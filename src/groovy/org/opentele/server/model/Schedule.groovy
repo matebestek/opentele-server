@@ -113,6 +113,6 @@ public interface Schedule {
     Date getSpecificDate()
     void setSpecificDate(Date specificDate)
 
-    int getReminderStartMinutes()
-    void setReminderStartMinutes(int reminderStartMinutes)
+    Integer getReminderStartMinutes()
+    void setReminderStartMinutes(Integer reminderStartMinutes)
 }

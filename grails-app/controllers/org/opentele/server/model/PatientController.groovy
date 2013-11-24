@@ -106,9 +106,9 @@ class PatientController {
                     CPRPerson cprLookupResult = cprLookupService.getPersonDetails(flow.patientInstance.cpr)
 
                     if (!cprLookupResult.hasErrors) {
-                        def firstAndMiddlename = cprLookupResult.firstName ? cprLookupResult.firstName + " "+cprLookupResult.middleName : null
+
                         flow.patientInstance.cpr = cprLookupResult.civilRegistrationNumber
-                        flow.patientInstance.firstName = firstAndMiddlename
+                        flow.patientInstance.firstName = cprLookupResult.getFirstNames()
                         flow.patientInstance.lastName = cprLookupResult.lastName
                         flow.patientInstance.sex = cprLookupResult.sex
                         flow.patientInstance.address = cprLookupResult.address
@@ -406,7 +406,15 @@ class PatientController {
 
     @Secured(PermissionName.PATIENT_READ_ALL)
     @SecurityWhiteListController
-    def search(PatientSearchCommand searchCommand) {
+    def search() {
+
+        [searchCommand: new PatientSearchCommand(), patients:[], clinicianPatientGroups: clinicianService.patientGroupsForCurrentClinician]
+    }
+
+    @Secured(PermissionName.PATIENT_READ_ALL)
+    @SecurityWhiteListController
+    def doSearch(PatientSearchCommand searchCommand) {
+
         def patientList = patientService.searchPatient(searchCommand)
 
 		//For g:sortableColumns
@@ -424,9 +432,8 @@ class PatientController {
                 patientList.reverse(true)
             }
 		}
-		[searchCommand: searchCommand, patients:patientList, clinicianPatientGroups: clinicianService.patientGroupsForCurrentClinician]
+        render(view:"search",  model: [searchCommand: searchCommand, patients:patientList, clinicianPatientGroups: clinicianService.patientGroupsForCurrentClinician])
 	}
-
 
     @Secured(PermissionName.PATIENT_READ_ALL)
     @SecurityWhiteListController

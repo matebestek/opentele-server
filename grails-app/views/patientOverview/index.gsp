@@ -5,8 +5,7 @@
 <html>
 <head>
     <meta name="layout" content="main">
-    <g:set var="entityName" value="${message(code: 'patient.label', default: 'Patient')}" />
-    <g:set var="title" value="${message(code: "patient.overview.questionnaires")}"/>
+    <g:set var="title" value="${message(code: "patientOverview.title")}"/>
     <title>${title}</title>
     <g:render template="/measurement/graphFunctions"/>
     <g:javascript src="knockout-2.2.0.js" />
@@ -52,7 +51,7 @@
                 enableMeasurementsIcons();
 
                 element.find('.acknowledge').click(function() {
-                    var message = '${g.message(code: 'default.confirm.msg', args: [message(code: 'confirm.context.msg.questionnaire')]).encodeAsJavaScript()}';
+                    var message = '${g.message(code: 'questionnaire.confirmAcknowledgement').encodeAsJavaScript()}';
                     if (confirm(message)) {
                         var automessage = $(this).attr('data-automessage');
                         var questionnaireId = $(this).attr('data-questionnaire-id');
@@ -85,7 +84,7 @@
             }
 
             function loadingFailed(detailsElement, collapseIcon) {
-                detailsElement.html('<h1>Der er sket en fejl</h1>');
+                detailsElement.html('<h1><g:message code="patientOverview.errorFetchingDetails"/></h1>');
                 setCollapseIconToOpened(collapseIcon);
                 collapseIcon.data('loaded', false);
             }
@@ -158,17 +157,17 @@
         <div id="overviewButtons" class="buttons clearfix">
             <g:if test="${!patientList.isEmpty()}">
                 <g:form action="index" style="display: inline-block; float: right;  width: 450px" method="GET">
-                    <g:submitButton name="submitFilter" class="search" data-tooltip="${message(code: "tooltip.questionnaire.filter")}" value="Filtrer"/>
+                    <g:submitButton name="submitFilter" class="search" data-tooltip="${message(code: "patientOverview.patientGroupFilter.tooltip")}" value="${message(code: 'patientOverview.filter')}"/>
                     <g:select id="filterDropdown"
                               name="patientgroup.filter.id"
                               class="many-to-one"
                               from="${clinicianPatientGroups}"
                               value="${session[Constants.SESSION_PATIENT_GROUP_ID]}"
-                              noSelection="['':'- Alle mine patientgrupper-']"
+                              noSelection="['':message(code: 'patientOverview.option.allPatientGroups')]"
                               optionKey="id"
                     />
                 </g:form>
-                <tmpl:acknowledgeGreen controller="patientOverview" action="acknowledgeAllForAll"/>
+                <tmpl:acknowledgeGreen />
             </g:if>
 
         </div>

@@ -39,8 +39,8 @@
         </tr>
         <tr>
             <td class="buttons" align="center" colspan="6">
-                <g:actionSubmit action="search"
-                                value="${message(code: "patient.search.form.submit", default: "Søg patient")}"
+                <g:actionSubmit action="doSearch"
+                                value="${message(code: "patient.search.form.submit")}"
                                 class="search" data-tooltip="${message(code: 'tooltip.patient.search.limit')}"/>
                 <g:actionSubmit action="resetSearch" value="${message(code: 'patient.search.form.reset')}"/>
             </td>

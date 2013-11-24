@@ -1,4 +1,5 @@
 package org.opentele.server
+
 import org.opentele.server.model.*
 import org.opentele.server.model.patientquestionnaire.*
 import org.opentele.server.model.questionnaire.MeasurementNode
@@ -9,15 +10,8 @@ import org.opentele.server.util.ISO8601DateParser
 import org.springframework.transaction.annotation.Transactional
 
 import java.text.ParseException
-import java.text.SimpleDateFormat
 
 class CompletedQuestionnaireService {
-    private static final ThreadLocal<SimpleDateFormat> BLOOD_SUGAR_DATE_FORMAT = new ThreadLocal<SimpleDateFormat>() {
-        @Override
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("MMM dd, yyyy hh:mm:ss aa", Locale.US)
-        }
-    }
     def springSecurityService
 	def patientService
     def clinicianService
@@ -534,7 +528,7 @@ class CompletedQuestionnaireService {
         for (def result : resultList) {
             if (result.type == "BloodSugarMeasurements") {
                 for (def measurementFromDevice: result.value.measurements) {
-                    def measurementTime = BLOOD_SUGAR_DATE_FORMAT.get().parse(measurementFromDevice.timeOfMeasurement)
+                    def measurementTime = ISO8601DateParser.parse(measurementFromDevice.timeOfMeasurement)
 
                     if (Measurement.findByPatientAndMeasurementTypeAndTime(patient, MeasurementType.findByName(MeasurementTypeName.BLOODSUGAR.value()),  measurementTime)) {
                         log.debug("Skipped!")
@@ -788,50 +782,24 @@ class CompletedQuestionnaireService {
     }
 
     @Transactional
-    CompletedQuestionnaire acknowledge(CompletedQuestionnaire completedQuestionnaire, String note) {
+    CompletedQuestionnaire acknowledge(CompletedQuestionnaire completedQuestionnaire, String note, boolean sendAcknowledgeMessage = false) {
         def clinician = clinicianService.currentClinician
         completedQuestionnaire.refresh()
 
         completedQuestionnaire.acknowledgedBy = clinician
         completedQuestionnaire.acknowledgedDate = new Date()
+        completedQuestionnaire.showAcknowledgementToPatient = sendAcknowledgeMessage
+
         if (note) {
             completedQuestionnaire.acknowledgedNote = note
         }
         completedQuestionnaire.save(failOnError: true)
-
-        completedQuestionnaire
     }
 
     @Transactional
-    List<CompletedQuestionnaire> acknowledge(List<CompletedQuestionnaire> completedQuestionnaires, boolean sendAcknowledgeMessage = false) {
-
-        def clinician = clinicianService.currentClinician
-
-        completedQuestionnaires.collect { questionnaire ->
-            questionnaire.refresh()
-            questionnaire.acknowledgedBy = clinician
-            questionnaire.acknowledgedDate = new Date()
-            questionnaire.save(failOnError: true)
-
-            acknowledge(questionnaire,null)
-            if(sendAcknowledgeMessage) {
-                sendAcknowledgeAutoMessage(questionnaire)
-            }
-            return questionnaire
-        }
-    }
-
-    @Transactional
-    def sendAcknowledgeAutoMessage(CompletedQuestionnaire questionnaire) {
-        Patient patient = questionnaire.patient
-        Clinician clinician = clinicianService.currentClinician
-        def departmentIntersect = (patient.groups.collect {PatientGroup it -> it.department}).intersect(clinician.departments())
-        Department department = departmentIntersect.size() > 0 ? departmentIntersect.first() : null
-
-        if (messageService.clinicianCanSendMessagesToPatient(clinician, patient)) {
-            Date uploadDate = questionnaire.uploadDate
-            messageService.saveMessage(department, patient, i18nService.message(code: 'completedquestionnaire.message.header'),
-                    i18nService.message(code: 'completedquestionnaire.message.body', args: [questionnaire.patientQuestionnaire?.name, uploadDate.format('d-MM-yyyy'), uploadDate.format('HH:mm')]))
+    def acknowledge(List<CompletedQuestionnaire> completedQuestionnaires, boolean sendAcknowledgeMessage = false) {
+        completedQuestionnaires.each { questionnaire ->
+            acknowledge(questionnaire, null, sendAcknowledgeMessage)
         }
     }
 }

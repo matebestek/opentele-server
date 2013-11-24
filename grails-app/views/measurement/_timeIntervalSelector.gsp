@@ -20,24 +20,24 @@
 </g:javascript>
 
 <div style="margin: 0.8em 1em 0.3em;padding: 0 0.25em;">
-    ${message(code: 'time.filter.text')}:
+    <g:message code="time.filter.text"/>:
     <a id="${pageId}${MeasurementFilterType.ALL}" href="${createLink(controller:controller, action:action, id:id, params:[filter:"${MeasurementFilterType.ALL}"])}">
-        ${message(code: 'time.filter.show.all')}
+        <g:message code="time.filter.show.all"/>
     </a> |
     <a id="${pageId}${MeasurementFilterType.WEEK}" href="${createLink(controller:controller, action:action, id:id, params:[filter:"${MeasurementFilterType.WEEK}"])}">
-        ${message(code: 'time.filter.show.week')}
+        <g:message code="time.filter.show.week"/>
     </a> |
     <a id="${pageId}${MeasurementFilterType.MONTH}" href="${createLink(controller:controller, action:action, id:id, params:[filter:"${MeasurementFilterType.MONTH}"])}">
-        ${message(code: 'time.filter.show.month')}
+        <g:message code="time.filter.show.month"/>
     </a> |
     <a id="${pageId}${MeasurementFilterType.QUARTER}" href="${createLink(controller:controller, action:action, id:id, params:[filter:"${MeasurementFilterType.QUARTER}"])}">
-        ${message(code: 'time.filter.show.quarter')}
+        <g:message code="time.filter.show.quarter"/>
     </a> |
     <a id="${pageId}${MeasurementFilterType.YEAR}" href="${createLink(controller:controller, action:action, id:id, params:[filter:"${MeasurementFilterType.YEAR}"])}">
-        ${message(code: 'time.filter.show.year')}
+        <g:message code="time.filter.show.year"/>
     </a> |
     <a id="${pageId}${MeasurementFilterType.CUSTOM}" href="#" onclick="showIntervalChooser();">
-        ${message(code: 'time.filter.show.choose')}
+        <g:message code="time.filter.show.choose"/>
     </a>
 </div>
 
@@ -50,14 +50,14 @@
 <g:form method="GET" controller="${controller}" action="${action}" params='[id:id]'>
     <fieldset class="form">
         <div class="fieldcontain">
-            <label for="start" style="width:auto">${message(code: 'time.filter.custom.start')}:</label>
+            <label for="start" style="width:auto"><g:message code="time.filter.custom.start"/>:</label>
             <jq:datePicker name="start" precision="day" value="${params.start}"/>
-            <label for="end" style="width:auto">${message(code: 'time.filter.custom.end')}:</label>
+            <label for="end" style="width:auto"><g:message code="time.filter.custom.end"/>:</label>
             <jq:datePicker name="end" precision="day" value="${params.end}"/>
         </div>
         <fieldset class="buttons">
             <g:hiddenField name="filter" value="${MeasurementFilterType.CUSTOM}"/>
-            <input type="Submit" value="Indstil" class="acknowledge" style="float:left"/>
+            <input type="Submit" value="${g.message(code:'time.filter.submit')}" class="acknowledge" style="float:left"/>
         </fieldset>
     </fieldset>
 </g:form>

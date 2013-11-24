@@ -5,7 +5,7 @@
 <html>
 <head>
     <meta name="layout" content="main">
-    <g:set var="title"><g:message code="default.patient.search.label" default="Søg patient"/></g:set>
+    <g:set var="title"><g:message code="default.patient.search.label"/></g:set>
     <title>${title}</title>
 </head>
 
@@ -13,7 +13,7 @@
 <div class="content">
     <h1>${title}</h1>
 <!--  Filter box  -->
-    <g:form method="post" action="search">
+    <g:form method="post" action="doSearch">
         <fieldset class="form">
             <tmpl:patientform/>
         </fieldset>
@@ -22,6 +22,7 @@
     <g:if test="${patients?.size() > 0}">
         <tmpl:patientlist/>
     </g:if>
+
 
 </div>
 </body>

@@ -33,7 +33,7 @@ class QuestionnaireServiceIntegrationSpec extends IntegrationSpec {
     def "test remove draft questionnaire"() {
     }
 
-    @Ignore("Shold not depend on exact counts")
+    @Ignore("Should not depend on exact counts")
     def "extract completedQuestionnaires with answers"() {
 
         setup:

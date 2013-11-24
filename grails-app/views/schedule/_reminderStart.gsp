@@ -7,7 +7,7 @@
             <g:field type="number" name="reminderStartMinutes" value="${reminderStartMinutes}"
                class='input-mini'
                data-tooltip="${message(code: 'tooltip.patient.questionnaireSchedule.create.reminderStart')}" />
-        <span>min. før</span>
+        <span><g:message code="questionnaireSchedule.minutesBefore"/></span>
     </div>
 </div>
 

@@ -101,7 +101,7 @@
                 }
 
                 postAction.fail(function() {
-                    alert('Noget er gået galt! Luk venligst vinduet og åbn det på ny.');
+                    alert('${g.message(code: 'conferenceMeasurement.error')}');
                 })
                 .always(function() {
                     setUpdateInProgress(false);
@@ -170,11 +170,11 @@
     });
     </r:script>
 
-    <title>Indtastning af målinger</title>
+    <title><g:message code="conferenceMeasurement.title" /></title>
 </head>
 
 <body>
-<h1>Målinger</h1>
+<h1><g:message code="conferenceMeasurement.header" /></h1>
 <p>
     <span id="patent_name">${session[Constants.SESSION_NAME]} </span>
     <span id="patient_cpr"><g:message code="main.SSN"/>: ${session[Constants.SESSION_CPR]} </span>
@@ -182,17 +182,10 @@
 <table>
     <thead>
     <tr>
-        <th>
-            Målingstype
-        </th>
-        <th>
-            Værdi(er)
-        </th>
-        <th>
-            Medtages
-        </th>
-        <th>
-        </th>
+        <th><g:message code="conferenceMeasurement.type"/></th>
+        <th><g:message code="conferenceMeasurement.value"/></th>
+        <th><g:message code="conferenceMeasurement.include"/></th>
+        <th></th>
     </tr>
     </thead>
     <tbody id="measurements">
@@ -217,7 +210,7 @@
                     <g:render template="drafts/manualWeight" model="[measurement: measurementDraft]"/>
                 </g:elseif>
                 <g:else>
-                    <td colspan="3">Ukendt målingstype: ${measurementDraft.type}</td>
+                    <td colspan="3"><g:message code="conferenceMeasurement.unknownType" args="[measurementDraft.type]"/></td>
                 </g:else>
             </tr>
         </g:each>
@@ -225,13 +218,13 @@
     <tfoot>
         <tr>
             <td colspan="4">
-                Tilføj måling:
-                <g:select name="measurementDraftType" valueMessagePrefix="conferenceMeasurements.measurementType" from="['MANUAL_BLOOD_PRESSURE', 'AUTOMATIC_BLOOD_PRESSURE', 'MANUAL_LUNG_FUNCTION', 'AUTOMATIC_LUNG_FUNCTION', 'MANUAL_SATURATION', 'AUTOMATIC_SATURATION', 'MANUAL_WEIGHT']" noSelection="[null: '']"/>
+                <g:message code="conferenceMeasurement.addMeasurement"/>
+                <g:select name="measurementDraftType" valueMessagePrefix="conferenceMeasurement.measurementType" from="['MANUAL_BLOOD_PRESSURE', 'AUTOMATIC_BLOOD_PRESSURE', 'MANUAL_LUNG_FUNCTION', 'AUTOMATIC_LUNG_FUNCTION', 'MANUAL_SATURATION', 'AUTOMATIC_SATURATION', 'MANUAL_WEIGHT']" noSelection="[null: '']"/>
 
                 <g:form action="confirm">
                     <g:hiddenField name="id" value="${conference.id}"/>
                     <g:hiddenField name="conferenceVersion" value="${conference.version}"/>
-                    <g:submitButton name="confirm" value="Gem og luk"/>
+                    <g:submitButton name="confirm" value="${g.message(code: 'conferenceMeasurement.saveAndClose')}"/>
                 </g:form>
             </td>
         </tr>

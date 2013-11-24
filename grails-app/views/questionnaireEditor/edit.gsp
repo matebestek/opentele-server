@@ -49,10 +49,10 @@
             </ul>
             <ul class="nav pull-right">
                 <li id="fat-menu" class="dropdown">
-                    <a href="#" id="drop-import-export" class="dropdown-toggle" data-toggle="dropdown">Import/Eksport <b class="icon-angle-down"></b></a>
+                    <a href="#" id="drop-import-export" class="dropdown-toggle" data-toggle="dropdown"><g:message code="questionnaireEditor.menu.importExport"/> <b class="icon-angle-down"></b></a>
                     <ul class="dropdown-menu" aria-labelledby="drop-import-export">
-                        <li id="import_questionnaire"><a tabindex="-1" href="#">Importer spørgeskema</a></li>
-                        <li id="export_questionnaire"><a tabindex="-1" href="#">Eksporter spørgeskema</a></li>
+                        <li id="import_questionnaire"><a tabindex="-1" href="#"><g:message code="questionnaireEditor.menu.importExport.import"/></a></li>
+                        <li id="export_questionnaire"><a tabindex="-1" href="#"><g:message code="questionnaireEditor.menu.importExport.export"/></a></li>
                     </ul>
                 </li>
             </ul>

@@ -4,7 +4,7 @@
 
 <div class="fieldcontain ${hasErrors(bean: messageInstance, field: 'patient', 'error')} required">
 	<label for="patient">
-        <g:message code="message.to.patient.label" default="To" />
+        <g:message code="message.to.patient.label" />
         <span class="required-indicator">*</span>
 	</label>
 	<g:if test="${patient != null}">
@@ -19,7 +19,7 @@
 
 <div class="fieldcontain ${hasErrors(bean: messageInstance, field: 'department', 'error')} required">
 	<label for="department">
-        <g:message code="message.from.department.label" default="To" />
+        <g:message code="message.from.department.label" />
 		<span class="required-indicator">*</span>
 	</label>
 	<g:if test="${departments.size() > 1}">
@@ -34,14 +34,14 @@
 
 <div class="fieldcontain ${hasErrors(bean: messageInstance, field: 'title', 'error')} ">
 	<label for="title">
-        <g:message code="message.title.label" default="Title" />
+        <g:message code="message.title.label" />
 	</label>
 	<g:textField name="title" value="${messageInstance?.title}" />
 </div>
 
 <div class="fieldcontain ${hasErrors(bean: messageInstance, field: 'text', 'error')} ">
 	<label for="text">
-        <g:message code="message.text.label" default="Text" />
+        <g:message code="message.text.label" />
 	</label>
 	<g:textArea name="text" cols="40" rows="5" maxlength="2000" value="${messageInstance?.text}" />
 </div>

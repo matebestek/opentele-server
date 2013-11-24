@@ -48,7 +48,7 @@ class QuestionnaireScheduleControllerIntegrationTests extends AbstractController
         //Check delete went well
         assert scheduleController.response.redirectedUrl == "/monitoringPlan/show/"+patient.id
         assert scheduleController.flash.message != null
-        assert scheduleController.flash.message == "Planned questionnaire deleted"
+        assert scheduleController.flash.message == "Questionnaire Schedule deleted"
 
         //Check we have the same number of results as before delete
         def completedAfterDelete = questionnaireService.extractCompletedQuestionnaireWithAnswers(patient.id)

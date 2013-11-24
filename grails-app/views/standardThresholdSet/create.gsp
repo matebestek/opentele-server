@@ -3,12 +3,11 @@
 <html>
 <head>
     <meta name="layout" content="main">
-    <g:set var="entityName" value="${message(code: 'standardThresholdSet.label', default: 'StandardThresholdSet')}" />
-  		<title><g:message code="default.create.label" args="[entityName]" /></title>
+  		<title><g:message code="standardThresholdSet.create" /></title>
   	</head>
   	<body>
   		<div id="create-standardThresholdSet" class="content scaffold-create" role="main">
-  			<h1><g:message code="default.create.label" args="[entityName]" /> for patientgruppe ${patientGroup.name}</h1>
+  			<h1><g:message code="standardThresholdSet.createForPatientGroup" args="[patientGroup.name]" /></h1>
     <g:if test="${flash.message}">
         <div class="message" role="status">${flash.message}</div>
     </g:if>
@@ -24,10 +23,10 @@
             <g:hiddenField name="id" value="${standardThresholdSetInstance?.id}"/>
             <div class="fieldcontain">
                 <label for="type">
-                    <g:message code="standardThresholdSet.threshold.choseType.label"/> <span class="required-indicator">*</span>
+                    <g:message code="standardThresholdSet.chooseType"/> <span class="required-indicator">*</span>
                 </label>
                 <g:select name="type" from="${notUsedThresholds}"
-                          noSelection="[null: message(code: 'standardThresholdSet.threshold.chooseType')]" value="${thresholdType}"/>
+                          noSelection="[null: message(code: 'standardThresholdSet.chooseType.option')]" value="${thresholdType}"/>
             </div>
 
             <div id="thresholdFields">
@@ -39,7 +38,7 @@
         </fieldset>
         <fieldset class="buttons">
             <g:submitButton name="saveThreshold" class="save"
-                            value="${message(code: 'default.button.create.label', default: 'Create')}"/>
+                            value="${message(code: 'default.button.create.label')}"/>
         </fieldset>
     </g:form>
     <g:javascript>

@@ -19,7 +19,7 @@
                 <input type="number" min="0" id="countTime" placeholder="${g.message(code: 'questionnaireEditor.modal.countTime')}" class="span5">
 
                 <label><g:message code="questionnaireEditor.modal.counttype"/> </label>
-                <g:select name="countType" from="${['Op', 'Ned']}"  valueMessagePrefix="questionnaireEditor.countType" class="span5"/>
+                <g:select name="countType" from="${[g.message(code: 'questionnaireEditor.modal.counttype.up'), g.message(code: 'questionnaireEditor.modal.counttype.down')]}"  valueMessagePrefix="questionnaireEditor.countType" class="span5"/>
             </fieldset>
         </form>
     </div>

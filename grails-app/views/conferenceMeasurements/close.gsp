@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta name="layout" content="conferenceMeasurements">
-    <title>Målingsindtastninger afsluttet</title>
+    <title><g:message code="conferenceMeasurement.finished.title"/></title>
     <r:script>
         $(function() {
             window.close();
@@ -10,7 +10,7 @@
     </r:script>
 </head>
 <body>
-<h1>Målingsindtastninger afsluttet</h1>
-<p>Vinduet bør lukke automatisk nu.</p>
+<h1><g:message code="conferenceMeasurement.finished.title"/></h1>
+<p><g:message code="conferenceMeasurement.finished.description"/></p>
 </body>
 </html>

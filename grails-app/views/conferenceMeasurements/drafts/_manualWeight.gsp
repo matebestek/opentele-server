@@ -1,5 +1,5 @@
-<tmpl:drafts/measurement measurement="${measurement}" headline="Vægt">
-    <tmpl:drafts/manualValue name="weight" title="Vægt (kg)" value="${g.formatNumber(number: measurement.weight, format:'0.0', locale: 'DA')}">
-        Skal bestå af et tal med højst én decimal. Brug komma.
+<tmpl:drafts/measurement measurement="${measurement}" headline="${g.message(code:'conferenceMeasurement.weight.manual.title')}">
+    <tmpl:drafts/manualValue name="weight" title="${g.message(code:'conferenceMeasurement.weight.weight.title')}" value="${g.formatNumber(number: measurement.weight, format:'0.0')}">
+        <g:message code="conferenceMeasurement.weight.weight.format"/>
     </tmpl:drafts/manualValue>
 </tmpl:drafts/measurement>
