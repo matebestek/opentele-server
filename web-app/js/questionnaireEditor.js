@@ -59,7 +59,7 @@ var yesSourceEndPoint = {
     overlays: [
         [ "Label", {
             location: [-0.4, 1.0],
-            label: "Ja"
+            label: i18n.yesSourceEndpoint
         } ]
     ],
     parameters: {
@@ -86,7 +86,7 @@ var skipMeasurementEndPoint = {
     overlays: [
         [ "Label", {
             location: [1.7, 1.0],
-            label: "Udelad"
+            label: i18n.skipMeasurementEndpoint
         } ]
     ],
     parameters: {
@@ -103,7 +103,7 @@ var noSourceEndPoint = {
     overlays: [
         [ "Label", {
             location: [1.7, 1.0],
-            label: "Nej"
+            label: i18n.noSourceEndpoint
         } ]
     ],
     parameters: {
@@ -503,13 +503,13 @@ var exitOnSave = false;
 
 function saveError(jqXHR) {
     return function () {
-        $('body').prepend("<div class='alert alert-error span12' style='position: absolute; z-index:100;'><button type='button' class='close' data-dismiss='alert'>&times;</button> Der kunne ikke gemmes: " + jqXHR.responseText + "</div>");
+        $('body').prepend("<div class='alert alert-error span12' style='position: absolute; z-index:100;'><button type='button' class='close' data-dismiss='alert'>&times;</button> " + i18n.couldNotSave + ": " + jqXHR.responseText + "</div>");
         exitOnSave = false;
     };
 }
 function saveSucceded(jqXHR) {
     return function () {
-        $('body').prepend("<div class='alert alert-info span12' style='position: absolute; z-index:100;'><button type='button' class='close' data-dismiss='alert'>&times;</button> Skema gemt</div>");
+        $('body').prepend("<div class='alert alert-info span12' style='position: absolute; z-index:100;'><button type='button' class='close' data-dismiss='alert'>&times;</button> " + i18n.questionnaireSaved + "</div>");
         if (exitOnSave) {
             window.location.href = $('input[name="exitUrl"]').val()
         }
@@ -563,7 +563,7 @@ function isShowing() {
     return getQuestionnaireId()
 }
 function failedToDoAjaxCall(error) {
-    $('body').prepend("<div class='alert alert-error span12'><button type='button' class='close' data-dismiss='alert'>&times;</button> Der kunne ikke gemmes: " + error + "</div>");
+    $('body').prepend("<div class='alert alert-error span12'><button type='button' class='close' data-dismiss='alert'>&times;</button> " + i18n.couldNotSave + ": " + error + "</div>");
 }
 function setPosition(element, position) {
     if (position) {
@@ -853,7 +853,7 @@ function restoreStateFromJsonString(jsonString) {
         var model = $.parseJSON(jsonString);
         updateModel(model);
     } catch (e) {
-        alert("Import fejlede.");
+        alert(i18n.importFailed);
         console.error(e)
     }
 }

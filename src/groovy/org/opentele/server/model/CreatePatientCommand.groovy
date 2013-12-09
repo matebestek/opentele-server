@@ -207,7 +207,7 @@ class CreatePatientCommand extends AbstractObject {
             try {
                 return GlucoseInUrineValue.fromString(newValue)
             } catch (IllegalArgumentException e) {
-                threshold.errors.reject("default.urineGlucoseThreshold.edit.error", [type] as Object[], 'i18n missing')
+                threshold.errors.reject("default.urineGlucoseThreshold.edit.error", [type] as Object[])
                 return threshold."${type}"
             }
         }
@@ -221,7 +221,7 @@ class CreatePatientCommand extends AbstractObject {
             try {
                 return NumberFormatUtil.parseFloatWithCommaOrPeriod(newValue)
             } catch (NumberFormatException e) {
-                threshold.errors.reject("default.threshold.edit.error", [type] as Object[], 'i18n missing')
+                threshold.errors.reject("default.threshold.edit.error", [type] as Object[])
                 return threshold."${type}"
             }
 

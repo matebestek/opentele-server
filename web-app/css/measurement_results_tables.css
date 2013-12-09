@@ -82,6 +82,8 @@ div#resultsContainer div#leftHeaderContainer select {
     border: 1px solid #ccc;
 }
 
+
+
 div#resultsContainer div#leftHeaderContainer tr#prefQuestion td {
     text-align: center;
     vertical-align: middle;
@@ -130,3 +132,22 @@ img.measurementResultSeverityIcon {
     width: 10px;
     height: 10px;
 }
+
+tr:nth-child(even) {background: #e2e2e2}
+tr:nth-child(odd) {background: #FFF}
+div#resultTableContainer td {
+    border: 1px solid #93b8ce;
+}
+div#resultsContainer tr th {
+    border: 1px solid #93b8ce;
+    border-bottom: none;
+}
+div#resultsContainer div#leftHeaderContainer td{
+    border: 1px solid #93b8ce;
+}
+
+div.question {
+    font-size: smaller !important;
+}
+
+

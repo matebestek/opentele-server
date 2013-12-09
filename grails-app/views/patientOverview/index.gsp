@@ -155,18 +155,18 @@
 
     <sec:ifAnyGranted roles="${PermissionName.QUESTIONNAIRE_ACKNOWLEDGE}">
         <div id="overviewButtons" class="buttons clearfix">
-            <g:if test="${!patientList.isEmpty()}">
-                <g:form action="index" style="display: inline-block; float: right;  width: 450px" method="GET">
-                    <g:submitButton name="submitFilter" class="search" data-tooltip="${message(code: "patientOverview.patientGroupFilter.tooltip")}" value="${message(code: 'patientOverview.filter')}"/>
-                    <g:select id="filterDropdown"
-                              name="patientgroup.filter.id"
-                              class="many-to-one"
-                              from="${clinicianPatientGroups}"
-                              value="${session[Constants.SESSION_PATIENT_GROUP_ID]}"
-                              noSelection="['':message(code: 'patientOverview.option.allPatientGroups')]"
-                              optionKey="id"
+            <g:form action="index" style="display: inline-block; float: right;  width: 450px" method="GET">
+                <g:submitButton name="submitFilter" class="search" data-tooltip="${message(code: "patientOverview.patientGroupFilter.tooltip")}" value="${message(code: 'patientOverview.filter')}"/>
+                <g:select id="filterDropdown"
+                          name="patientgroup.filter.id"
+                          class="many-to-one"
+                          from="${clinicianPatientGroups}"
+                          value="${session[Constants.SESSION_PATIENT_GROUP_ID]}"
+                          noSelection="['':message(code: 'patientOverview.option.allPatientGroups')]"
+                          optionKey="id"
                     />
-                </g:form>
+            </g:form>
+            <g:if test="${!patientList.isEmpty()}">
                 <tmpl:acknowledgeGreen />
             </g:if>
 

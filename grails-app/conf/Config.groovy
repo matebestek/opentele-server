@@ -91,6 +91,8 @@ video {
     }
 }
 
+defaultLocale = new Locale("da", "DK")
+
 // set per-environment serverURL stem for creating absolute links
 environments {
 	development {

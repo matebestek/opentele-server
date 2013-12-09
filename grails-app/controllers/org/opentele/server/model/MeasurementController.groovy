@@ -36,7 +36,7 @@ class MeasurementController {
             return
         }
 
-        flash.message = message(code: 'default.created.message', args: [message(code: 'measurement.label', default: 'Measurement')])
+        flash.message = message(code: 'default.created.message', args: [message(code: 'measurement.label')])
         redirect(action: "show", id: measurementInstance.id)
     }
 
@@ -58,7 +58,7 @@ class MeasurementController {
     def edit() {
         def measurementInstance = Measurement.get(params.id)
         if (!measurementInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label', default: 'Measurement')])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label')])
             redirect(action: "list")
             return
         }
@@ -70,7 +70,7 @@ class MeasurementController {
     def update() {
         def measurementInstance = Measurement.get(params.id)
         if (!measurementInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label', default: 'Measurement')])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label')])
             redirect(action: "list")
             return
         }
@@ -93,7 +93,7 @@ class MeasurementController {
             return
         }
 
-        flash.message = message(code: 'default.updated.message', args: [message(code: 'measurement.label', default: 'Measurement')])
+        flash.message = message(code: 'default.updated.message', args: [message(code: 'measurement.label')])
         redirect(action: "show", id: measurementInstance.id)
     }
 
@@ -102,18 +102,18 @@ class MeasurementController {
     def delete() {
         def measurementInstance = Measurement.get(params.id)
         if (!measurementInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label', default: 'Measurement')])
+            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label')])
             redirect(action: "list")
             return
         }
 
         try {
             measurementInstance.delete(flush: true)
-            flash.message = message(code: 'default.deleted.message', args: [message(code: 'measurement.label', default: 'Measurement')])
+            flash.message = message(code: 'default.deleted.message', args: [message(code: 'measurement.label')])
             redirect(action: "list")
         }
         catch (DataIntegrityViolationException e) {
-            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'measurement.label', default: 'Measurement')])
+            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'measurement.label')])
             redirect(action: "show", id: params.id)
         }
     }

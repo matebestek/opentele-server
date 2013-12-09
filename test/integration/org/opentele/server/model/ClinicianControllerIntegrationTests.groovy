@@ -1,6 +1,7 @@
 package org.opentele.server.model
 
 import org.junit.Ignore
+import org.opentele.server.service.BootStrapService
 
 class ClinicianControllerIntegrationTests extends AbstractControllerIntegrationTest {
     //Injections
@@ -103,8 +104,8 @@ class ClinicianControllerIntegrationTests extends AbstractControllerIntegrationT
 
         grailsApplication.mainContext.sessionFactory.currentSession.clear()
 
-        def roleAdmin = Role.findByAuthority(BootStrapUtil.RoleName.ROLE_ADMIN.value())
-        def roleClinician =  Role.findByAuthority(BootStrapUtil.RoleName.ROLE_CLINICIAN.value())
+        def roleAdmin = Role.findByAuthority(BootStrapService.roleAdministrator)
+        def roleClinician =  Role.findByAuthority(BootStrapService.roleClinician)
 
         clinicianController.params.id = clinician.id
         clinicianController.params.version = clinician.version

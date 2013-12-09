@@ -12,6 +12,12 @@ import org.opentele.server.util.CustomGroovyBeanJSONMarshaller
 import grails.converters.JSON
 
 class BootStrapService {
+    // User role names
+    public static String roleAdministrator = "Administrator"
+    public static String rolePatient = "Patient"
+    public static String roleClinician = "Kliniker"
+    public static String roleVideoConsultant = "Videokonsultør"
+
     private static final DateTimeFormatter DATE_TIME_FORMATTER = ISODateTimeFormat.dateTime();
 
     def grailsApplication
@@ -23,43 +29,4 @@ class BootStrapService {
             it == null ? null : DATE_TIME_FORMATTER.print(new DateTime(it))
         }
     }
-
-	void setupAdminUserRole (Date date) {
-		
-		// Setup admin role
-		def adminRole = Role.findByAuthority('ROLE_ADMIN') ?: new Role(authority: 'ROLE_ADMIN',
-			createdBy: "System",
-			modifiedBy: "System",
-			createdDate: date,
-			modifiedDate: date).save(failOnError: true)
-
-			
-			def adminUser = User.findByUsername('admin') ?: new User(
-				username: 'admin',
-				password: 'admin',
-				enabled: true,
-				createdBy: "System",
-				modifiedBy: "System",
-				createdDate: date,
-				modifiedDate: date).save(failOnError: true)
-
-		if (!adminUser.authorities.contains(adminRole)) {
-			log.debug (UserRole.create(adminUser, adminRole))
-		}
-	}
-	
-	
-	void setupRoles(Date date) {
-		// Setup super user
-		Role patientRole = new Role(authority: "DEFAULT_PATIENT_ROLE", createdBy: "System", modifiedBy: "System", createdDate: date, modifiedDate: date)
-		patientRole.save(failOnError:true)
-
-		Role clinicRole = new Role(authority: "ROLE_CLINICAL", createdBy: "System", modifiedBy: "System", createdDate: date, modifiedDate: date)
-		clinicRole.save(failOnError:true)
-
-
-	}
-	
-	
-
 }

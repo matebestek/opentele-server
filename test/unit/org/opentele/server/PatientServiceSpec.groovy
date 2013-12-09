@@ -13,7 +13,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 @TestFor(PatientService)
-@Build([Patient, User, Role, UserRole, PatientGroup, Patient2PatientGroup, MonitoringPlan, NextOfKinPerson, Clinician, Patient2PatientGroup, Clinician2PatientGroup])
+@Build([Patient, User, Role, UserRole, PatientGroup, Patient2PatientGroup, MonitoringPlan, NextOfKinPerson, Clinician, Clinician2PatientGroup])
 class PatientServiceSpec extends Specification {
 
     def setup() {
@@ -176,6 +176,7 @@ class PatientServiceSpec extends Specification {
                 password: "password1"
         ])
     }
+
 
     private createPatientForUpdate() {
         def user = User.build(password: "password1", cleartextPassword: null)

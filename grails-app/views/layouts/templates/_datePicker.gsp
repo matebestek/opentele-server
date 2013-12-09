@@ -2,9 +2,9 @@
     <div class="ui-datepicker-wrapper"><g:textField name="${name}_widget" id="${id}_widget" value="${dateAsText}" class="ui-datepicker-ot-date"/></div>
     <g:if test="${showTime}">
         <div class="ui-datepicker-timewrapper">
-            <g:message code="default.time.name" default="@"/>
+            <g:message code="default.time.name"/>
             <g:textField name="${name}_hour" value="${formatDate(date: date, format: "HH")}" class="ui-datepicker-ot-time" maxlength="2"/>
-            <g:message code="default.time.separator" default=":"/>
+            <g:message code="default.time.separator"/>
             <g:textField name="${name}_minute" value="${formatDate(date: date, format: "mm")}" class="ui-datepicker-ot-time" maxlength="2"/>
         </div>
     </g:if>

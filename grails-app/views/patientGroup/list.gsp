@@ -49,7 +49,7 @@
 
             <fieldset class="buttons">
                 <g:link class="create" action="create">
-                    <g:message code="default.create.label" args="["patientgruppe"]" />
+                    <g:message code="default.create.label" args="[g.message(code:'patientGroup.label')]" />
                 </g:link>
             </fieldset>
 		</div>

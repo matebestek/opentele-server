@@ -32,7 +32,7 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
         controller.update()
 
         then:
-        controller.flash.message == "password.changed.for.user"
+        controller.flash.message == "Password changed for user: passwordtestuser"
         !user.cleartextPassword
         user.version > version
         controller.response.redirectUrl == '/password/changed'
@@ -53,7 +53,7 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
 
         then:
         json.status == 'ok'
-        json.message == 'password.changed.for.user'
+        json.message == 'Password changed for user: passwordtestuser'
         !user.cleartextPassword
         user.version > version
     }

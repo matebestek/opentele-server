@@ -39,7 +39,7 @@
                     </g:link>
                 </td>
 
-                <td>${fieldValue(bean: patientNoteInstance, field: "type")}</td>
+                <td><g:message code="enum.patientnote.${patientNoteInstance.type.name()}"/></td>
 
                 <td><g:formatDate date="${patientNoteInstance.reminderDate}"/></td>
 

@@ -4,26 +4,11 @@ import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.MeterTypeName
 import org.opentele.server.model.types.PermissionName
 import org.opentele.server.model.types.ProteinValue
+import org.opentele.server.service.BootStrapService
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class BootStrapUtil {
-    private static final Logger log = LoggerFactory.getLogger(BootStrapUtil.class.name)
-
-    public static enum RoleName {
-        ROLE_ADMIN("Administrator"),ROLE_PATIENT("Patient"),ROLE_CLINICIAN("Kliniker"),ROLE_VIDEO_CONSULTANT("Videokonsultør")
-
-        private final String value
-
-        RoleName(String value) {
-            this.value = value
-        }
-
-        String value() {
-            value
-        }
-    }
-
 	Date now = new Date()
 
     static void removePermission(String permissionName) {
@@ -185,7 +170,7 @@ class BootStrapUtil {
 
     private def permissionsForRole(Role r) {
         switch (r.authority) {
-            case RoleName.ROLE_ADMIN.value():
+            case BootStrapService.roleAdministrator:
                 return [
                     PermissionName.WEB_LOGIN,
                     PermissionName.QUESTIONNAIRE_READ,
@@ -245,7 +230,7 @@ class BootStrapUtil {
                     PermissionName.QUESTIONNAIRE_GROUP_CREATE,
                     PermissionName.QUESTIONNAIRE_GROUP_DELETE,
                 ]
-            case RoleName.ROLE_CLINICIAN.value():
+            case BootStrapService.roleClinician:
                 return [
                     PermissionName.WEB_LOGIN,
                     PermissionName.CLAIM_PATIENT_RESPONSIBILITY,
@@ -319,7 +304,7 @@ class BootStrapUtil {
                     PermissionName.PASSIVE_INTERVAL_READ_ALL,
                     PermissionName.CONFERENCE_READ
                 ]
-            case RoleName.ROLE_PATIENT.value():
+            case BootStrapService.rolePatient:
                 return [
                     PermissionName.WEB_LOGIN, // Maybe, maybe not?
 
@@ -340,7 +325,7 @@ class BootStrapUtil {
 
                     PermissionName.JOIN_VIDEO_CALL
                 ]
-            case RoleName.ROLE_VIDEO_CONSULTANT.value():
+            case BootStrapService.roleVideoConsultant:
                 return [
                     PermissionName.VIDEO_CALL
                 ]

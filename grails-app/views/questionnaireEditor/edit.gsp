@@ -8,11 +8,26 @@
     <link href="${resource(dir: 'css', file: 'font-awesome.min.css')}" rel="stylesheet">
     <link href="${resource(dir: 'css', file: 'jquery-ui.custom.css')}" rel="stylesheet">
     <link href="${resource(dir: 'css', file: 'questionnaireEditor.css')}" rel="stylesheet">
+
+    <!-- Internationalization -->
+    <r:script disposition="head">
+    i18n = {
+        startNodeName: "${g.message(code:'questionnaireEditor.nodetype.start')}",
+        endNodeName: "${g.message(code:'questionnaireEditor.nodetype.end')}",
+        skipMeasurementEndpoint: "${g.message(code:'questionnaireEditor.skipMeasurementEndpoint')}",
+        yesSourceEndpoint: "${g.message(code:'questionnaireEditor.yesSourceEndpoint')}",
+        noSourceEndpoint: "${g.message(code:'questionnaireEditor.noSourceEndpoint')}",
+        importFailed: "${g.message(code:'questionnaireEditor.importFailed')}",
+        couldNotSave: "${g.message(code:'questionnaireEditor.couldNotSave')}",
+        questionnaireSaved: "${g.message(code:'questionnaireEditor.questionnaireSaved')}"
+    }
+    </r:script>
+
     <r:layoutResources/>
 
     <!--[if lt IE 9]>
     <script type="text/javascript">
-        alert("Spørgeskemaeditoren er ikke supporteret i\nInternet Explorer før version 9.");
+        alert("${g.message(code:'questionnaireEditor.unsupported')}");
     </script>
    <![endif]-->
 </head>

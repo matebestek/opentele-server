@@ -3,10 +3,13 @@ package org.opentele.server.questionnaire
 import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
 import org.opentele.server.model.patientquestionnaire.PatientQuestionnaireNode
 import org.opentele.server.model.patientquestionnaire.PatientQuestionnaireNodeVisitor
+import org.springframework.context.MessageSource
 
 class QuestionnaireDownloadService {
+    MessageSource messageSource
+
     def asJson(PatientQuestionnaire questionnaire) {
-        def outputBuilder = new QuestionnaireOutputBuilder()
+        def outputBuilder = new QuestionnaireOutputBuilder(messageSource)
         outputBuilder.build(questionnaire)
 
         [

@@ -234,6 +234,36 @@ class PatientService {
         }
     }
 
+    def getActivePatientsForClinician(Clinician activeClinician) {
+        def criteria = Patient.createCriteria()
+        criteria.listDistinct() {
+            eq('state', PatientState.ACTIVE)
+
+            patient2PatientGroups {
+                patientGroup {
+                    clinician2PatientGroups {
+                        eq('clinician', activeClinician)
+                    }
+                }
+            }
+        }
+    }
+
+    def getActivePatientsForClinicianAndPatientGroup(Clinician activeClinician, PatientGroup activePatientGroup) {
+        if (!activeClinician.clinician2PatientGroups.find { it.patientGroup == activePatientGroup }) {
+            throw new IllegalArgumentException("Clinician ${activeClinician} is not part of given patient group (${activePatientGroup})")
+        }
+
+        def criteria = Patient.createCriteria()
+        criteria.listDistinct() {
+            eq('state', PatientState.ACTIVE)
+
+            patient2PatientGroups {
+                eq('patientGroup', activePatientGroup)
+            }
+        }
+    }
+
     def isNoteSeenByUser(PatientNote note) {
         def clinician = Clinician.findByUser(springSecurityService.getCurrentUser())
         return note.seenBy.contains(clinician)
@@ -285,5 +315,4 @@ class PatientService {
         mailSenderService.sendMail(i18nService.message(code: 'patient.send-password.subject'), patient.email, '/email/passwordRecovery',
                 [patient: patient.name, clinician: clinicianService.currentClinician.name, password: patient.user.cleartextPassword])
     }
-
 }

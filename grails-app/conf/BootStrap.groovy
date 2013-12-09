@@ -2,7 +2,6 @@ import opentele.server.ConferenceCallJob
 import opentele.server.ExportCTGToMilouJob
 import opentele.server.ExportMeasurementsToKihDbJob
 import org.opentele.server.model.*
-import org.opentele.server.model.BootStrapUtil.RoleName
 import org.opentele.server.model.Schedule.TimeOfDay
 import org.opentele.server.model.patientquestionnaire.*
 import org.opentele.server.model.questionnaire.Questionnaire
@@ -13,6 +12,7 @@ import org.opentele.server.model.types.*
 import org.opentele.server.questionnaire.RMQuestionnaireBuilder
 import org.opentele.server.questionnaire.RNQuestionnaireBuilder
 import org.opentele.server.questionnaire.TestQuestionnaireBuilder
+import org.opentele.server.service.BootStrapService
 import org.opentele.server.util.ISO8601DateParser
 import org.springframework.web.context.support.WebApplicationContextUtils
 
@@ -20,7 +20,6 @@ import java.text.SimpleDateFormat
 
 @SuppressWarnings("GroovyDocCheck")
 class BootStrap {
-
     private static final String LINDA_CPR = '0101860124'
     private static final String ERNA_CPR = '0101800124'
     private static final String KIRAN_CPR = '1103811376'
@@ -28,10 +27,34 @@ class BootStrap {
 
     private static final CREATED_BY_NAME = "BootStrap"
 
-    // Patientgruppe navne i testdata
-    static final String PRAEKLAMPSI = "Præeklampsi"
+    // Test patient groups
+    static String praeklampsi = "Præeklampsi"
+    static String hjertepatient = "Hjertepatient"
     static final String PPROM = "PPROM"
-    static final String HJERTEPATIENT = "Hjertepatient"
+
+    // Test department names
+    static String afdelingBTest = "Afdeling-B Test"
+    static String afdelingYTest = "Afdeling-Y Test"
+
+    // Test clinician data
+    static def clinicianHelleAndersen = [
+            firstName: 'Helle', lastName: 'Andersen',
+            email: 'helle@andersen'
+    ]
+    static def clinicianJensHansen = [
+            firstName: 'Jens', lastName: 'Hansen',
+            email: 'jens@hansen'
+    ]
+    static def clinicianDoktorHansen = [
+            firstName: 'Doktor', lastName: 'Hansen',
+            email: 'drhansen@sygehuset'
+    ]
+
+    // Test patient data
+    static def patientNancyAnn = [
+            firstName: 'Nancy Ann', lastName: 'Berggren',
+            address: 'Åbogade 15', postalCode: '8200', city: 'Aarhus N'
+    ]
 
     def springSecurityService
     def bootStrapService
@@ -108,20 +131,73 @@ class BootStrap {
         createCliniciansForTest()
         createTestPatients()
 
-        def schemaCreator = Clinician.findByFirstNameAndLastName("Helle", "Andersen")
+        def schemaCreator = Clinician.findByFirstNameAndLastName(clinicianHelleAndersen.firstName, clinicianHelleAndersen.lastName)
 
         def nancyAnn = Patient.findByCpr(NANCY_CPR)
         def kiran = Patient.findByCpr(KIRAN_CPR)
         def pErna = Patient.findByCpr(ERNA_CPR)
         def pLinda = Patient.findByCpr(LINDA_CPR)
 
-        Department deptY = Department.findByName("Afdeling-Y Test")
+        Department deptY = Department.findByName(afdelingYTest)
 
         createMessagesForTest(pErna, deptY)
         createMonitorKitsAndMetersForTest(nancyAnn, kiran, deptY)
         createQuestionnairesForTest(schemaCreator)
         // ..assign the questionnaires to patients...
         createPatientQuestionnairesForTest(schemaCreator, nancyAnn, pLinda)
+        createConferencesForTest(schemaCreator, nancyAnn)
+    }
+
+    def doBootstrapForEnglishTest() {
+        BootStrapService.roleAdministrator = "Administrator"
+        BootStrapService.rolePatient = "Patient"
+        BootStrapService.roleClinician = "Clinican"
+        BootStrapService.roleVideoConsultant = "Video consultant"
+
+        praeklampsi = 'preeclampsia'
+        hjertepatient = 'heart patient'
+
+        afdelingBTest = 'Department B'
+        afdelingYTest = 'Department Y'
+
+        clinicianHelleAndersen = [
+                firstName: 'Helen', lastName: 'Anderson',
+                email: 'helen@anderson'
+        ]
+        clinicianJensHansen = [
+                firstName: 'John', lastName: 'Hansson',
+                email: 'john@hansson'
+        ]
+        clinicianDoktorHansen = [
+                firstName: 'Doctor', lastName: 'Hansson',
+                email: 'drhansson@hospital'
+        ]
+
+        patientNancyAnn = [
+                firstName: 'Nancy Ann', lastName: 'Doe',
+                address: '150 Tremont St', postalCode: 'MA 02111', city: 'Boston, Downtown'
+        ]
+
+        setupRolesAndTypes()
+
+        createAdminUser("admin_23")
+        createOrganizationObjectsForTest()
+
+        createCliniciansForTest()
+        createTestPatients()
+
+        def schemaCreator = Clinician.findByFirstNameAndLastName(clinicianHelleAndersen.firstName, clinicianHelleAndersen.lastName)
+
+        def nancyAnn = Patient.findByCpr(NANCY_CPR)
+        def kiran = Patient.findByCpr(KIRAN_CPR)
+        def pLinda = Patient.findByCpr(LINDA_CPR)
+
+        Department deptY = Department.findByName(afdelingYTest)
+
+        createQuestionnairesForEnglishTest(schemaCreator)
+        createMonitorKitsAndMetersForTest(nancyAnn, kiran, deptY)
+        // ..assign the questionnaires to patients...
+        createPatientQuestionnairesForEnglishTest(schemaCreator, nancyAnn, pLinda)
         createConferencesForTest(schemaCreator, nancyAnn)
     }
 
@@ -166,19 +242,19 @@ class BootStrap {
         Date now = new Date()
         def role
 
-        role = bootStrapUtil.setupRoleIfNotExists(RoleName.ROLE_ADMIN.value())
+        role = bootStrapUtil.setupRoleIfNotExists(BootStrapService.roleAdministrator)
         bootStrapUtil.setupPermissionsForRole(role)
-        role = bootStrapUtil.setupRoleIfNotExists(RoleName.ROLE_PATIENT.value(), now)
+        role = bootStrapUtil.setupRoleIfNotExists(BootStrapService.rolePatient, now)
         bootStrapUtil.setupPermissionsForRole(role)
-        role = bootStrapUtil.setupRoleIfNotExists(RoleName.ROLE_CLINICIAN.value(),now)
+        role = bootStrapUtil.setupRoleIfNotExists(BootStrapService.roleClinician,now)
         bootStrapUtil.setupPermissionsForRole(role)
-        role = bootStrapUtil.setupRoleIfNotExists(RoleName.ROLE_VIDEO_CONSULTANT.value(),now)
+        role = bootStrapUtil.setupRoleIfNotExists(BootStrapService.roleVideoConsultant,now)
         bootStrapUtil.setupPermissionsForRole(role)
     }
 
     def createAdminUser(String code) {
         def adminUser = setupUserIfNotExists('admin', code, 'admin', 'admin')
-        Role adminRole = Role.findByAuthority(RoleName.ROLE_ADMIN.value())
+        Role adminRole = Role.findByAuthority(BootStrapService.roleAdministrator)
         bootStrapUtil.addUserToRoleIfNotExists(adminUser, adminRole)
 
         adminUser
@@ -236,17 +312,17 @@ class BootStrap {
 
         Date now = new Date()
 
-        Department deptB = bootStrapUtil.createDepartmentIfNotExists("Afdeling-B Test")
-        Department deptY = bootStrapUtil.createDepartmentIfNotExists("Afdeling-Y Test")
+        Department deptB = bootStrapUtil.createDepartmentIfNotExists(afdelingBTest)
+        Department deptY = bootStrapUtil.createDepartmentIfNotExists(afdelingYTest)
 
         //Set ThresholdSet for each created patientGroup
         def preEmpStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['temperature', 'hemoglobin', 'crp'])
         def ppromStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['saturation', 'weight', 'urine'])
         def heartStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['bloodPressure', 'pulse'])
 
-        bootStrapUtil.createPatientGroupIfNotExists(PRAEKLAMPSI, deptY, now, preEmpStandardThresholdSet)
+        bootStrapUtil.createPatientGroupIfNotExists(praeklampsi, deptY, now, preEmpStandardThresholdSet)
         bootStrapUtil.createPatientGroupIfNotExists(PPROM, deptY, now, ppromStandardThresholdSet)
-        bootStrapUtil.createPatientGroupIfNotExists(HJERTEPATIENT, deptB,now, heartStandardThresholdSet)
+        bootStrapUtil.createPatientGroupIfNotExists(hjertepatient, deptB,now, heartStandardThresholdSet)
     }
 
     def createEmptyStandardThresholdSet() {
@@ -284,12 +360,12 @@ class BootStrap {
         Date now = new Date()
         Date today = now.clone().clearTime()
 
-        Department deptY = Department.findByName("Afdeling-Y Test")
-        Department deptB = Department.findByName("Afdeling-B Test")
+        Department deptY = Department.findByName(afdelingYTest)
+        Department deptB = Department.findByName(afdelingBTest)
 
-        PatientGroup preEmp = PatientGroup.findByNameAndDepartment(PRAEKLAMPSI, deptY)
+        PatientGroup preEmp = PatientGroup.findByNameAndDepartment(praeklampsi, deptY)
         PatientGroup pprom = PatientGroup.findByNameAndDepartment(PPROM, deptY)
-        PatientGroup heart = PatientGroup.findByNameAndDepartment(HJERTEPATIENT, deptB)
+        PatientGroup heart = PatientGroup.findByNameAndDepartment(hjertepatient, deptB)
 
         Patient pLinda = createPatientIfNotExists(firstName:'Linda',
                 lastName:'Hansen',
@@ -447,13 +523,13 @@ class BootStrap {
         }
         kiran.monitoringPlan = kiransPlan
 
-        Patient nancyAnn = createPatientIfNotExists(firstName:'Nancy Ann',
-                lastName:'Berggren',
+        Patient nancyAnn = createPatientIfNotExists(firstName: patientNancyAnn.firstName,
+                lastName: patientNancyAnn.lastName,
                 cpr: NANCY_CPR,
                 sex: Sex.FEMALE,
-                address:'Åbogade 15',
-                postalCode:'8200',
-                city:'Aarhus N',
+                address: patientNancyAnn.address,
+                postalCode: patientNancyAnn.postalCode,
+                city: patientNancyAnn.city,
                 mobilePhone: null,
                 phone: null,
                 email: null)
@@ -593,6 +669,15 @@ class BootStrap {
         createQuestionnairesForRMProd(schemaCreator)
         createQuestionnairesForRNProd(schemaCreator)
         createQuestionnairesForRHProd(schemaCreator)
+    }
+
+    def createQuestionnairesForEnglishTest(Clinician schemaCreator) {
+        bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'Blood pressure and pulse', 'US_blood_pressure.json'
+        bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'Blood sugar levels', 'US_blood_sugar_levels.json'
+        bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'Lung function', 'US_Lung_function.json'
+        bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'Oxygen saturation', 'US_saturation.json'
+        bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'Weight', 'US_weight.json'
+        bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'How are you feeling', 'US_general_welfare.json'
     }
 
     def createQuestionnaireGroup(String name, ArrayList<Questionnaire> questionnaires, boolean overrideSchedule = false) {
@@ -758,6 +843,35 @@ class BootStrap {
 
     }
 
+    def createPatientQuestionnairesForEnglishTest(Clinician schemaCreator, Patient nancyAnn, Patient linda) {
+        def nancysPlan = MonitoringPlan.findByPatient(nancyAnn)
+
+        PatientQuestionnaire pq
+
+        //////////////
+        // Skema til måling af blodtryk
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blood pressure and pulse"), nancyAnn, schemaCreator, nancysPlan, atWeekdays(new TimeOfDay(hour: 13), [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]))
+        if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndPatient(pq, nancyAnn)) {
+
+            def bpMeter = Meter.findByMeterId("58354")
+
+            def date = new Date().clearTime()
+            date[Calendar.DATE] = date[Calendar.DATE] - 8
+
+            (130..120).each {
+                createResultsForBlodtryk(pq, nancyAnn, bpMeter, new Date(date.time), it, 80, 50 + new Random().nextInt(10))
+                date[Calendar.MONTH] = date[Calendar.MONTH] - 1
+            }
+        }
+
+        createPqAndSchedule(QuestionnaireHeader.findByName("Weight"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 7)))
+
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blood sugar levels"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createResultsForBloodSugarTest(nancyAnn, pq)
+
+        createPqAndSchedule(QuestionnaireHeader.findByName("Lung function"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
+    }
+
     def createConferencesForTest(Clinician schemaCreator, Patient nancyAnn) {
         if (Conference.findAllByClinicianAndPatient(schemaCreator, nancyAnn).empty) {
             def conference = new Conference(clinician: schemaCreator, patient: nancyAnn)
@@ -815,29 +929,29 @@ class BootStrap {
 
     def createCliniciansForTest() {
 
-        Department deptY = Department.findByName("Afdeling-Y Test")
-        Department deptB = Department.findByName("Afdeling-B Test")
+        Department deptY = Department.findByName(afdelingYTest)
+        Department deptB = Department.findByName(afdelingBTest)
 
-        PatientGroup preEmp = PatientGroup.findByNameAndDepartment(PRAEKLAMPSI, deptY)
+        PatientGroup preEmp = PatientGroup.findByNameAndDepartment(praeklampsi, deptY)
         PatientGroup pprom = PatientGroup.findByNameAndDepartment(PPROM, deptY)
-        PatientGroup heart = PatientGroup.findByNameAndDepartment(HJERTEPATIENT, deptB)
+        PatientGroup heart = PatientGroup.findByNameAndDepartment(hjertepatient, deptB)
 
         // Helle Andersen
-        Clinician clHelle = createClinicianIfNotExists(firstName: 'Helle', lastName:'Andersen', email:'helle@andersen', mobile:'12345678', videoUser:'HelleAndersen', videoPassword:'HelleAndersen1')
-        Role adminRole = Role.findByAuthority(RoleName.ROLE_ADMIN.value())
+        Clinician clHelle = createClinicianIfNotExists(firstName: clinicianHelleAndersen.firstName, lastName:clinicianHelleAndersen.lastName, email:clinicianHelleAndersen.email, mobile:'12345678', videoUser:'HelleAndersen', videoPassword:'HelleAndersen1')
+        Role adminRole = Role.findByAuthority(BootStrapService.roleAdministrator)
         bootStrapUtil.addUserToRoleIfNotExists(clHelle.user, adminRole)
-        Role videoRole = Role.findByAuthority(RoleName.ROLE_VIDEO_CONSULTANT.value())
+        Role videoRole = Role.findByAuthority(BootStrapService.roleVideoConsultant)
         bootStrapUtil.addUserToRoleIfNotExists(clHelle.user, videoRole)
 
         addClinician2PatientGroupIfNotExists(clHelle, preEmp)
         addClinician2PatientGroupIfNotExists(clHelle, heart)
 
         // Jens Hansen
-        Clinician clJens = createClinicianIfNotExists(firstName: 'Jens', lastName:'Hansen', email:'jens@hansen', mobile:'12345678')
+        Clinician clJens = createClinicianIfNotExists(firstName: clinicianJensHansen.firstName, lastName:clinicianJensHansen.lastName, email:clinicianJensHansen.email, mobile:'12345678')
         addClinician2PatientGroupIfNotExists(clJens, pprom)
 
         // Doktor Hansen
-        createClinicianIfNotExists(firstName: 'Doktor', lastName:'Hansen', email:'drhansen@sygehuset', mobile:'12345678')
+        createClinicianIfNotExists(firstName: clinicianDoktorHansen.firstName, lastName:clinicianDoktorHansen.lastName, email:clinicianDoktorHansen.email, mobile:'12345678')
     }
 
     def createClinicianIfNotExists(Map params) {
@@ -868,7 +982,7 @@ class BootStrap {
                     createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now);
             user.save(failOnError:true);
 
-            Role clinicianRole = Role.findByAuthority(RoleName.ROLE_CLINICIAN.value())
+            Role clinicianRole = Role.findByAuthority(BootStrapService.roleClinician)
 
             def userRole = new UserRole(user:user,role:clinicianRole, createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now)
             userRole.save(failOnError:true,flush:true)
@@ -907,7 +1021,7 @@ class BootStrap {
 
             user.save(failOnError:true);
 
-            Role patientRole = Role.findByAuthority(RoleName.ROLE_PATIENT.value())
+            Role patientRole = Role.findByAuthority(BootStrapService.rolePatient)
 
             def userRole = new UserRole(user:user,role: patientRole, createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now)
             userRole.save(failOnError:true,flush:true)
@@ -1052,7 +1166,7 @@ class BootStrap {
         completedQuestionnaire.patientQuestionnaire.nodes*.refresh()
 
         def patientMeasurementNode = completedQuestionnaire.patientQuestionnaire.nodes.find {
-            it.instanceOf(PatientMeasurementNode) && it.text == "Blodsukker"
+            it.instanceOf(PatientMeasurementNode) && it.text in ["Blodsukker", "Blood sugar levels"]
         }
 
         MeasurementType measurementType = MeasurementType.findByName(MeasurementTypeName.BLOODSUGAR)

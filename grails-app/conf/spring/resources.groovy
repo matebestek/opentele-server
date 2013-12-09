@@ -12,8 +12,8 @@ import wslite.soap.SOAPClient
 // Place your Spring DSL code here
 beans = {
     localeResolver(SessionLocaleResolver) {
-        defaultLocale = new Locale("da", "DK")
-        Locale.setDefault(defaultLocale)
+        defaultLocale = grailsApplication.config.defaultLocale
+        Locale.setDefault(grailsApplication.config.defaultLocale)
 
         customPropertyEditorRegistrar(CustomPropertyEditorRegistrar)
         auditLogLookupBean(OpenteleAuditLogLookup)

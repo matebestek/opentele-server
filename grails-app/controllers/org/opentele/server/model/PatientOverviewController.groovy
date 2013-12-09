@@ -4,7 +4,6 @@ import org.opentele.server.TimeFilter
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.constants.Constants
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
-import org.opentele.server.model.types.PatientState
 import org.opentele.server.model.types.PermissionName
 
 @Secured(PermissionName.NONE)
@@ -29,14 +28,14 @@ class PatientOverviewController {
 
         PatientGroup patientGroupFilter = session[Constants.SESSION_PATIENT_GROUP_ID] ? PatientGroup.get(session[Constants.SESSION_PATIENT_GROUP_ID]) : null
 
-        def allPatientsForClinician = patientService.getPatientsForClinician(clinician)
-        def activePatients = allPatientsForClinician.findAll { it.state == PatientState.ACTIVE }
-        def activePatientsInGroupFilter = activePatients.findAll { patientGroupFilter == null || it.groups.contains(patientGroupFilter) }
+        def activePatients = patientGroupFilter == null ?
+            patientService.getActivePatientsForClinician(clinician) :
+            patientService.getActivePatientsForClinicianAndPatientGroup(clinician, patientGroupFilter)
 
-        Map<Patient, List<CompletedQuestionnaire>> patientsToCompletedQuestionnaires = findPatientsToCompletedQuestionnaires(activePatientsInGroupFilter)
-        Map<Patient, List<PatientNote>> patientsToNotes = findPatientsToNotes(activePatientsInGroupFilter)
+        Map<Patient, List<CompletedQuestionnaire>> patientsToCompletedQuestionnaires = findPatientsToCompletedQuestionnaires(activePatients)
+        Map<Patient, List<PatientNote>> patientsToNotes = findPatientsToNotes(activePatients)
 
-        def patientsToShow = activePatientsInGroupFilter.grep { Patient patient ->
+        def patientsToShow = activePatients.grep { Patient patient ->
             if (!patientsToCompletedQuestionnaires[patient].empty) {
                 return true
             }
@@ -56,7 +55,6 @@ class PatientOverviewController {
 
             return hasUnseenReminders
         }
-
 
         //Sort patient list by severity
         patientsToShow.sort { a, b ->

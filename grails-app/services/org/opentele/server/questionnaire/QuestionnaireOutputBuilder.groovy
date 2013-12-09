@@ -6,10 +6,17 @@ import org.opentele.server.model.types.DataType
 import org.opentele.server.model.types.MeterTypeName
 import org.opentele.server.model.types.Operation
 import org.opentele.server.model.types.Severity
+import org.springframework.context.MessageSource
+import org.springframework.context.i18n.LocaleContextHolder
 
 class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
     final List nodes = []
     final Map<String,String> outputVariables = new HashMap<String,String>()
+    final MessageSource messageSource
+
+    public QuestionnaireOutputBuilder(MessageSource messageSource) {
+        this.messageSource = messageSource
+    }
 
     def build(PatientQuestionnaire questionnaire) {
         questionnaire.getNodes().each {
@@ -64,10 +71,13 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
         def severityDefined = n.defaultSeverity || n.alternativeSeverity
 
         if (n.inputType == DataType.BOOLEAN) {
+            String no = messageSource.getMessage('default.yesno.no', new String[0], LocaleContextHolder.locale)
+            String yes = messageSource.getMessage('default.yesno.yes', new String[0], LocaleContextHolder.locale)
+
             addIoNode(nodeName: n.id, elements: [
                     textViewElement(text: n.text),
-                    twoButtonElement(leftText: 'Nej', leftNextNodeId: "AN_${n.alternativeNext.id}_L${n.id}",
-                        rightText: 'Ja', rightNextNodeId: "AN_${n.defaultNext.id}_R${n.id}")
+                    twoButtonElement(leftText: no, leftNextNodeId: "AN_${n.alternativeNext.id}_L${n.id}",
+                        rightText: yes, rightNextNodeId: "AN_${n.defaultNext.id}_R${n.id}")
                 ]
             )
             // "Yes" choice
