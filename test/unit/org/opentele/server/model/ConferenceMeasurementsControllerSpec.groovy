@@ -437,7 +437,7 @@ class ConferenceMeasurementsControllerSpec extends Specification {
 
     def 'can complete conference by creating real measurements from drafts'() {
         setup:
-        ConferenceLungFunctionMeasurementDraft.build(conference: conference, fev1: 3.67, modifiedDate: new Date(), included: true)
+        ConferenceLungFunctionMeasurementDraft.build(conference: conference, fev1: 3.67, modifiedDate: new Date(), included: true, deviceId: '678')
         ConferenceWeightMeasurementDraft.build(conference: conference, weight: 76.5, modifiedDate: new Date(), included: true)
 
         when:
@@ -452,6 +452,7 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         measurements[0].measurementType.name == MeasurementTypeName.LUNG_FUNCTION
         measurements[0].value == 3.67
         measurements[0].unit == Unit.LITER
+        measurements[0].deviceIdentification == '678'
 
         measurements[1].measurementType.name == MeasurementTypeName.WEIGHT
         measurements[1].value == 76.5
@@ -476,7 +477,7 @@ class ConferenceMeasurementsControllerSpec extends Specification {
 
     def 'can complete conference with blood pressure drafts'() {
         setup:
-        ConferenceBloodPressureMeasurementDraft.build(conference: conference, systolic: 120, diastolic: 65, pulse: 76, modifiedDate: new Date(), included: true)
+        ConferenceBloodPressureMeasurementDraft.build(conference: conference, systolic: 120, diastolic: 65, pulse: 76, modifiedDate: new Date(), included: true, deviceId: '321')
 
         when:
         params.id = conference.id
@@ -491,17 +492,19 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         measurements[0].systolic == 120
         measurements[0].diastolic == 65
         measurements[0].unit == Unit.MMHG
+        measurements[0].deviceIdentification == '321'
 
         measurements[1].measurementType.name == MeasurementTypeName.PULSE
         measurements[1].value == 76
         measurements[1].unit == Unit.BPM
+        measurements[1].deviceIdentification == '321'
 
         conference.completed
     }
 
     def 'can complete conference with saturation drafts'() {
         setup:
-        ConferenceSaturationMeasurementDraft.build(conference: conference, saturation: 97, pulse: 76, modifiedDate: new Date(), included: true)
+        ConferenceSaturationMeasurementDraft.build(conference: conference, saturation: 97, pulse: 76, modifiedDate: new Date(), included: true, deviceId: '456')
 
         when:
         params.id = conference.id
@@ -515,17 +518,19 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         measurements[0].measurementType.name == MeasurementTypeName.SATURATION
         measurements[0].value == 97
         measurements[0].unit == Unit.PERCENTAGE
+        measurements[0].deviceIdentification == '456'
 
         measurements[1].measurementType.name == MeasurementTypeName.PULSE
         measurements[1].value == 76
         measurements[1].unit == Unit.BPM
+        measurements[1].deviceIdentification == '456'
 
         conference.completed
     }
 
     def 'only creates a blood pressure measurement when pulse is not specified'() {
         setup:
-        ConferenceBloodPressureMeasurementDraft.build(conference: conference, systolic: 120, diastolic: 65, modifiedDate: new Date(), included: true)
+        ConferenceBloodPressureMeasurementDraft.build(conference: conference, systolic: 120, diastolic: 65, modifiedDate: new Date(), included: true, deviceId: '786')
 
         when:
         params.id = conference.id
@@ -540,6 +545,7 @@ class ConferenceMeasurementsControllerSpec extends Specification {
         measurements[0].systolic == 120
         measurements[0].diastolic == 65
         measurements[0].unit == Unit.MMHG
+        measurements[0].deviceIdentification == '786'
     }
 
     def 'only creates a pulse measurement when blood pressure is not specified'() {

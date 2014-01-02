@@ -13,6 +13,8 @@ class PatientNoteController {
     def springSecurityService
     def sessionService
     def patientService
+    def clinicianService
+    def patientNoteService
 
     @Secured(PermissionName.PATIENT_NOTE_READ_ALL)
     def index() {
@@ -41,31 +43,23 @@ class PatientNoteController {
     @Secured(PermissionName.PATIENT_NOTE_READ_ALL_TEAM)
     @SecurityWhiteListController
     def listTeam() {
-        User u =springSecurityService.currentUser
-        def notes = []
-        if (u.isClinician()) {
-            Clinician c = Clinician.findByUser(u)
-            def patients = patientService.getPatientsForClinician(c)
+        Clinician clinician = clinicianService.currentClinician
 
-            // Only show notes for the active patients.
-            patients = patients.findAll { it.state == PatientState.ACTIVE }
+        Set<PatientNote> notes = patientNoteService.patientNotesForTeam(clinician)
+        Set<Long> idsOfSeenNotes = patientNoteService.idsOfSeenPatientNotes(clinician, notes)
 
-            notes = patients.findAll{it.notes.size() > 0}.collectMany {
-                it.notes
-            }
-        } //Non clinicians should not be able to see this
-
-        def isSeen = notes.collectEntries { [it, patientService.isNoteSeenByUser(it)] }
-        sortNotes(notes, isSeen)
+        def isSeen = notes.collectEntries { [it, idsOfSeenNotes.contains(it.id)] }
+        List<PatientNote> sortedNotes = notes.toList()
+        sortNotes(sortedNotes, isSeen)
 
         [
-                patientNoteInstanceList: notes,
+                patientNoteInstanceList: sortedNotes,
                 isSeen: isSeen,
-                patientNoteInstanceTotal: notes.size()
+                patientNoteInstanceTotal: sortedNotes.size()
         ]
     }
 
-    private void sortNotes(List<PatientNote> notes, Map<PatientNote, Boolean> isSeen) {
+    private List<PatientNote> sortNotes(List<PatientNote> notes, Map<PatientNote, Boolean> isSeen) {
         switch (params.sort) {
             case 'note':
                 notes.sort { it.note }
@@ -81,7 +75,7 @@ class PatientNoteController {
                 break;
             case 'patient':
             default:
-                notes.sort { it.patient.name() }
+                notes.sort { it.patient.name }
         }
         if (params.order == 'desc') {
             notes.reverse(true)

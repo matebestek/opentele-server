@@ -5,6 +5,7 @@ import grails.test.mixin.TestFor
 import org.opentele.server.RoleService
 import spock.lang.Ignore
 import spock.lang.Specification
+import spock.lang.Unroll
 
 @TestFor(RoleController)
 @Build([Role, RolePermission, User, UserRole])
@@ -75,23 +76,18 @@ class RoleControllerSpec extends Specification {
 
     def "test rename role"() {
         setup:
-        def roleService = mockFor(RoleService)
-        roleService.demand.removePermissions{ -> }
-        controller.roleService = roleService.createMock()
+        controller.roleService = Mock(RoleService)
 
-        and:
         Role role = Role.build(authority: authority)
 
         when:
         params.id = role.id
-        params.authority = "NewAuthority"
-        params.permissions = []
+        params.authority = authorityAfterRename
 
-        and:
         controller.update()
 
         then:
-        (Role.findAll()[0].authority) == authorityAfterRename
+        1 * controller.roleService.updateRole(role, authorityAfterRename, _) >> true
 
         where:
         authority       | authorityAfterRename

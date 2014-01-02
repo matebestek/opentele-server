@@ -99,27 +99,6 @@ class MeasurementControllerTests {
         assert response.redirectUrl.endsWith("conference/${measurement.conference.id}")
     }
 
-	void testIndex() {
-		mockDomain(Measurement)
-		controller.index()
-		assert "/measurement/list" == response.redirectedUrl
-	}
-
-	void testList() {
-		mockDomain(Measurement)
-		def model = controller.list()
-
-		assert model.measurementInstanceList.isEmpty()
-		assert model.measurementInstanceTotal == 0
-	}
-
-	void testCreate() {
-		mockDomain(Measurement)
-		def model = controller.create()
-
-		assert model.measurementInstance != null
-	}
-
     private createPatient() {
         def patient = Patient.build(cpr: '1234567890')
         patient.save(failOnError: true)

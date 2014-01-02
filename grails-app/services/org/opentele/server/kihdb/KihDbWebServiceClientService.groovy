@@ -167,23 +167,26 @@ class KihDbWebServiceClientService {
 
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.TEMPERATURE)) {
 
-            // Not supported
+            def type = addExtendedType(measurement.getValue(), "°C", measurement.getTime(), IupacCode.TEMPERATURE, "Legeme temp.;Pt", objectFactory)
+            selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
+
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.URINE)) {
 
-            // TODO: KIH DB Scale not compatible w/OpenTele..
-
-            def type = addExtendedType(measurement.getProtein()?.toString(), "", measurement.getTime(), IupacCode.URINE, "PROTEINURIN", objectFactory)
+            def type = addExtendedType(measurement.getProtein().toString(), "g/L", measurement.getTime(), IupacCode.URINE, "Protein;U", objectFactory)
             type.resultEncodingIdentifier = EncodingIdentifierType.ALPHANUMERIC
 
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
 
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.URINE_GLUCOSE)) {
 
-            // Not supported
+            def type = addExtendedType(measurement.getGlucoseInUrine().value(), "mmol/L", measurement.getTime(), IupacCode.URINE_GLUCOSE, "Glukose;U", objectFactory)
+            type.resultEncodingIdentifier = EncodingIdentifierType.ALPHANUMERIC
+
+            selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
         } else  {
 
             // Perhaps not exception. Just message saying this measurement is ignored.
-            log.warn("Unsupported measurement type ${measurement.getMeasurementType().getName()} encountered.")
+            log.error("Unsupported measurement type ${measurement.getMeasurementType().getName()} encountered.")
 
         }
 
@@ -214,7 +217,7 @@ class KihDbWebServiceClientService {
         //laboratoryReportExtendedType.resultUnitText = messageSource.getMessage(code, null, Locale.getDefault())
 
         laboratoryReportExtendedType.nationalSampleIdentifier = "9999999999"
-        laboratoryReportExtendedType.iupacIdentifier = iupacIdentifier
+        laboratoryReportExtendedType.iupacIdentifier = iupacIdentifier?.value()
         laboratoryReportExtendedType.resultTypeOfInterval = "unspecified"
 
         addGenericFields(laboratoryReportExtendedType, objectFactory)

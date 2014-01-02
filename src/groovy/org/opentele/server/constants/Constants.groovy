@@ -22,5 +22,4 @@ class Constants {
     //Periodic checks
 	public static final int BLUE_ALARM_CHECK_INTERVAL = 1 //minutes
     public static final int BLUE_ALARM_CHECK_WINDOW = 30 //minutes
-    public static final int PATIENT_NOTE_REMINDER_CHECK = 15 //minutes
 }

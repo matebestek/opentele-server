@@ -32,15 +32,12 @@ class RoleController {
 
     @Secured(PermissionName.ROLE_CREATE)
     def save() {
-        def roleInstance = new Role(params)
-        if (!roleInstance.save(flush: true)) {
+        def roleInstance = new Role()
+        if (!roleService.updateRole(roleInstance, params.authority, params.permissionIds)) {
             def permissionIds = params.list('permissionIds')
             def permissions = Permission.getAll(permissionIds)
             render(view: "create", model: [roleInstance: roleInstance, permissions: permissions])
             return
-        }
-        if (params.permissionIds) {
-            roleService.updatePermissions(roleInstance, params.permissionIds)
         }
 
 		flash.message = message(code: 'default.created.message', args: [message(code: 'role.label')])
@@ -84,7 +81,9 @@ class RoleController {
             def version = params.version.toLong()
             if (roleInstance.version > version) {
                 roleInstance.errors.rejectValue("version", "default.optimistic.locking.failure", [message(code: 'role.label')] as Object[])
-                render(view: "edit", model: [roleInstance: roleInstance])
+                def permissionIds = params.list('permissionIds')
+                def permissions = Permission.getAll(permissionIds)
+                render(view: "edit", model: [roleInstance: roleInstance, permissions: permissions])
                 return
             }
         }
@@ -92,19 +91,16 @@ class RoleController {
         //Check that we do not try to change the name of the patient role
         if (roleInstance.authority.equals("Patient") && !params.authority.equals("Patient")) {
             roleInstance.errors.rejectValue("authority", "cannot.change.patient.role.authority")
-            render(view: "edit", model:  [roleInstance: roleInstance])
+            def permissionIds = params.list('permissionIds')
+            def permissions = Permission.getAll(permissionIds)
+            render(view: "edit", model:  [roleInstance: roleInstance, permissions: permissions])
             return
         }
 
-        roleInstance.properties = params
-        if (params.permissionIds) {
-            roleService.updatePermissions(roleInstance, params.permissionIds)
-        } else {
-            roleService.removePermissions(roleInstance)
-        }
-
-        if (!roleInstance.save(flush: true)) {
-            render(view: "edit", model: [roleInstance: roleInstance])
+        if (!roleService.updateRole(roleInstance, params.authority, params.permissionIds)) {
+            def permissionIds = params.list('permissionIds')
+            def permissions = Permission.getAll(permissionIds)
+            render(view: "edit", model: [roleInstance: roleInstance, permissions: permissions])
             return
         }
 

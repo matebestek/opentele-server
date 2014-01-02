@@ -1,4 +1,4 @@
-<%@ page import="org.opentele.server.constants.Constants; org.opentele.server.model.types.PermissionName" %>
+<%@ page import="grails.util.Environment; org.opentele.server.constants.Constants; org.opentele.server.model.types.PermissionName" %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <!--[if lt IE 7 ]> <html lang="en" class="no-js ie6 ie"> <![endif]-->
 <!--[if IE 7 ]>    <html lang="en" class="no-js ie7 ie"> <![endif]-->
@@ -99,5 +99,8 @@
                 $(":input[type!='hidden'][type!='submit'][type!='button'][type!='file']:first").focus();
             })
         </script>
+        <g:if test="${Environment.current == Environment.DEVELOPMENT}">
+            <miniprofiler:javascript/>
+        </g:if>
 	</body>
 </html>

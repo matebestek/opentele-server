@@ -230,30 +230,36 @@ class ConferenceMeasurementsController {
             case ConferenceMeasurementDraftType.BLOOD_PRESSURE:
                 if (draft.systolic != null && draft.diastolic != null) {
                     result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.BLOOD_PRESSURE),
-                            systolic: draft.systolic, diastolic: draft.diastolic, meanArterialPressure: draft.meanArterialPressure, unit: Unit.MMHG)
+                            systolic: draft.systolic, diastolic: draft.diastolic, meanArterialPressure: draft.meanArterialPressure,
+                            unit: Unit.MMHG, deviceIdentification: draft.deviceId)
                 }
                 if (draft.pulse) {
-                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.PULSE), value: draft.pulse, unit: Unit.BPM)
+                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.PULSE), value: draft.pulse,
+                            unit: Unit.BPM, deviceIdentification: draft.deviceId)
                 }
                 break
             case ConferenceMeasurementDraftType.LUNG_FUNCTION:
                 if (draft.fev1 != null) {
                     result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.LUNG_FUNCTION),
-                       value: draft.fev1, unit: Unit.LITER,
-                       fev6: draft.fev6, fev1Fev6Ratio: draft.fev1Fev6Ratio, fef2575: draft.fef2575, isGoodTest: draft.goodTest, fevSoftwareVersion: draft.softwareVersion)
+                       value: draft.fev1,
+                       fev6: draft.fev6, fev1Fev6Ratio: draft.fev1Fev6Ratio, fef2575: draft.fef2575, isGoodTest: draft.goodTest, fevSoftwareVersion: draft.softwareVersion,
+                       unit: Unit.LITER, deviceIdentification: draft.deviceId)
                 }
                 break
             case ConferenceMeasurementDraftType.WEIGHT:
                 if (draft.weight != null) {
-                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.WEIGHT), value: draft.weight, unit: Unit.KILO)
+                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.WEIGHT), value: draft.weight,
+                        unit: Unit.KILO, deviceIdentification: draft.deviceId)
                 }
                 break
             case ConferenceMeasurementDraftType.SATURATION:
                 if (draft.saturation != null) {
-                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.SATURATION), value: draft.saturation, unit: Unit.PERCENTAGE)
+                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.SATURATION), value: draft.saturation,
+                        unit: Unit.PERCENTAGE, deviceIdentification: draft.deviceId)
                 }
                 if (draft.pulse != null) {
-                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.PULSE), value: draft.pulse, unit: Unit.BPM)
+                    result << new Measurement(measurementType: MeasurementType.findByName(MeasurementTypeName.PULSE), value: draft.pulse,
+                        unit: Unit.BPM, deviceIdentification: draft.deviceId)
                 }
                 break
             default:

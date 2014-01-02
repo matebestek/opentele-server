@@ -15,15 +15,14 @@ class CompletedQuestionnaireService {
     def springSecurityService
 	def patientService
     def clinicianService
-    def messageService
-    def i18nService
+    def patientOverviewService
 
     static transactional = false
 
     // For use when testing
     static final def SHOULD_FAIL_ON_ERROR = true
     
-    def handleResults(String cpr, def patientQuestionnaireId, Date date, def jsonOutputs) {
+    def handleResults(Patient patient, def patientQuestionnaireId, Date date, def jsonOutputs) {
         Map resultHolder = [:]
         
         CompletedQuestionnaire.withTransaction { status ->
@@ -36,15 +35,15 @@ class CompletedQuestionnaireService {
             resultHolder.errors = []
             resultHolder.hasErrors = false
     
-            PatientQuestionnaire thePq = PatientQuestionnaire.get(patientQuestionnaireId)
-            if (!thePq) {
+            PatientQuestionnaire patientQuestionnaire = PatientQuestionnaire.get(patientQuestionnaireId)
+            if (!patientQuestionnaire) {
                 appendErrors(resultHolder, "Questionnaire with id: ${patientQuestionnaireId} not found.")
-            } else if (!cpr) {
-                appendErrors(resultHolder, "Missing cpr argument.")
+            } else if (!patient) {
+                appendErrors(resultHolder, "Missing patient argument.")
             } else if (!date) {
                 appendErrors(resultHolder, "Missing date argument.")
             } else {
-                parseAndHandleResults(cpr, resultHolder, patientQuestionnaireId, date, thePq, jsonOutputs);
+                parseAndHandleResults(patient, resultHolder, patientQuestionnaireId, date, patientQuestionnaire, jsonOutputs);
             }
             
             if (resultHolder.hasErrors) {
@@ -55,6 +54,8 @@ class CompletedQuestionnaireService {
             } else {
                 resultHolder.results << ["Received ${resultHolder.outputVarCount} variables. Stored ${resultHolder.completedQuestionnaireCount} questionnaire(s), ${resultHolder.resultCount} result(s) and ${resultHolder.measurementCount} measurement(s)."]
             }
+
+            patientOverviewService.updateOverviewFor(patient);
         }
         resultHolder.results
     }
@@ -64,10 +65,7 @@ class CompletedQuestionnaireService {
         resultHolder.errors <<  errs
     }
     
-    def parseAndHandleResults(String cpr, Map resultHolder, def questionnaireId, Date date, PatientQuestionnaire thePq, def jsonOutputs) {
-
-        Patient patient = Patient.findByCpr(cpr)
-
+    private def parseAndHandleResults(Patient patient, Map resultHolder, def questionnaireId, Date date, PatientQuestionnaire thePq, def jsonOutputs) {
         // Create completed questionnaire
         CompletedQuestionnaire completed = new CompletedQuestionnaire(createdBy: "WS", modifiedBy: "WS", createdDate: new Date(), modifiedDate: new Date())
         completed.setReceivedDate(new Date())
@@ -198,7 +196,7 @@ class CompletedQuestionnaireService {
             if(!isValidVariableName(variableName, "URINE_GLUCOSE", resultHolder)) {
                 return
             }
-            handleUrineGlycoseNode(completed, node, date, resultHolder, resultList, patient)
+            handleUrineGlucoseNode(completed, node, date, resultHolder, resultList, patient)
         } else if (MeterTypeName.CTG == node.meterType.getName()) {
             if (!isValidVariableName(variableName, "CTG", resultHolder)) {
                 return
@@ -329,7 +327,7 @@ class CompletedQuestionnaireService {
         setSeverityAndOmission(measurementNodeResult, measurement, resultHolder)
 	}
 
-    private void handleUrineGlycoseNode(CompletedQuestionnaire completed, PatientQuestionnaireNode node, Date date, Map resultHolder, def results, Patient patient) {
+    private void handleUrineGlucoseNode(CompletedQuestionnaire completed, PatientQuestionnaireNode node, Date date, Map resultHolder, def results, Patient patient) {
         MeasurementNodeResult measurementNodeResult = createMeasurementNodeResult(MeasurementTypeName.URINE_GLUCOSE, completed, node, date, resultHolder)
         Measurement measurement = null
 
@@ -418,6 +416,8 @@ class CompletedQuestionnaireService {
         for (def result : results) {
             if (isPrimaryResultObject(result)) {
                 measurement = createMeasurement(patient, MeasurementTypeName.WEIGHT, measurementNodeResult, Unit.KILO, date)
+
+                // oops.. TODO: should check for correct var-name, if we are sending deviceIdentification as well...
                 if (result.value != null) {
                     measurement.setValue(getDoubleVal(result.value))
                 }
@@ -434,10 +434,11 @@ class CompletedQuestionnaireService {
         MeasurementNodeResult measurementNodeResult = createMeasurementNodeResult(MeasurementTypeName.BLOOD_PRESSURE, completed, node, date, resultHolder)
         Measurement bp = null
         Measurement pulse = null
-            
+        String deviceId = null
+
         // Handle different result objects
         for (def result : resultList) {
-            // If only one occurence
+            // If only one occurrence
             if (result.name.count('#') < 2) { // one of several possible primary (systolic,diastolic,pulse) result objects
                 
                 if (containsString(result.name, MeasurementNode.DIASTOLIC_VAR) || containsString(result.name, MeasurementNode.SYSTOLIC_VAR) || containsString(result.name, MeasurementNode.MEAN_ARTERIAL_PRESSURE_VAR)) {
@@ -462,6 +463,8 @@ class CompletedQuestionnaireService {
                             pulse.setValue(getDoubleVal(result.value))
                         }
                     }
+                } else if (containsString(result.name, MeasurementNode.DEVICE_ID_VAR) && result.value != null) {
+                    deviceId = result.value
                 }
             } else if (handleSecondaryFields(result, measurementNodeResult, resultHolder.errors)) {
                 resultHolder.hasErrors = true
@@ -471,11 +474,13 @@ class CompletedQuestionnaireService {
         
         if (!measurementNodeResult.wasOmitted) {
             if (bp != null) {
+                bp.setDeviceIdentification(deviceId)
                 setSeverityOn(measurementNodeResult, bp)
                 saveResultAndMeasurement(measurementNodeResult, bp, resultHolder)
             }
 
             if (pulse != null) {
+                pulse.setDeviceIdentification(deviceId)
                 setSeverityOn(measurementNodeResult, pulse)
                 saveResultAndMeasurement(measurementNodeResult, pulse, resultHolder)
             }
@@ -486,7 +491,9 @@ class CompletedQuestionnaireService {
         MeasurementNodeResult measurementNodeResult = createMeasurementNodeResult(MeasurementTypeName.SATURATION, completed, node, date, resultHolder)
         Measurement saturation = null
         Measurement pulse = null
-            
+
+        String deviceId = null
+
         // Handle different result objects
         for (def result : resultList) { // Necessary for sat?
             // If only one occurence
@@ -501,6 +508,8 @@ class CompletedQuestionnaireService {
                     if (result.value != null && containsString(result.name, MeasurementNode.PULSE_VAR)) {
                         pulse.setValue(getDoubleVal(result.value))
                     }
+                } else if (containsString(result.name, MeasurementNode.DEVICE_ID_VAR) && result.value != null) {
+                    deviceId = result.value
                 }
             } else if (handleSecondaryFields(result, measurementNodeResult, resultHolder.errors)) {
                 resultHolder.hasErrors = true
@@ -510,10 +519,12 @@ class CompletedQuestionnaireService {
         
         if (!measurementNodeResult.wasOmitted) {
             if (saturation) {
+                saturation.setDeviceIdentification(deviceId)
                 setSeverityOn(measurementNodeResult, saturation)
                 saveResultAndMeasurement(measurementNodeResult, saturation, resultHolder)
             }
             if (pulse) {
+                pulse.setDeviceIdentification(deviceId)
                 setSeverityOn(measurementNodeResult, pulse)
                 saveResultAndMeasurement(measurementNodeResult, pulse, resultHolder)
             }
@@ -564,7 +575,7 @@ class CompletedQuestionnaireService {
 
         // Handle different result objects
         for (def result : resultList) {
-            // If only one occurence
+
             if (result.name.count('#') < 2) { // one of several possible primary result objects
                 if (containsString(result.name, MeasurementNode.FEV1_FEV6_RATIO_VAR) && result.value != null) {
                     measurement.setFev1Fev6Ratio(getDoubleVal(result.value))
@@ -578,6 +589,8 @@ class CompletedQuestionnaireService {
                     measurement.setFevSoftwareVersion(result.value as int)
                 } else if (containsString(result.name, MeasurementNode.FEV_GOOD_TEST_VAR) && result.value != null) {
                     measurement.setIsGoodTest(result.value as boolean)
+                } else if (containsString(result.name, MeasurementNode.DEVICE_ID_VAR) && result.value != null) {
+                    measurement.setDeviceIdentification(result.value)
                 }
             } else if (handleSecondaryFields(result, measurementNodeResult, resultHolder.errors)) {
                 resultHolder.hasErrors = true
@@ -783,7 +796,25 @@ class CompletedQuestionnaireService {
 
     @Transactional
     CompletedQuestionnaire acknowledge(CompletedQuestionnaire completedQuestionnaire, String note, boolean sendAcknowledgeMessage = false) {
-        def clinician = clinicianService.currentClinician
+        Clinician clinician = clinicianService.currentClinician
+        acknowledgeQuestionnaireWithoutUpdatingPatientOverview(clinician, completedQuestionnaire, note, sendAcknowledgeMessage)
+        patientOverviewService.updateOverviewFor(completedQuestionnaire.patient)
+    }
+
+    @Transactional
+    def acknowledge(List<CompletedQuestionnaire> completedQuestionnaires, boolean sendAcknowledgeMessage = false) {
+        Clinician clinician = clinicianService.currentClinician
+        Set<Patient> patientsToUpdate = []
+
+        completedQuestionnaires.each { questionnaire ->
+            acknowledgeQuestionnaireWithoutUpdatingPatientOverview(clinician, questionnaire, null, sendAcknowledgeMessage)
+            patientsToUpdate << questionnaire.patient
+        }
+
+        patientsToUpdate.each { patientOverviewService.updateOverviewFor(it) }
+    }
+
+    private void acknowledgeQuestionnaireWithoutUpdatingPatientOverview(Clinician clinician, CompletedQuestionnaire completedQuestionnaire, String note, boolean sendAcknowledgeMessage) {
         completedQuestionnaire.refresh()
 
         completedQuestionnaire.acknowledgedBy = clinician
@@ -793,13 +824,6 @@ class CompletedQuestionnaireService {
         if (note) {
             completedQuestionnaire.acknowledgedNote = note
         }
-        completedQuestionnaire.save(failOnError: true)
-    }
-
-    @Transactional
-    def acknowledge(List<CompletedQuestionnaire> completedQuestionnaires, boolean sendAcknowledgeMessage = false) {
-        completedQuestionnaires.each { questionnaire ->
-            acknowledge(questionnaire, null, sendAcknowledgeMessage)
-        }
+        completedQuestionnaire.save(failOnError: true, flush: true)
     }
 }

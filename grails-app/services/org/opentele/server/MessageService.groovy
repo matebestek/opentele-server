@@ -14,6 +14,7 @@ class MessageService {
 
     def springSecurityService
 	def clinicianService
+    def patientOverviewService
 
 	@Transactional
 	def saveMessage (Message msg) {
@@ -27,13 +28,14 @@ class MessageService {
 			throw new MessageException ("Could not validate message" + msg.errors)
 		}
 
-		msg.save()
+		msg.save(flush: true)
 
 		if (msg.hasErrors()) {
 			log.error "Could not save message: " + msg.errors
 			throw new MessageException ("Could not save message" + msg.errors)
 		}
 
+        patientOverviewService.updateOverviewFor(msg.patient)
 		return msg
 	}
 

@@ -62,6 +62,7 @@ class BootStrap {
     def grailsApplication
     def passwordService
     def bootstrapQuestionnaireService
+    def patientOverviewService
 
     BootStrapUtil bootStrapUtil = null
 
@@ -79,10 +80,12 @@ class BootStrap {
             development {
                 println "Initializing for DEVEL"
                 doBootstrapForTest()
+                createPatientOverviewDataForPatients()
             }
             test {
                 println "Initializing for TEST"
                 doBootstrapForTest()
+                createPatientOverviewDataForPatients()
             }
         }
 
@@ -101,6 +104,15 @@ class BootStrap {
         }
     }
 
+    private void createPatientOverviewDataForPatients() {
+        println 'Creating patient overview for patients'
+        List<Patient> patientsWithNoPatientOverviewDetails = Patient.findAll('from Patient p where p.id not in (select po.patient.id from PatientOverview po)')
+        patientsWithNoPatientOverviewDetails.each {
+            println "Creating overview for patient with id: ${it.id}"
+            patientOverviewService.createOverviewFor(it)
+        }
+    }
+
     private static void cleanUpOldPermissions() {
         // General clean-up of unused permissions
         BootStrapUtil.removePermission('ROLE_ADMINISTRATOR')
@@ -114,6 +126,13 @@ class BootStrap {
         BootStrapUtil.removePermission('ROLE_COMPLETED_QUESTIONNAIRE_WRITE')
         BootStrapUtil.removePermission('ROLE_COMPLETED_QUESTIONNAIRE_CREATE')
         BootStrapUtil.removePermission('ROLE_QUESTIONNAIRE_SCHEDULE_READ')
+        BootStrapUtil.removePermission('ROLE_MESSAGE_DELETE')
+        BootStrapUtil.removePermission('ROLE_MESSAGE_DELETE_JSON')
+        BootStrapUtil.removePermission('ROLE_MEASUREMENT_CREATE')
+        BootStrapUtil.removePermission('ROLE_CLAIM_PATIENT_RESPONSIBILITY')
+        BootStrapUtil.removePermission('ROLE_MEASUREMENT_WRITE')
+        BootStrapUtil.removePermission('ROLE_MEASUREMENT_DELETE')
+        BootStrapUtil.removePermission('ROLE_MEASUREMENT_READ_ALL')
 
         // Removal of Clinician2PatientGroupController
         BootStrapUtil.removePermission('ROLE_CLINICIAN_PATIENT_GROUP_READ')

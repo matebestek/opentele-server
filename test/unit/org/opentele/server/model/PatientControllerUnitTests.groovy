@@ -3,9 +3,12 @@ import grails.buildtestdata.mixin.Build
 import grails.test.mixin.TestFor
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
+import groovy.mock.interceptor.MockFor
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.junit.Test
 import org.opentele.builders.PatientBuilder
+import org.opentele.server.PatientOverviewService
+import org.opentele.server.PatientService
 import org.opentele.server.SessionService
 import org.opentele.server.ThresholdService
 import org.opentele.server.model.types.MeasurementTypeName
@@ -26,6 +29,7 @@ class PatientControllerUnitTests {
         defineBeans {
             sessionService(SessionService)
             thresholdService(ThresholdService)
+            patientService(PatientService)
         }
     }
 
@@ -250,6 +254,9 @@ class PatientControllerUnitTests {
         Patient patient = new PatientBuilder().build()
         patient.blueAlarmQuestionnaireIDs = ['0', '1', '2'] as Set<Long>
         patient.save(flush: true)
+        def patientOverviewServiceControl = mockFor(PatientOverviewService)
+        patientOverviewServiceControl.demand.updateOverviewFor { it == patient }
+        controller.patientService.patientOverviewService = patientOverviewServiceControl.createMock()
 
         //Execute
         params.patientID = patient.id

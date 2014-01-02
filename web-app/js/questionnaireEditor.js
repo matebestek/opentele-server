@@ -831,9 +831,10 @@ function updateWeekdays(model, field) {
     });
 }
 function updateTimeOfDay(model, field) {
-    //console.debug(field, $('input[name="'+field+'.hour"]'),model[field].hour, $('input[name="'+field+'.minute"]'),model[field].minute)
-    $('input[name="'+field+'.hour"]').val(model[field].hour);
-    $('input[name="'+field+'.minute"]').val(model[field].minute);
+    if (model[field]) {
+        $('input[name="'+field+'.hour"]').val(model[field].hour);
+        $('input[name="'+field+'.minute"]').val(model[field].minute);
+    }
 }
 
 function updateModel(model) {

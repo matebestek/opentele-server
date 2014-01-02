@@ -33,10 +33,13 @@
             <label for="allNoneIntroPeriod" style="width: auto"><g:message code="schedule.allNoDays.label"/></label>
             <br/>
             <g:each in="${Weekday.values()}" var="day">
-                <g:checkBox name="weekdaysIntroPeriod" id="weekdaysIntroPeriod_${day}" type="checkbox" value="${day}"
-                            checked="${day in weekdaysIntroPeriod}" class="narrow-checkbox"/>
-                <label for="weekdaysIntroPeriod_${day}">
-                    <g:message code="enum.weekday.${day}"/></label> <br/>
+                <div>
+                    <g:checkBox name="weekdaysIntroPeriod" id="weekdaysIntroPeriod_${day}" type="checkbox" value="${day}"
+                                checked="${day in weekdaysIntroPeriod}" class="narrow-checkbox"/>
+                    <label for="weekdaysIntroPeriod_${day}">
+                        <g:message code="enum.weekday.${day}"/>
+                    </label>
+                </div>
             </g:each>
         </div>
 
@@ -46,10 +49,13 @@
             <label for="allNoneSecondPeriod" style="width: auto"><g:message code="schedule.allNoDays.label"/></label>
             <br/>
             <g:each in="${Weekday.values()}" var="day">
-                <g:checkBox name="weekdaysSecondPeriod" id="weekdaysSecondPeriod_${day}" type="checkbox" value="${day}"
-                            checked="${day in weekdaysSecondPeriod}" class="narrow-checkbox"/>
-                <label for="weekdaysSecondPeriod_${day}">
-                    <g:message code="enum.weekday.${day}"/></label> <br/>
+                <div>
+                    <g:checkBox name="weekdaysSecondPeriod" id="weekdaysSecondPeriod_${day}" type="checkbox" value="${day}"
+                                checked="${day in weekdaysSecondPeriod}" class="narrow-checkbox"/>
+                    <label for="weekdaysSecondPeriod_${day}">
+                        <g:message code="enum.weekday.${day}"/>
+                    </label>
+                </div>
             </g:each>
         </div>
     </div>

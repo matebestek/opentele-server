@@ -29,7 +29,7 @@
         <g:each in="${patientNoteInstanceList}" status="i" var="patientNoteInstance">
             <tr class="${(i % 2) == 0 ? 'even' : 'odd'}">
 
-                <g:if test="${patientNoteInstance.remindToday}">
+                <g:if test="${PatientNote.isRemindToday(patientNoteInstance)}">
                     <td id="patientNoteReminder" onclick="window.location='${createLink(action: 'show', id: patientNoteInstance.id)}'" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'" style="cursor:pointer;">
                 </g:if>
                 <g:else>

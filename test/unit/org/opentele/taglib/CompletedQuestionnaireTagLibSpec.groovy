@@ -11,13 +11,14 @@ import org.opentele.server.questionnaire.QuestionnaireService
 import spock.lang.Specification
 import spock.lang.Unroll
 
-@Build([Patient, Message, NextOfKinPerson, Clinician, User])
+@Build([PatientOverview, Message, NextOfKinPerson, Clinician, User])
 @TestFor(CompletedQuestionnaireTagLib)
 class CompletedQuestionnaireTagLibSpec extends Specification {
-    def patient, clinician
+    def patientOverview, clinician
 
     def setup() {
-        patient = Patient.build(blueAlarmQuestionnaireIDs: [], cpr:"0000000000")
+        patientOverview = PatientOverview.build(cpr:"0000000000")
+        patientOverview.metaClass.patientId = 10L
         clinician = Clinician.build()
 
         tagLib.clinicianService = Mock(ClinicianService)
@@ -32,56 +33,55 @@ class CompletedQuestionnaireTagLibSpec extends Specification {
 
         tagLib.springSecurityService = springSecurityService
         tagLib.messageService = Mock(MessageService)
+        tagLib.metaClass.otformat = Mock(FormattingTagLib)
+        tagLib.otformat.formatCPR(_, _) >> '1234567890'
     }
 
     @Unroll
     def "Patient notes are shown with the correct icon"() {
 
         when:
-        def patientNote = new PatientNote(type: type, remindToday: remindToday, reminderDate: reminderDate, seenBy: [])
-        def output = tagLib.renderOverviewForPatient(patient: patient, patientNotes: [patientNote], null)
+        def patientNote = new PatientNote(type: type, reminderDate: reminderDate, seenBy: [])
+        def output = tagLib.renderOverviewForPatient(patientOverview: patientOverview, patientNotes: [patientNote], null)
 
         then:
         output.contains icon
 
         where:
-        type                | reminderDate  |remindToday    | icon
-        NoteType.NORMAL     | new Date()    | true          | "note_reminder_green.png"
-        NoteType.NORMAL     | new Date()    | false         | "note.png"
-        NoteType.NORMAL     | null          | false         | "note.png"
-        NoteType.IMPORTANT  | new Date()    | false         | "note.png"
-        NoteType.IMPORTANT  | new Date()    | true          | "note_reminder_red.png"
-        NoteType.IMPORTANT  | null          | false         | "note_important.png"
+        type                | reminderDate    | icon
+        NoteType.NORMAL     | new Date()-1    | "note_reminder_green.png"
+        NoteType.NORMAL     | new Date()+1    | "note.png"
+        NoteType.NORMAL     | null            | "note.png"
+        NoteType.IMPORTANT  | new Date()+1    | "note.png"
+        NoteType.IMPORTANT  | new Date()-1    | "note_reminder_red.png"
+        NoteType.IMPORTANT  | null            | "note_important.png"
     }
 
     @Unroll
     def "Patient notes are only visible until seen"() {
         when:
 
-        def patientNote = new PatientNote(type: type, remindToday: remindToday, reminderDate: reminderDate, seenBy: (seenByClinician ? [clinician] : []))
-        def output = tagLib.renderOverviewForPatient(patient: patient, patientNotes: [patientNote], null)
+        def patientNotes = seenByClinician ? [] : [new PatientNote(type: type, reminderDate: reminderDate)]
+        def output = tagLib.renderOverviewForPatient(patientOverview: patientOverview, patientNotes: patientNotes, messagingEnabled: false, null)
 
         then:
         output.contains icon
 
         where:
-        type                | reminderDate  |remindToday   | seenByClinician    | icon
-        NoteType.NORMAL     | new Date()    | true         | false              | "note_reminder_green.png"
-        NoteType.IMPORTANT  | new Date()    | true         | false              | "note_reminder_red.png"
-        NoteType.IMPORTANT  | null          | false        | false              | "note_important.png"
-        NoteType.NORMAL     | new Date()    | true         | true               | "note.png"
-        NoteType.IMPORTANT  | new Date()    | true         | true               | "note.png"
-        NoteType.IMPORTANT  | null          | false        | true               | "note.png"
+        type                | reminderDate | seenByClinician    | icon
+        NoteType.NORMAL     | new Date()   | false              | "note_reminder_green.png"
+        NoteType.IMPORTANT  | new Date()   | false              | "note_reminder_red.png"
+        NoteType.IMPORTANT  | null         | false              | "note_important.png"
+        NoteType.NORMAL     | new Date()   | true               | "note.png"
+        NoteType.IMPORTANT  | new Date()   | true               | "note.png"
+        NoteType.IMPORTANT  | null         | true               | "note.png"
 
     }
 
     @Unroll
     def "Patient can be messaged if enabled on the patientgroup otherwise not"() {
-        given:
-        tagLib.messageService.clinicianCanSendMessagesToPatient(_, _) >> canMessage
-
         when:
-        def output = tagLib.renderOverviewForPatient(patient: patient, null)
+        def output = tagLib.renderOverviewForPatient(patientOverview: patientOverview, patientNotes: [], messagingEnabled: canMessage, null)
 
         then:
         output.contains iconInbox

@@ -13,6 +13,7 @@ class PatientService {
     def mailSenderService
     def i18nService
     def clinicianService
+    def patientOverviewService
 
     @Transactional
     def buildAndSavePatient(CreatePatientCommand cmd) {
@@ -85,8 +86,12 @@ class PatientService {
             patient.addToNextOfKinPersons(nok)
         }
 
+        //prefill blueAlarmQuestionnaireIDs
+        patient.blueAlarmQuestionnaireIDs = []
+
         //Validate, save and return patient object
         patient.save()
+        patientOverviewService.createOverviewFor(patient)
         return patient //Return with validation errors, for the view to handle/show
     }
 
@@ -99,7 +104,6 @@ class PatientService {
      */
     @Transactional
     def updatePatient(def params, Patient patientInstance) {
-
         if (!patientInstance) {
             throw new PatientNotFoundException()
         }
@@ -193,75 +197,23 @@ class PatientService {
         }
         if(!patientInstance.hasErrors()) {
             patientInstance.save(failOnError: true)
+            patientOverviewService.updateOverviewFor(patientInstance)
         }
+
         return patientInstance
     }
 
     List<Patient> searchPatient(PatientSearchCommand command) {
         def clinician = Clinician.findByUser(springSecurityService.currentUser as User)
-
-        def patientList = Patient.patientSearch(command).list()
+        def patients = Patient.patientSearch(command).list()
 
         //If we search by phone number, include next of kin phone numbers in the search
         if (command.phone) {
-            patientList += NextOfKinPerson.findAllByPhone(command.phone)*.patient
+            patients += NextOfKinPerson.findAllByPhone(command.phone)*.patient
         }
+
         //Only return patients this clinician is allowed to see
-        List<Patient> patients = getPatientsForClinician(clinician, patientList).unique()
-        return patients
-    }
-    /**
-     * Finds all patients the clinician is allowed to view. That is, patients that
-     * are in patientGroups the clinician is associated with.
-     * @param clinician - find patients for this clinician
-     * @param patients - find patients from this collection. Must be a list of patient objects
-     * @return list of patients
-     */
-    //NOT Transactional
-    def getPatientsForClinician(Clinician clinician, Collection<Patient> patients = null) {
-        if (clinician == null) {
-            return []
-        }
-
-        if (patients == null) {
-            patients = Patient.list()
-        }
-
-        patients.findAll {
-            Patient2PatientGroup.findAllByPatient(it)*.patientGroup
-                .intersect(Clinician2PatientGroup.findAllByClinician(clinician)*.patientGroup)
-                .size() > 0
-        }
-    }
-
-    def getActivePatientsForClinician(Clinician activeClinician) {
-        def criteria = Patient.createCriteria()
-        criteria.listDistinct() {
-            eq('state', PatientState.ACTIVE)
-
-            patient2PatientGroups {
-                patientGroup {
-                    clinician2PatientGroups {
-                        eq('clinician', activeClinician)
-                    }
-                }
-            }
-        }
-    }
-
-    def getActivePatientsForClinicianAndPatientGroup(Clinician activeClinician, PatientGroup activePatientGroup) {
-        if (!activeClinician.clinician2PatientGroups.find { it.patientGroup == activePatientGroup }) {
-            throw new IllegalArgumentException("Clinician ${activeClinician} is not part of given patient group (${activePatientGroup})")
-        }
-
-        def criteria = Patient.createCriteria()
-        criteria.listDistinct() {
-            eq('state', PatientState.ACTIVE)
-
-            patient2PatientGroups {
-                eq('patientGroup', activePatientGroup)
-            }
-        }
+        filterPatientsForClinician(clinician, patients)
     }
 
     def isNoteSeenByUser(PatientNote note) {
@@ -274,7 +226,6 @@ class PatientService {
             def p = Patient.get(patientId)
             return allowedToView(p)
         }
-
     }
 
     def allowedToView(Patient patient) {
@@ -314,5 +265,25 @@ class PatientService {
     def sendPassword(Patient patient) {
         mailSenderService.sendMail(i18nService.message(code: 'patient.send-password.subject'), patient.email, '/email/passwordRecovery',
                 [patient: patient.name, clinician: clinicianService.currentClinician.name, password: patient.user.cleartextPassword])
+    }
+
+    @Transactional
+    def removeAllBlueAlarms(Patient patient) {
+        patient.blueAlarmQuestionnaireIDs = []
+        patient.save(failOnError: true)
+
+        patientOverviewService.updateOverviewFor(patient)
+    }
+
+    /**
+     * Filters patients the clinician is allowed to view. That is, patients that
+     * are in patientGroups the clinician is associated with.
+     */
+    private def filterPatientsForClinician(Clinician clinician, Collection<Patient> patients) {
+        patients.findAll {
+            Patient2PatientGroup.findAllByPatient(it)*.patientGroup
+                    .intersect(Clinician2PatientGroup.findAllByClinician(clinician)*.patientGroup)
+                    .size() > 0
+        }.unique()
     }
 }

@@ -1,7 +1,9 @@
 package org.opentele.server.questionnaire
+
 import org.hibernate.Criteria
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
+import org.hibernate.criterion.Order
 import org.opentele.server.TimeFilter
 import org.opentele.server.model.*
 import org.opentele.server.model.patientquestionnaire.*
@@ -268,7 +270,7 @@ class QuestionnaireService {
                     .add(Projections.property("_questionnaireIgnored"))
                     .add(Projections.property("questionnaireIgnoredReason"))
                     .add(Projections.property("questionnareIgnoredBy"))
-                );
+                ).addOrder(Order.asc("CQ.id"));
 
         if (completedQuestionnairesFilter && completedQuestionnairesFilter.size() > 0) { //Limit to this set of patientQuestionnaires
             completedQuestionnairesCriteria.add(Restrictions.in("id", completedQuestionnairesFilter))
@@ -318,6 +320,8 @@ class QuestionnaireService {
                         .add(Projections.property("Q.revision"))
         );
 
+        questionnaireNodesCriteria.addOrder(Order.asc("QN.id"))
+
         def questionnaireNodes = questionnaireNodesCriteria.list().unique()
         //We need to sort (order: Same as presented when answering questionnaire) and filter (only interested in MeasurementNode and InputNode)
         //(Query of all from DB is needed to sort)
@@ -361,7 +365,7 @@ class QuestionnaireService {
                         .add(Projections.property("TQN.id")) //6
                         .add(Projections.property("PQN.id"))
                         .add(Projections.property("severity"))
-                    );
+                    ).addOrder(Order.asc("INR.id"))
 
         Criteria measurementNodeResultsCriteria = session.createCriteria(Measurement.class, "MEAS")
                     .createAlias("measurementNodeResult", "MNR")
@@ -390,7 +394,7 @@ class QuestionnaireService {
                         .add(Projections.property("glucoseInUrine"))
                         .add(Projections.property("MNR.severity"))            //15
                         /* Don't get CTG - that is not for us to show, but shown in Milou */
-                    );
+                    ).addOrder(Order.asc("MEAS.id"))
 
         def inputNodeResults = inputNodeResultsCriteria.list()
         def measurementNodeResults = measurementNodeResultsCriteria.list()

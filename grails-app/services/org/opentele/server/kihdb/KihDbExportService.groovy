@@ -13,7 +13,7 @@ class KihDbExportService {
 
         kihDbMeasurementService.measurementsToExport().each { Measurement measurement ->
             try {
-                log.info("Exporting measurement (id:'${measurement.id}') to KIH DB")
+                log.info("Exporting measurement (id:'${measurement.id}', type: ${measurement?.measurementType?.name}) to KIH DB")
 
                 def measurementExported = kihDbWebServiceClientService.sendMeasurement(measurement, sosiRequest)
                 if (measurementExported) {

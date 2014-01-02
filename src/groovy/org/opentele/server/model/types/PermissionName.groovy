@@ -12,7 +12,6 @@ public class PermissionName {
 
     public static final String WEB_LOGIN = 'ROLE_WEB_LOGIN'
 
-    public static final String CLAIM_PATIENT_RESPONSIBILITY = 'ROLE_CLAIM_PATIENT_RESPONSIBILITY'
     public static final String SET_PATIENT_RESPONSIBILITY = 'ROLE_SET_PATIENT_RESPONSIBILITY'
 
     public static final String PATIENT_READ = 'ROLE_PATIENT_READ'
@@ -49,8 +48,6 @@ public class PermissionName {
     public static final String MESSAGE_WRITE_JSON = 'ROLE_MESSAGE_WRITE_JSON'
     public static final String MESSAGE_CREATE = 'ROLE_MESSAGE_CREATE'
     public static final String MESSAGE_READ_JSON = 'ROLE_MESSAGE_READ_JSON'
-    public static final String MESSAGE_DELETE = 'ROLE_MESSAGE_DELETE'
-    public static final String MESSAGE_DELETE_JSON = 'ROLE_MESSAGE_DELETE_JSON'
 
     public static final String METER_READ = 'ROLE_METER_READ'
     public static final String METER_READ_ALL = 'ROLE_METER_READ_ALL'
@@ -131,11 +128,7 @@ public class PermissionName {
     public static final String PATIENT_GROUP_WRITE = 'ROLE_PATIENT_GROUP_WRITE'
     public static final String PATIENT_GROUP_DELETE   = 'ROLE_PATIENT_GROUP_DELETE  '
 
-    public static final String MEASUREMENT_READ_ALL = 'ROLE_MEASUREMENT_READ_ALL'
     public static final String MEASUREMENT_READ = 'ROLE_MEASUREMENT_READ'
-    public static final String MEASUREMENT_CREATE = 'ROLE_MEASUREMENT_CREATE'
-    public static final String MEASUREMENT_WRITE = 'ROLE_MEASUREMENT_WRITE'
-    public static final String MEASUREMENT_DELETE = 'ROLE_MEASUREMENT_DELETE'
 
     public static final String PATIENT_LOGIN = 'ROLE_PATIENT_LOGIN'
     public static final String PATIENT_DELETE = 'ROLE_PATIENT_DELETE'

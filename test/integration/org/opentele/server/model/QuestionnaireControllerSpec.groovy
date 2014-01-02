@@ -43,7 +43,8 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         def output = [
             systolic:[type:'Integer', value:systolic.toString()],
             diastolic:[type:'Integer', value:diastolic.toString()],
-            pulse:[type:'Integer', value:pulse.toString()]
+            pulse:[type:'Integer', value:pulse.toString()],
+            deviceId:[type:'String', value:"FFFF2D65"]
         ]
         if (meanArterialPressure != null) { output['meanArterialPressure'] = [type:'Integer', value:meanArterialPressure.toString()] }
         withOutput('BloodPressureDeviceNode', output)
@@ -56,7 +57,9 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         bloodPressureMeasurement.systolic == systolic
         bloodPressureMeasurement.diastolic == diastolic
         bloodPressureMeasurement.meanArterialPressure == meanArterialPressure
+        bloodPressureMeasurement.deviceIdentification == "FFFF2D65"
         pulseMeasurement.value == pulse
+        pulseMeasurement.deviceIdentification == "FFFF2D65"
         measurementNodeResult.severity == expectedSeverity
 
         where:
@@ -82,6 +85,7 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
             systolic:[type:'Integer', value:'150'],
             diastolic:[type:'Integer', value:'91'],
             meanArterialPressure:[type:'Integer', value:'101'],
+            deviceId:[type:'String', value:"ABCD1234"]
         ])
         def (stillOldMeasurement, bloodPressureMeasurement) = newestMeasurements(2)
 
@@ -91,6 +95,7 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         bloodPressureMeasurement.systolic == 150
         bloodPressureMeasurement.diastolic == 91
         bloodPressureMeasurement.meanArterialPressure == 101
+        bloodPressureMeasurement.deviceIdentification == "ABCD1234"
     }
 
     def 'can upload urine result with legal value'() {
@@ -175,7 +180,8 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
             fev1Fev6Ratio:[type:'Float', value:fev1Fev6Ratio.toString()],
             fef2575:[type:'Float', value:fef2575.toString()],
             goodTest:[type:'Boolean', value:true],
-            softwareVersion:[type:'Integer', value:933]
+            softwareVersion:[type:'Integer', value:933],
+            deviceId:[type:'String', value: "00012345678"]
         ])
         def lungFunctionMeasurement = newestMeasurement()
 
@@ -188,6 +194,7 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         lungFunctionMeasurement.fef2575 == fef2575
         lungFunctionMeasurement.isGoodTest
         lungFunctionMeasurement.fevSoftwareVersion == 933
+        lungFunctionMeasurement.deviceIdentification == "00012345678"
 
         where:
         fev1 | fev6 | fev1Fev6Ratio | fef2575
@@ -203,14 +210,17 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         inQuestionnaire 'Saturation'
         withOutput('SaturationDeviceNode', [
             saturation:[type:'Integer', value:saturation],
-            pulse:[type:'Integer', value:pulse]
+            pulse:[type:'Integer', value:pulse],
+            deviceId:[type:'String', value:"123458"]
         ])
         def (saturationMeasurement, pulseMeasurement) = newestMeasurements(2)
 
         then:
         controller.response.json[0][0].toString() == 'success'
         saturationMeasurement.value == saturation
+        saturationMeasurement.deviceIdentification == "123458"
         pulseMeasurement.value == pulse
+        pulseMeasurement.deviceIdentification == "123458"
 
         where:
         saturation | pulse
@@ -224,7 +234,8 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         def oldMeasurement = newestMeasurement()
         inQuestionnaire 'Saturation'
         withOutput('SaturationDeviceNode', [
-            saturation:[type:'Integer', value:97]
+            saturation:[type:'Integer', value:97],
+            deviceId:[type:'String', value: "123xab"]
         ])
         def (stillOldMeasurement, saturationMeasurement) = newestMeasurements(2)
 
@@ -232,6 +243,7 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         stillOldMeasurement == oldMeasurement
         controller.response.json[0][0].toString() == 'success'
         saturationMeasurement.value == 97.0
+        saturationMeasurement.deviceIdentification == "123xab"
     }
 
     def 'can upload blood sugar result'() {

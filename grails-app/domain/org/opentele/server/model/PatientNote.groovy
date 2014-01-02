@@ -7,9 +7,12 @@ class PatientNote extends AbstractObject{
     String note
     NoteType type
     Date reminderDate
-    boolean remindToday = false
     Patient patient
     static hasMany = [seenBy: Clinician]
+
+    static boolean isRemindToday(PatientNote note) {
+        return (note.reminderDate && note.reminderDate.getTime() < Calendar.getInstance().getTimeInMillis())
+    }
 
     static constraints = {
 

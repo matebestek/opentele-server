@@ -7,38 +7,9 @@ import org.springframework.dao.DataIntegrityViolationException
 
 @Secured(PermissionName.NONE)
 class MeasurementController {
-    static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
     def measurementService
     def patientService
     def sessionService
-
-    @Secured(PermissionName.MEASUREMENT_READ_ALL)
-    def index() {
-        redirect(action: "list", params: params)
-    }
-
-    @Secured(PermissionName.MEASUREMENT_READ_ALL)
-    def list() {
-        params.max = Math.min(params.max ? params.int('max') : 10, 100)
-        [measurementInstanceList: Measurement.list(params), measurementInstanceTotal: Measurement.count()]
-    }
-
-    @Secured(PermissionName.MEASUREMENT_CREATE)
-    def create() {
-        [measurementInstance: new Measurement(params)]
-    }
-
-    @Secured(PermissionName.MEASUREMENT_CREATE)
-    def save() {
-        def measurementInstance = new Measurement(params)
-        if (!measurementInstance.save(flush: true)) {
-            render(view: "create", model: [measurementInstance: measurementInstance])
-            return
-        }
-
-        flash.message = message(code: 'default.created.message', args: [message(code: 'measurement.label')])
-        redirect(action: "show", id: measurementInstance.id)
-    }
 
     @Secured(PermissionName.MEASUREMENT_READ)
     @SecurityWhiteListController
@@ -51,70 +22,6 @@ class MeasurementController {
             redirect(controller: 'patient', action: 'conference', id: measurement.conference.id)
         } else {
             throw new IllegalStateException("Measurement ${params.id} (${measurement}) belongs to neither a questionnaire nor a conference")
-        }
-    }
-
-    @Secured(PermissionName.MEASUREMENT_WRITE)
-    def edit() {
-        def measurementInstance = Measurement.get(params.id)
-        if (!measurementInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label')])
-            redirect(action: "list")
-            return
-        }
-
-        [measurementInstance: measurementInstance]
-    }
-
-    @Secured(PermissionName.MEASUREMENT_WRITE)
-    def update() {
-        def measurementInstance = Measurement.get(params.id)
-        if (!measurementInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label')])
-            redirect(action: "list")
-            return
-        }
-
-        if (params.version) {
-            def version = params.version.toLong()
-            if (measurementInstance.version > version) {
-                measurementInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
-                        [message(code: 'measurement.label', default: 'Measurement')] as Object[],
-                        "Another user has updated this Measurement while you were editing")
-                render(view: "edit", model: [measurementInstance: measurementInstance])
-                return
-            }
-        }
-
-        measurementInstance.properties = params
-
-        if (!measurementInstance.save(flush: true)) {
-            render(view: "edit", model: [measurementInstance: measurementInstance])
-            return
-        }
-
-        flash.message = message(code: 'default.updated.message', args: [message(code: 'measurement.label')])
-        redirect(action: "show", id: measurementInstance.id)
-    }
-
-
-    @Secured(PermissionName.MEASUREMENT_DELETE)
-    def delete() {
-        def measurementInstance = Measurement.get(params.id)
-        if (!measurementInstance) {
-            flash.message = message(code: 'default.not.found.message', args: [message(code: 'measurement.label')])
-            redirect(action: "list")
-            return
-        }
-
-        try {
-            measurementInstance.delete(flush: true)
-            flash.message = message(code: 'default.deleted.message', args: [message(code: 'measurement.label')])
-            redirect(action: "list")
-        }
-        catch (DataIntegrityViolationException e) {
-            flash.message = message(code: 'default.not.deleted.message', args: [message(code: 'measurement.label')])
-            redirect(action: "show", id: params.id)
         }
     }
 

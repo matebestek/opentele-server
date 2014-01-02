@@ -660,8 +660,29 @@ class QuestionnaireServiceSpec extends Specification {
         monitoringPlan.questionnaireSchedules.size() == 3
         command.addedQuestionnaires.size() == 2
         command.updatedQuestionnaires.size() == 1
+    }
 
+    @Unroll
+    def 'can calculate worst severity given a list of questionnaires'() {
+        when:
+        def questionnaires = severities.collect { severity ->
+            new CompletedQuestionnaireBuilder().forPatient(patient).ofSeverity(severity).build()
+        }
+        patient.blueAlarmQuestionnaireIDs = new HashSet(blueAlarms)
 
+        Severity worstSeverity = service.worstSeverityOfUnacknowledgedQuestionnaires(patient, questionnaires)
+
+        then:
+        worstSeverity == calculatedSeverity
+
+        where:
+        severities                                          | blueAlarms | calculatedSeverity
+        []                                                  |         [] | Severity.NONE
+        [Severity.GREEN, Severity.GREEN, Severity.GREEN]    |         [] | Severity.GREEN
+        [Severity.GREEN, Severity.GREEN, Severity.ORANGE]   |         [] | Severity.ORANGE
+        [Severity.ORANGE, Severity.ORANGE]                  |       [12] | Severity.BLUE
+        [Severity.YELLOW]                                   |   [12, 25] | Severity.YELLOW
+        [Severity.YELLOW, Severity.YELLOW, Severity.RED]    |         [] | Severity.RED
     }
 
     Calendar subtractOneMinute(Calendar c) {

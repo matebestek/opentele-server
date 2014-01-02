@@ -16,7 +16,8 @@ class Patient extends AbstractObject {
 		blueAlarmQuestionnaireIDs: Long,
         notes: PatientNote,
         thresholds: Threshold,
-        passiveIntervals: PassiveInterval
+        passiveIntervals: PassiveInterval,
+        patientOverviews: PatientOverview
 	]
 
 	MonitoringPlan monitoringPlan //The current monitoring plan, null initially and if patient is discharged
@@ -41,6 +42,11 @@ class Patient extends AbstractObject {
     User user
     PatientGroup dataResponsible
 
+    PatientOverview getPatientOverview() {
+        // There is always one, and exactly one, instance of PatientOverview associated with a Patient
+        patientOverviews.iterator().next()
+    }
+
     boolean isPaused() {
         passiveIntervals.any { it.inInterval() }
     }
@@ -63,7 +69,7 @@ class Patient extends AbstractObject {
         "${cpr[0..5]}-${cpr[6..9]}"
     }
 
-    static transients = ['formattedCpr','name','latestQuestionnaireUploadDate','numberOfUnreadMessages','groups']
+    static transients = ['formattedCpr','name','latestQuestionnaireUploadDate','numberOfUnreadMessages','groups', 'patientOverview']
     
     static constraints = {
         cpr(validator: { val, obj ->
@@ -174,12 +180,7 @@ class Patient extends AbstractObject {
     }
 
     def getGroups() {
-		def patient2PatientGroups = Patient2PatientGroup.findAllByPatient(this)
-		def groups = []
-		patient2PatientGroups.each { group ->
-			groups << group.patientGroup
-		}
-		groups
+        patient2PatientGroups*.patientGroup
 	}
 
     def getNumberOfUnreadMessages() {

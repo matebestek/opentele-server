@@ -10,10 +10,13 @@
             <label for="allNone"><g:message code="schedule.allNoDays.label"/></label>
             <br/>
             <g:each in="${Weekday.values()}" var="day">
-                <g:checkBox name="weekdays" id="weekdays_${day}" type="checkbox" value="${day}"
-                            checked="${day in weekdays}" class="narrow-checkbox"/>
-                <label for="weekdays_${day}">
-                    <g:message code="enum.weekday.${day}"/></label> <br/>
+                <div>
+                    <g:checkBox name="weekdays" id="weekdays_${day}" type="checkbox" value="${day}"
+                                checked="${day in weekdays}" class="narrow-checkbox"/>
+                    <label for="weekdays_${day}">
+                        <g:message code="enum.weekday.${day}"/>
+                    </label>
+                </div>
             </g:each>
         </div>
     </div>

@@ -54,9 +54,7 @@
                         <div class="acknowledgeAll" style="margin: 0 1em; padding: 0 0.25em;">
                             <span>
                                 <g:message code="patient.questionnaire.acknowledge.green.label"/>
-                            </span><cq:renderAcknowledgeAllGreenButtons
-                                completedQuestionnaires="${greenCompletedAndUnacknowledgedQuestionnaires}"
-                                patient="${patientInstance}"/>
+                            </span><cq:renderAcknowledgeAllGreenButtons patientOverview="${patientInstance.patientOverview}"/>
                         </div>
                     </sec:ifAnyGranted>
                 </g:if>

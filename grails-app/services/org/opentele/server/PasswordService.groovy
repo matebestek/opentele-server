@@ -129,6 +129,16 @@ class PasswordService {
 
     private oldPasswordIsCorrect(PasswordCommand passwordCommand) {
         try {
+            // Debug output - Jenkins build is failing here!
+            if (authenticationManager == null) {
+                throw new IllegalStateException("authenticationManager is null")
+            }
+            if (passwordCommand == null) {
+                throw new IllegalArgumentException("passwordCommand is null")
+            }
+            if (passwordCommand.user == null) {
+                throw new IllegalArgumentException("passwordCommand.user is null")
+            }
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(passwordCommand.user.username, passwordCommand.currentPassword))
             return true
         } catch (AuthenticationException e) {

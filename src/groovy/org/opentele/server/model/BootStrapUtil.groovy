@@ -233,7 +233,6 @@ class BootStrapUtil {
             case BootStrapService.roleClinician:
                 return [
                     PermissionName.WEB_LOGIN,
-                    PermissionName.CLAIM_PATIENT_RESPONSIBILITY,
                     PermissionName.SET_PATIENT_RESPONSIBILITY,
                     PermissionName.PATIENT_READ,
                     PermissionName.PATIENT_READ_ALL,
@@ -289,12 +288,7 @@ class BootStrapUtil {
                     PermissionName.MESSAGE_READ,
                     PermissionName.MESSAGE_WRITE,
                     PermissionName.MESSAGE_CREATE,
-                    PermissionName.MESSAGE_DELETE,
                     PermissionName.MEASUREMENT_READ,
-                    PermissionName.MEASUREMENT_DELETE,
-                    PermissionName.MEASUREMENT_WRITE,
-                    PermissionName.MEASUREMENT_CREATE,
-                    PermissionName.MEASUREMENT_READ_ALL,
                     PermissionName.CLINICIAN_CHANGE_PASSWORD,
                     PermissionName.STANDARD_THRESHOLD_READ,
                     PermissionName.PASSIVE_INTERVAL_CREATE,
@@ -321,7 +315,6 @@ class BootStrapUtil {
 
                     PermissionName.MESSAGE_READ_JSON,
                     PermissionName.MESSAGE_WRITE_JSON,
-                    PermissionName.MESSAGE_DELETE_JSON,
 
                     PermissionName.JOIN_VIDEO_CALL
                 ]

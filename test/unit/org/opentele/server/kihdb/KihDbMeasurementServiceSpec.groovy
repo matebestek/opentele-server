@@ -38,7 +38,7 @@ class KihDbMeasurementServiceSpec extends Specification {
         def exported = service.measurementsToExport()
 
         then:
-        notToBeExported.size() >= 4
+        notToBeExported.size() >= 2
         exported.contains(bloodSugar)
         notToBeExported.every { !exported.contains(it) }
     }

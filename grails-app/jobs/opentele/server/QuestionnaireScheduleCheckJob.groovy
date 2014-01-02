@@ -6,6 +6,7 @@ import org.opentele.server.model.Patient
 
 class QuestionnaireScheduleCheckJob {
 	def questionnaireService
+    def patientOverviewService
 
     static triggers = {
         simple(name: 'CheckForBlueAlarms', startDelay: 20000, repeatInterval: Constants.BLUE_ALARM_CHECK_INTERVAL*60000, repeatCount: -1)
@@ -34,9 +35,12 @@ class QuestionnaireScheduleCheckJob {
         def blueAlarms = questionnaireService.checkForBlueAlarms(patient, checkFrom, checkTo)
 
         if (blueAlarms) {
-            patient.blueAlarmQuestionnaireIDs.addAll(blueAlarms)
-            patient.save(failOnError: true)
-            log.debug "New blue alarms for " + patient + ": " + blueAlarms
+            Patient.withTransaction {
+                patient.blueAlarmQuestionnaireIDs.addAll(blueAlarms)
+                patient.save(failOnError: true)
+                patientOverviewService.updateOverviewFor(patient)
+                log.debug "New blue alarms for " + patient + ": " + blueAlarms
+            }
         }
     }
 }

@@ -27,7 +27,9 @@ enum IupacCode {
     //BMI("NPU27281"),
     //SKRIDT-TÆLLER("unspecified_1"),
     //MOTION("MCS88001"),
-    URINE("NPU17997"), // PROTEIN in urine
+    TEMPERATURE("NPU08676"),
+    URINE("NPU03958"), // PROTEIN in urine // Simens multistix 5 (RM): NPU03958, Siemens uristix 2857 (RH): NPU04206
+    URINE_GLUCOSE("NPU03936"),
     //ØDEM_GRAD("unspecified_2"),
     //FOSTER_AKTIVIET("unspecified_3")
     CRP ("NPU01423")
@@ -43,7 +45,5 @@ enum IupacCode {
     }
 
     // Missing types:
-   // TEMPERATURE
-   // URINE_GLUCOSE
    // HEMOGLOBIN
 }

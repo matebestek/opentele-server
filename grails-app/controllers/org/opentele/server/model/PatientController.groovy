@@ -400,7 +400,6 @@ class PatientController {
     private void removeRemindersFromNotes(Patient patient) {
         for (note in patient.notes) {
             note.reminderDate = null
-            note.remindToday = false
         }
     }
 
@@ -696,9 +695,8 @@ class PatientController {
     @Secured(PermissionName.PATIENT_REMOVE_BLUE_ALARMS)
     @SecurityWhiteListController
 	def removeAllBlue() {
-		Patient p = Patient.get(params.patientID)
-        p.blueAlarmQuestionnaireIDs = []
-        p.save()
+		Patient patient = Patient.get(params.patientID)
+        patientService.removeAllBlueAlarms(patient)
 
 		redirect(controller: session.lastController, action: session.lastAction)
 	}

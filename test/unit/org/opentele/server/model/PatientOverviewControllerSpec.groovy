@@ -4,7 +4,7 @@ import grails.buildtestdata.mixin.Build
 import grails.test.mixin.*
 import org.opentele.server.ClinicianService
 import org.opentele.server.CompletedQuestionnaireService
-import org.opentele.server.PatientService
+import org.opentele.server.PatientOverviewService
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.questionnaire.QuestionnaireHeader
 import org.opentele.server.model.types.Severity
@@ -12,7 +12,7 @@ import spock.lang.Specification
 
 @SuppressWarnings("GroovyAssignabilityCheck")
 @TestFor(PatientOverviewController)
-@Build([CompletedQuestionnaire, Clinician, User, Patient, Department, PatientGroup, Patient2PatientGroup, Clinician2PatientGroup, QuestionnaireHeader])
+@Build([CompletedQuestionnaire, Clinician, User, Patient, Department, PatientGroup, Patient2PatientGroup, Clinician2PatientGroup, QuestionnaireHeader, PatientOverview])
 class PatientOverviewControllerSpec extends Specification {
     Patient patientA
     Patient patientB
@@ -24,8 +24,8 @@ class PatientOverviewControllerSpec extends Specification {
 
     def setup() {
         controller.completedQuestionnaireService = Mock(CompletedQuestionnaireService)
-        controller.patientService = Mock(PatientService)
         controller.clinicianService = Mock(ClinicianService)
+        controller.patientOverviewService = Mock(PatientOverviewService)
         controller.metaClass.checkAccessToPatient = { Patient patient -> /* Do nothing */ }
 
         Department depA = Department.build(name: "A")
@@ -77,7 +77,7 @@ class PatientOverviewControllerSpec extends Specification {
         controller.acknowledgeAll()
 
         then:
-        1 * controller.completedQuestionnaireService.acknowledge({it.size() == greenQuestionnairesForPatientA.size()}, true) >> greenQuestionnairesForPatientA
+        1 * controller.completedQuestionnaireService.acknowledge({it.size() == greenQuestionnairesForPatientA.size()}, true)
     }
 
     def 'does not send auto-messages as part of acknowledgeAll when told not to'() {
@@ -92,37 +92,40 @@ class PatientOverviewControllerSpec extends Specification {
         controller.acknowledgeAll()
 
         then:
-        1 * controller.completedQuestionnaireService.acknowledge({it.size() == greenQuestionnairesForPatientA.size()}, false) >> greenQuestionnairesForPatientA
+        1 * controller.completedQuestionnaireService.acknowledge({it.size() == greenQuestionnairesForPatientA.size()}, false)
     }
 
     def 'sends auto-messages in acknowledgeAllForAll the correct number of times when told so'() {
         setup:
         def correctQuestionnaires = questionnaireTestList.findAll { it.severity == Severity.GREEN }
-        //From setup this clinician is only in patientGroupA
-        Clinician2PatientGroup.build(clinician: clinicianA, patientGroup: patientGroupB)
-        controller.patientService.getPatientsForClinician(_) >> [patientA, patientB]
+        def greenQuestionnaireIdsForPatientA = correctQuestionnaires.findAll { it.patient == patientA }*.id
+        def greenQuestionnaireIdsForPatientB = correctQuestionnaires.findAll { it.patient == patientB }*.id
+        controller.patientOverviewService.getPatientsForClinicianOverview(clinicianA) >> [
+                PatientOverview.build(patient: patientA, greenQuestionnaireIds: greenQuestionnaireIdsForPatientA.join(',')),
+                PatientOverview.build(patient: patientB, greenQuestionnaireIds: greenQuestionnaireIdsForPatientB.join(','))]
 
         when:
         controller.params.withAutoMessage = 'true'
         controller.acknowledgeAllForAll()
 
         then:
-        1 * controller.completedQuestionnaireService.acknowledge({it.size() == correctQuestionnaires.size()},true)  >> correctQuestionnaires
+        1 * controller.completedQuestionnaireService.acknowledge(correctQuestionnaires, true)
     }
 
     def 'does not send any auto-messages in acknowledgeAllForAll when told not to'() {
         setup:
         def correctQuestionnaires = questionnaireTestList.findAll { it.severity == Severity.GREEN }
-        //From setup this clinician is only in patientGroupA
-        Clinician2PatientGroup.build(clinician: clinicianA, patientGroup: patientGroupB)
-
-        controller.patientService.getPatientsForClinician(_) >> [patientA, patientB]
+        def greenQuestionnaireIdsForPatientA = correctQuestionnaires.findAll { it.patient == patientA }*.id
+        def greenQuestionnaireIdsForPatientB = correctQuestionnaires.findAll { it.patient == patientB }*.id
+        controller.patientOverviewService.getPatientsForClinicianOverview(clinicianA) >> [
+                PatientOverview.build(patient: patientA, greenQuestionnaireIds: greenQuestionnaireIdsForPatientA.join(',')),
+                PatientOverview.build(patient: patientB, greenQuestionnaireIds: greenQuestionnaireIdsForPatientB.join(','))]
 
         when:
         controller.params.withAutoMessage = 'false'
         controller.acknowledgeAllForAll()
 
         then:
-        1 * controller.completedQuestionnaireService.acknowledge({it.size() == correctQuestionnaires.size()}, false) >> correctQuestionnaires
+        1 * controller.completedQuestionnaireService.acknowledge(correctQuestionnaires, false)
     }
 }

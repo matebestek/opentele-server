@@ -1,3 +1,5 @@
+import grails.util.Environment
+
 grails.servlet.version = "3.0" // Change depending on target container compliance (2.5 or 3.0)
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
@@ -41,6 +43,11 @@ grails.project.dependency.resolution = {
     }
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
+
+        if(Environment.current == Environment.DEVELOPMENT) {
+            runtime 'org.grails.plugins:profiler:0.5'
+            runtime 'org.grails.plugins:miniprofiler:0.3'
+        }
 
         runtime 'mysql:mysql-connector-java:5.1.18'
         runtime 'net.sourceforge.jtds:jtds:1.2.6'

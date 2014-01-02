@@ -1,6 +1,6 @@
-<div class="patientEntry" id="${patient}">
-    <div class="questionnaireList" id="${patient.id}">
-        <cq:renderOverviewForPatient patient="${patient}" completedQuestionnaires="${unacknowledgedQuestionnaires}" patientNotes="${notes}"/>
+<div class="patientEntry" id="${patientOverview.patientId}">
+    <div class="questionnaireList" id="${patientOverview.patientId}">
+        <cq:renderOverviewForPatient patientOverview="${patientOverview}" patientNotes="${patientNotes}" messagingEnabled="${messagingEnabled}"/>
         <div class="questionnaireListInner">
             <tmpl:details/>
         </div>

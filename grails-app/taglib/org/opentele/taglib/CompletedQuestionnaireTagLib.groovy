@@ -10,6 +10,7 @@ import org.opentele.server.PatientService
 import org.opentele.server.TimeFilter
 import org.opentele.server.model.*
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
+import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
 import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.NoteType
 import org.opentele.server.model.types.PermissionName
@@ -413,27 +414,26 @@ class CompletedQuestionnaireTagLib {
     }
 
     def renderAcknowledgeAllGreenButtons = { attributes ->
-        Patient patient = (Patient) attributes['patient']
-        def questionnaires = attributes['completedQuestionnaires'] ?: []
-        writeAcknowledgeAllGreenButtons(questionnaires, patient,false)
+        PatientOverview patientOverview = (PatientOverview) attributes['patientOverview']
+        boolean messagingEnabled = messageService.clinicianCanSendMessagesToPatient(Clinician.findByUser(springSecurityService.currentUser), patientOverview.patient)
+        writeAcknowledgeAllGreenButtons(patientOverview, messagingEnabled, false)
     }
 
 	def renderOverviewForPatient = { attributes, body ->
-		Patient patient = (Patient) attributes['patient']
+		PatientOverview patientOverview = (PatientOverview) attributes['patientOverview']
+        List<PatientNote> patientNotes = (List<PatientNote>) attributes['patientNotes']
+        boolean messagingEnabled = (boolean) attributes['messagingEnabled']
 
-		def questionnaires = attributes['completedQuestionnaires'] ?: []
-		def numberOfUnacknowledgedQuestionnaires = questionnaires.size()
-        def (numberOfUnreadFromDepartment, oldestUnreadFromDepartment, numberOfUnreadFromPatient, oldestUnreadFromPatient) = patient.numberOfUnreadMessages
-        def (icon, severityTooltip) = questionnaireService.iconAndTooltip(g, patient, questionnaires)
+        def (icon, severityTooltip) = iconAndTooltip(g, patientOverview)
 
         MarkupBuilder builder = new MarkupBuilder(out)
         def mkp = builder.getMkp()
         builder.div(id: "questionnaireListHeader", class: "overviewStyleShadow", "") {
 
             // Put the (right) floating element first to prevent the IE7 float-newline bug
-            writeAcknowledgeAllGreenButtons(questionnaires, patient)
-            if (!patient.blueAlarmQuestionnaireIDs.empty) {
-                writeRemoveBlueAlarmsButton(builder, patient.id)
+            writeAcknowledgeAllGreenButtons(patientOverview, messagingEnabled)
+            if (patientOverview.blueAlarmText != null) {
+                writeRemoveBlueAlarmsButton(builder, patientOverview.patientId)
             }
 
             // First entry item: Patient status
@@ -444,26 +444,26 @@ class CompletedQuestionnaireTagLib {
             builder.img(imageArguments)
 
             // Second entry item: Messages to patient icon
-            if(messageService.clinicianCanSendMessagesToPatient(clinicianService.currentClinician, patient)) {
+            if (messagingEnabled) {
                 def imageOUT
                 def imageIN
 
-                if (numberOfUnreadFromDepartment > 0) {
-                    def tooltip = message(code: "patientOverview.unreadMessagesFromDepartment",args: [numberOfUnreadFromDepartment, formatDate(date: oldestUnreadFromDepartment?.sendDate)])
+                if (patientOverview.numberOfUnreadMessagesToPatient > 0) {
+                    def tooltip = message(code: "patientOverview.unreadMessagesFromDepartment",args: [patientOverview.numberOfUnreadMessagesToPatient, formatDate(date: patientOverview.dateOfOldestUnreadMessageToPatient)])
                     imageOUT = """<img src=${g.resource(dir: "/images", file: "outboxNew.png")} id="outboxIcon" data-tooltip="$tooltip"/>"""
                 } else {
                     def tooltip =message(code: "patientOverview.noUnreadMessagesFromDepartment")
                     imageOUT = """<img src=${g.resource(dir: "/images", file: "outbox.png")} id="outboxIcon" data-tooltip="$tooltip"/>"""
                 }
-                if (numberOfUnreadFromPatient > 0) {
-                    def tooltip=message(code: "patientOverview.unreadMessagesFromPatient", args: [numberOfUnreadFromPatient, formatDate(date: oldestUnreadFromPatient?.sendDate)])
+                if (patientOverview.numberOfUnreadMessagesFromPatient > 0) {
+                    def tooltip=message(code: "patientOverview.unreadMessagesFromPatient", args: [patientOverview.numberOfUnreadMessagesFromPatient, formatDate(date: patientOverview.dateOfOldestUnreadMessageFromPatient)])
                     imageIN = """<img src=${g.resource(dir: "/images", file: "inboxNew.png")} id="inboxIcon" data-tooltip="$tooltip"/>"""
                 } else {
                     def tooltip=message(code: "patientOverview.noUnreadMessagesFromPatient")
                     imageIN = """<img src=${g.resource(dir: "/images", file: "inbox.png")} id="inboxIcon" data-tooltip="$tooltip"/>"""
                 }
-                mkp.yieldUnescaped(g.link(controller:"patient", action:"messages", id:patient.id, imageOUT))
-                mkp.yieldUnescaped(g.link(controller:"patient", action:"messages", id:patient.id, imageIN))
+                mkp.yieldUnescaped(g.link(controller:"patient", action:"messages", id:patientOverview.patientId, imageOUT))
+                mkp.yieldUnescaped(g.link(controller:"patient", action:"messages", id:patientOverview.patientId, imageIN))
 
             } else {
                 def tooltip = message(code: "patientOverview.messagingDisabled")
@@ -474,43 +474,53 @@ class CompletedQuestionnaireTagLib {
             // Third entry item: Patient name and CPR
             builder.div('data-tooltip': message(code: 'patientOverview.goToPatient.tooltip')) {
                 builder.h2(class: "questionnaireListHeader", id: "patientName", "") {
-                    mkp.yieldUnescaped(g.link(action: 'questionnaires', controller: 'patient', id: patient.id, patient.name))
+                    mkp.yieldUnescaped(g.link(action: 'questionnaires', controller: 'patient', id: patientOverview.patientId, patientOverview.name.encodeAsHTML()))
                 }
             }
             builder.div('data-tooltip': message(code: 'patientOverview.goToPatient.tooltip')) {
                 builder.h2(class: "questionnaireListHeader", id: "patientCPR", "") {
-                    mkp.yieldUnescaped(g.link(action: 'questionnaires', controller: 'patient', id: patient.id, patient.formattedCpr))
+                    mkp.yieldUnescaped(g.link(action: 'questionnaires', controller: 'patient', id: patientOverview.patientId, otformat.formatCPR(cpr: patientOverview.cpr)))
                 }
             }
 
             // Fourth entry item: Expland/Collapse measurement table
-            def tooltip = g.message(code: 'patientOverview.numberOfUnacknowledgedQuestionnaires', args: [numberOfUnacknowledgedQuestionnaires])
+            def tooltip = g.message(code: 'patientOverview.numberOfUnacknowledgedQuestionnaires', args: [patientOverview.numberOfUnacknowledgedQuestionnaires])
             builder.div('data-tooltip': tooltip) {
                 builder.img(src: g.resource(dir: "images", file: 'measurements_expand.png'), class: "measurementsIcon", style: "position:center")
             }
 
             // Patient notes
             builder.div(class: "patientNotes", "") {
-                renderPatientNoteIcon(builder, attributes['patientNotes'], patient)
+                renderPatientNoteIcon(builder, patientOverview, patientNotes)
             }
         }
     }
 
-    private void renderPatientNoteIcon(MarkupBuilder builder, patientNotes, Patient patient) {
-        def clinician = Clinician.findByUser(springSecurityService.currentUser)
-        def patientNoteImage = g.resource(dir:'/images', file: patientNoteImage(patientNotes, clinician))
-        def patientNoteTooltip = patientNoteToolTip(patientNotes, clinician)
-        def patientNoteIcon = "<img src='${patientNoteImage}' data-tooltip='${patientNoteTooltip}' id='noteIcon'/>"
+    def iconAndTooltip(g, PatientOverview patientOverview) {
+        def severity = patientOverview.questionnaireSeverity
 
-        builder.getMkp().yieldUnescaped(g.link(controller:"patientNote", action:"list", id:patient.id, patientNoteIcon))
+        if (severity == Severity.BLUE) {
+            String tooltip = 'Følgende spørgeskemaer er ikke besvaret til tiden:<br/>' + patientOverview.blueAlarmText.replace('\n', '<br/>')
+            [severity.icon(), tooltip]
+        } else if (severity != Severity.NONE) {
+            [severity.icon(), "Fra skema: ${patientOverview.mostSevereQuestionnaireName} (${g.formatDate(date: patientOverview.mostSevereQuestionnaireDate)})"]
+        } else {
+            [Severity.NONE.icon(), "Ingen nye besvarelser fra denne patient"]
+        }
     }
 
-    private String patientNoteImage(patientNotes, clinician) {
-        PatientNote[] unreadNotes = patientNotes.grep { !it.seenBy.contains(clinician) }
+    private void renderPatientNoteIcon(MarkupBuilder builder, PatientOverview patientOverview, List<PatientNote> patientNotes) {
+        def patientNoteImage = g.resource(dir:'/images', file: patientNoteImage(patientNotes))
+        def patientNoteTooltip = patientNoteToolTip(patientNotes)
+        def patientNoteIcon = "<img src='${patientNoteImage}' data-tooltip='${patientNoteTooltip}' id='noteIcon'/>"
 
-        def hasUnreadImportantWithReminder = unreadNotes.any { it.type == NoteType.IMPORTANT && it.remindToday }
-        def hasUnreadNormalWithReminder = unreadNotes.any { it.type == NoteType.NORMAL && it.remindToday }
-        def hasUnreadImportantWithoutDeadline = unreadNotes.any { it.type == NoteType.IMPORTANT && !it.reminderDate }
+        builder.getMkp().yieldUnescaped(g.link(controller:"patientNote", action:"list", id:patientOverview.patientId, patientNoteIcon))
+    }
+
+    private String patientNoteImage(List<PatientNote> patientNotes) {
+        def hasUnreadImportantWithReminder = patientNotes.any { it.type == NoteType.IMPORTANT && PatientNote.isRemindToday(it) }
+        def hasUnreadNormalWithReminder = patientNotes.any { it.type == NoteType.NORMAL && PatientNote.isRemindToday(it) }
+        def hasUnreadImportantWithoutDeadline = patientNotes.any { it.type == NoteType.IMPORTANT && !it.reminderDate }
 
         if (hasUnreadImportantWithReminder) {
             'note_reminder_red.png'
@@ -523,15 +533,14 @@ class CompletedQuestionnaireTagLib {
         }
     }
 
-    private String patientNoteToolTip(patientNotes, clinician) {
+    private String patientNoteToolTip(List<PatientNote> patientNotes) {
         String tooltip = g.message(code: 'patientOverview.noUnreadNotes').encodeAsHTML()
 
-        def reminders = patientNotes.findAll{!it.seenBy.contains(clinician) && it.remindToday}
-        def important = patientNotes.findAll{!it.seenBy.contains(clinician) && it.type == NoteType.IMPORTANT}
-        def unread = patientNotes.findAll{!it.seenBy.contains(clinician)}
+        def reminders = patientNotes.findAll { PatientNote.isRemindToday(it) }
+        def important = patientNotes.findAll { it.type == NoteType.IMPORTANT }
         def numReminders = reminders.size()
         def numImportant = important.size()
-        def numUnread = unread.size()
+        def numUnread = patientNotes.size()
 
         if (numUnread + numReminders + numImportant > 0) {
             tooltip = g.message(code: 'patientOverview.numberOfUnreadNotesAndReminders', args: [numUnread, numReminders, numImportant])
@@ -579,13 +588,13 @@ class CompletedQuestionnaireTagLib {
         }
 	}
 	
-	private void writeRemoveBlueAlarmsButton(MarkupBuilder builder, patientID) {
+	private void writeRemoveBlueAlarmsButton(MarkupBuilder builder, patientId) {
         builder.div(id: "removeBlueButton") {
             def tooltip = message(code:"patientOverview.removeBlueAlarms")
             builder.getMkp().yieldUnescaped(
                 g.form(controller: "patient", action: "removeAllBlue",
                     """<fieldset class="buttons">
-                        <input type="hidden" name="patientID" value="${patientID}" />
+                        <input type="hidden" name="patientID" value="${patientId}" />
                         <input 	type="submit" name="_action_removeAllBlue"
                         data-tooltip="${tooltip}"
                         value="" class="removeBlueAlarms"
@@ -596,8 +605,8 @@ class CompletedQuestionnaireTagLib {
         }
 	}
 	
-	def writeAcknowledgeAllGreenButtons(questionnaires, patient, createDivWrapper = true) {
-        def idsOfGreenQuestionnaires = questionnaires.findAll{ it.severity == Severity.GREEN }.collect{ it.id }
+	def writeAcknowledgeAllGreenButtons(PatientOverview patientOverview, boolean messagingEnabled, createDivWrapper = true) {
+        def idsOfGreenQuestionnaires = patientOverview.greenQuestionnaireIds?.split(',') ?: []
 
         MarkupBuilder builder = new MarkupBuilder(out)
         if (idsOfGreenQuestionnaires) {
@@ -606,15 +615,15 @@ class CompletedQuestionnaireTagLib {
                 out << g.remoteLink(controller: 'patientOverview',
                         action: 'acknowledgeAll',
                         onComplete: 'location.reload(true);',
-                        id: patient.id,
+                        id: patientOverview.patientId,
                         params:[ids:idsOfGreenQuestionnaires, withAutoMessage: 'false'],
                         before: "return confirm('${message(code: 'patientOverview.acknowledgeAllForAll.confirm')}')", acknowledgeAllIcon)
 
-               def withAutoMessageIcon = getAutoMessageAllIcon(messageService.clinicianCanSendMessagesToPatient(Clinician.findByUser(springSecurityService.currentUser), patient))
+               def withAutoMessageIcon = getAutoMessageAllIcon(messagingEnabled)
                out << g.remoteLink(controller: 'patientOverview',
                         action: 'acknowledgeAll',
                         onComplete: 'location.reload(true);',
-                        id: patient.id,
+                        id: patientOverview.patientId,
                         params:[ids:idsOfGreenQuestionnaires, withAutoMessage: 'true'],
                         before: "return confirm('${message(code: 'patientOverview.acknowledgeAllForAllWithMessage.confirm')}')", withAutoMessageIcon)
             }

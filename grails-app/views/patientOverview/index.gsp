@@ -166,7 +166,7 @@
                           optionKey="id"
                     />
             </g:form>
-            <g:if test="${!patientList.isEmpty()}">
+            <g:if test="${!patients.empty}">
                 <tmpl:acknowledgeGreen />
             </g:if>
 
@@ -182,10 +182,10 @@
     </r:script>
 
 <div id="list-patient" class="content scaffold-list" role="main">
-		<g:each in="${patientList}" var="patient">
-			<div class="patientEntry" id="${patient}">
-				<div class="questionnaireList" id="${patient.id}">
-					<cq:renderOverviewForPatient patient="${patient}" completedQuestionnaires="${patientsToCompletedQuestionnaires[patient]}" patientNotes="${notes[patient]}"/>
+		<g:each in="${patients}" var="patientOverview">
+			<div class="patientEntry" id="${patientOverview.patientId}">
+				<div class="questionnaireList" id="${patientOverview.patientId}">
+					<cq:renderOverviewForPatient patientOverview="${patientOverview}" patientNotes="${patientNotes[patientOverview.patientId]}" messagingEnabled="${idsOfPatientsWithMessaging.contains(patientOverview.patientId)}"/>
 					<div class="questionnaireListInner" style="display: none;">
 					</div>
 				</div>

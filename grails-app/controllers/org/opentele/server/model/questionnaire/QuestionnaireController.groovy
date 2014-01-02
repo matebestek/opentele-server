@@ -104,7 +104,7 @@ class QuestionnaireController {
 			results << ["failure"]
 			results << errors
 		} else {
-			results = completedQuestionnaireService.handleResults(patient.cpr, patientQuestionnaireId, date, jsonRequest.output)
+			results = completedQuestionnaireService.handleResults(patient, patientQuestionnaireId, date, jsonRequest.output)
 		}
 
 		render results as JSON
@@ -122,7 +122,7 @@ class QuestionnaireController {
 		def questionnaire = CompletedQuestionnaire.get(qId)
 		boolean errorOccured = false
 
-		questionnaire = completedQuestionnaireService.acknowledge(questionnaire, note, withAutoMessage)
+		completedQuestionnaireService.acknowledge(questionnaire, note, withAutoMessage)
 
 		if (questionnaire.hasErrors()) {
 			def msg

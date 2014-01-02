@@ -1,26 +1,40 @@
 package org.opentele.builders
 
+import org.opentele.server.model.Clinician
+import org.opentele.server.model.Patient
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
 import org.opentele.server.model.types.Severity
 
 class CompletedQuestionnaireBuilder {
-    def patient
+    Patient patient
     def patientQuestionnaire
     def name
     def questionnaireHeader
     def uploadDate = new Date()
     def receivedDate = new Date()
-    def severity = Severity.GREEN
+    Severity severity = Severity.GREEN
     def createdDate = new Date()
+    boolean acknowledged
 
-    CompletedQuestionnaireBuilder forPatient(patient) {
+
+    CompletedQuestionnaireBuilder forPatient(Patient patient) {
         this.patient = patient
         this
     }
 
     CompletedQuestionnaireBuilder forName(String name) {
         this.name = name
+        this
+    }
+
+    CompletedQuestionnaireBuilder acknowledged() {
+        this.acknowledged = true
+        this
+    }
+
+    CompletedQuestionnaireBuilder uploadedAt(Date uploadDate) {
+        this.uploadDate = uploadDate
         this
     }
 
@@ -35,8 +49,19 @@ class CompletedQuestionnaireBuilder {
 
         def result = new CompletedQuestionnaire(patient:patient, questionnaireHeader: questionnaireHeader,
                 patientQuestionnaire: patientQuestionnaire, uploadDate: uploadDate, receivedDate: receivedDate, severity: severity, createdDate: createdDate)
+        if (acknowledged) {
+            Clinician clinician = Clinician.build()
+            result.acknowledgedBy = clinician
+            result.acknowledgedDate = new Date()
+        }
+
         result.save(failOnError: true)
 
         result
+    }
+
+    CompletedQuestionnaireBuilder ofSeverity(Severity severity) {
+        this.severity = severity
+        this
     }
 }

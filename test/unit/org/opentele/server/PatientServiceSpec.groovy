@@ -23,6 +23,7 @@ class PatientServiceSpec extends Specification {
         service.clinicianService = Mock(ClinicianService)
         service.i18nService = Mock(I18nService)
         service.mailSenderService = Mock(MailSenderService)
+        service.patientOverviewService = Mock(PatientOverviewService)
     }
 
     def "when I create a user with a valid CreatePatientCommand it works"() {
@@ -50,6 +51,7 @@ class PatientServiceSpec extends Specification {
         then:
         !patient.hasErrors()
         patient.state == PatientState.ACTIVE
+        1 * service.patientOverviewService.createOverviewFor({ it.cpr == '12345678' })
     }
 
     @Unroll
@@ -73,11 +75,12 @@ class PatientServiceSpec extends Specification {
         )
 
         when:
-        def patient = service.buildAndSavePatient(command)
+        service.buildAndSavePatient(command)
 
         then:
         def e = thrown(PatientException)
         e.message == errorMessage
+        0 * service.patientOverviewService.createOverviewFor(_)
 
         where:
         username   | cpr        | firstName | errorMessage
@@ -103,6 +106,7 @@ class PatientServiceSpec extends Specification {
         then:
         patient.user.password == 'newpassword1'
         patient.user.cleartextPassword == 'newpassword1'
+        1 * service.patientOverviewService.updateOverviewFor(patient)
     }
 
 
@@ -116,6 +120,7 @@ class PatientServiceSpec extends Specification {
 
         then:
         patient.hasErrors()
+        0 * service.patientOverviewService.updateOverviewFor(patient)
     }
 
 

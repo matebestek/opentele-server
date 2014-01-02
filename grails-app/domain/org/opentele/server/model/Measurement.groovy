@@ -19,13 +19,13 @@ class Measurement extends AbstractObject {
 
     public static final ArrayList<MeasurementTypeName> notToBeExportedMeasurementTypes = [
             MeasurementTypeName.CTG,
-            MeasurementTypeName.HEMOGLOBIN,
-            MeasurementTypeName.TEMPERATURE,
-            MeasurementTypeName.URINE_GLUCOSE
+            MeasurementTypeName.HEMOGLOBIN
     ]
 
     Boolean exported = false
     Boolean exportedToKih = false
+
+    String deviceIdentification
 
     Date time
     
@@ -111,6 +111,7 @@ class Measurement extends AbstractObject {
 
         exported(nullable:false)
         exportedToKih(nullable:false)
+        deviceIdentification(nullable:true)
         time(nullable:false)
         value(nullable:true)
         systolic(nullable:true)
