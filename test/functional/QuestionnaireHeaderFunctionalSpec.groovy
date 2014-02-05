@@ -1,4 +1,3 @@
-import geb.spock.GebReportingSpec
 import pages.LoginPage
 import pages.LogoutPage
 import pages.patient.OverviewPage
@@ -7,7 +6,7 @@ import spock.lang.Ignore
 import spock.lang.Stepwise
 
 @Stepwise
-class QuestionnaireHeaderFunctionalSpec extends GebReportingSpec {
+class QuestionnaireHeaderFunctionalSpec extends OpenTeleSpec {
 
     @Ignore  // TODO: Figure out, why it's not working
     def "Helle Andersen logs in"() {

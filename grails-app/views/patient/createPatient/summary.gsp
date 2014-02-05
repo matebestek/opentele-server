@@ -38,7 +38,7 @@
         <g:form>
             <fieldset class="buttons">
                 <g:submitButton name="save" class="save" value="${message(code: 'patient.create.flow.summary.save.label')}" data-tooltip="${message(code: 'tooltip.patient.create.permanent')}"/>
-                <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label')}" data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
+                <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label')}" data-tooltip="${message(code: 'patient.create.flow.summary.saveAndExitToMonitoringPlan.tooltip')}"/>
                 <g:submitButton name="quitNoSaving" class="cancel" value="${message(code: 'patient.create.flow.summary.cancel.label')}" />
             </fieldset>
         </g:form>

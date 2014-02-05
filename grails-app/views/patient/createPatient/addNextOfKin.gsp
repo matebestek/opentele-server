@@ -37,8 +37,8 @@
             <g:submitButton name="previous" class="goback" value="${message(code: 'patient.create.flow.button.previous.label')}" />
             <g:submitButton name="create" class="create" value="${message(code: 'patient.create.flow.button.createNextOfKin.label')}" />
             <g:submitButton name="next" class="gonext" value="${message(code: 'patient.create.flow.button.next.label')}" />
-            <g:submitButton name="saveAndShow" class="save" value="${message(code: 'patient.create.flow.button.saveAndExit.label')}" data-tooltip="${message(code: 'patient.create.flow.finish.tooltip')}"/>
-            <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label')}" data-tooltip="${message(code: 'patient.create.flow.finish.monplan.tooltip')}"/>
+            <g:submitButton name="saveAndShow" class="save" value="${message(code: 'patient.create.flow.button.saveAndExit.label')}" data-tooltip="${message(code: 'patient.create.flow.addNextOfKin.finish.tooltip')}"/>
+            <g:submitButton name="saveAndGotoMonplan" class="save" value="${message(code: 'patient.create.flow.button.saveAndExitToMonplan.label')}" data-tooltip="${message(code: 'patient.create.flow.addNextOfKin.saveAndExitToMonitoringPlan.tooltip')}"/>
         </fieldset>
     </g:form>
 </div>

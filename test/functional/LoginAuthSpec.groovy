@@ -1,12 +1,10 @@
-import geb.spock.GebReportingSpec
 import pages.LoginPage
 import pages.patient.OverviewPage
 import pages.questionnaire.ListPage
 import spock.lang.Stepwise
 
 @Stepwise
-class LoginAuthSpec extends GebReportingSpec {
-
+class LoginAuthSpec extends OpenTeleSpec {
     def "invalid login"() {
         given: "I am at the login page"
         to LoginPage

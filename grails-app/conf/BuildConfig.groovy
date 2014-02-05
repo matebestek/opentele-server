@@ -22,7 +22,7 @@ grails.project.dependency.resolution = {
     checksums true // Whether to verify checksums on resolve
 
     def gebVersion = "0.9.2"
-    def seleniumVersion = "2.21.0"
+    def seleniumVersion = "2.33.0"
 
 
     repositories {
@@ -62,17 +62,21 @@ grails.project.dependency.resolution = {
             //exclude "xercesImpl"
             exclude "axis-jaxrpc"
         }
-
-        test("org.seleniumhq.selenium:selenium-htmlunit-driver:$seleniumVersion") {
-            exclude "xml-apis"
-        }
         test("org.seleniumhq.selenium:selenium-chrome-driver:$seleniumVersion")
         test("org.seleniumhq.selenium:selenium-firefox-driver:$seleniumVersion")
         test("org.seleniumhq.selenium:selenium-support:$seleniumVersion")
+        test ("org.seleniumhq.selenium:selenium-remote-driver:$seleniumVersion") // Needed by phantomjsdriver
 
-// You usually only need one of these, but this project uses both
+    // You usually only need one of these, but this project uses both
         test "org.gebish:geb-spock:$gebVersion"
         test "org.gebish:geb-junit4:$gebVersion"
+
+        test( "com.github.detro.ghostdriver:phantomjsdriver:1.1.0" ) {
+            transitive = false
+        }
+
+
+
 
         // Included due to ecludes for the :rest:0.7 plugin which includes version 4.0.x
         runtime("org.apache.httpcomponents:httpclient:4.1.2",

@@ -1,11 +1,9 @@
-import geb.spock.GebReportingSpec
 import pages.LoginPage
 import pages.patient.FindPage
 import pages.patient.OverviewPage
 import pages.patient.create.*
-import spock.lang.Ignore
 
-class CreatePatientSpec extends GebReportingSpec {
+class CreatePatientSpec extends OpenTeleSpec {
     def setupSpec() {
         to LoginPage
 
@@ -16,7 +14,6 @@ class CreatePatientSpec extends GebReportingSpec {
         at OverviewPage
     }
 
-    @Ignore
     def "Clinician can create a patient"() {
         given: "That I'm logged in and at the overview page"
         at OverviewPage

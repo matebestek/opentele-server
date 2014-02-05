@@ -1,13 +1,12 @@
+import pages.LoginPage
 import pages.meter.CreatePage
 import pages.meter.MetersListPage
 import pages.meter.ShowPage
 import pages.patient.OverviewPage
 import spock.lang.Stepwise
-import geb.spock.GebReportingSpec
-import pages.LoginPage
 
 @Stepwise
-class ScenarioZeroSpec extends GebReportingSpec {
+class ScenarioZeroSpec extends OpenTeleSpec {
 
     private String weightString = "Weight"
     private String bloodPressureString = "BloodPressure"
