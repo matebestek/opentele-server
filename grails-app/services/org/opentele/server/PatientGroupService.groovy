@@ -1,7 +1,10 @@
 package org.opentele.server
 
 import grails.plugins.springsecurity.Secured
+import org.opentele.server.model.Clinician2PatientGroup
+import org.opentele.server.model.Patient2PatientGroup
 import org.opentele.server.model.PatientGroup
+import org.opentele.server.model.StandardThresholdSet
 import org.opentele.server.model.types.PermissionName
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.transaction.annotation.Transactional
@@ -19,22 +22,26 @@ class PatientGroupService {
         if (patientGroup == null) {
             throw new IllegalArgumentException("Cannot delete PatientGroup: "+patientGroup)
         }
-
-        patientGroup.clinician2PatientGroups.each {
-            it.delete(failOnError: true)
-        }
-        patientGroup.patient2PatientGroups.each {
-            it.delete(failOnError: true)
-        }
-        patientGroup.standardThresholdSet.delete()
-
         try {
-            patientGroup.delete(flush: true)
-        }
-        catch (DataIntegrityViolationException e) {
+
+            Clinician2PatientGroup.executeUpdate("delete Clinician2PatientGroup c2p where c2p.patientGroup = ?", [patientGroup])
+            Patient2PatientGroup.executeUpdate("delete Patient2PatientGroup p2p where p2p.patientGroup = ?", [patientGroup])
+
+            StandardThresholdSet st = patientGroup.standardThresholdSet
+
+            st.patientGroup = null
+            st.save(failOnError: true, flush: true)
+
+            PatientGroup.executeUpdate("delete PatientGroup pg where pg = ?", [patientGroup])
+
+            st.delete(failOnError: true, flush: true)
+
+        } catch (DataIntegrityViolationException e) {
+            println e.getMessage()
+            e.printStackTrace()
+
             return false
         }
-
         return true
     }
 }

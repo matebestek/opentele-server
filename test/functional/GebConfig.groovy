@@ -15,14 +15,13 @@ driver = {
     htmlUnitDriver.javascriptEnabled = true
     htmlUnitDriver
 }
-//baseUrl = "http://localhost:8080"
-//reportsDir = "target/reports/geb"
 
 environments {
     // run as “grails -Dgeb.env=chrome test-app”
     // See: http://code.google.com/p/selenium/wiki/ChromeDriver
     chrome {
         driver = { new ChromeDriver() }
+        //baseUrl="http://opentele-devel.silverbullet.dk/opentele-server/"
     }
 
     // run as “grails -Dgeb.env=firefox test-app”

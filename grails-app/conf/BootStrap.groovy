@@ -49,6 +49,10 @@ class BootStrap {
             firstName: 'Doktor', lastName: 'Hansen',
             email: 'drhansen@sygehuset'
     ]
+    static def clinicianAllAccess = [
+            firstName: 'Super', lastName: 'Adgang',
+            email: 'super@adgang'
+    ]
 
     // Test patient data
     static def patientNancyAnn = [
@@ -144,6 +148,9 @@ class BootStrap {
     def doBootstrapForTest() {
         setupRolesAndTypes()
 
+        Role role = bootStrapUtil.setupRoleIfNotExists(BootStrapService.roleReadAllPatientsInSystem, new Date())
+        bootStrapUtil.setupPermissionsForRole(role)
+
         createAdminUser("admin_23")
         createOrganizationObjectsForTest()
 
@@ -172,6 +179,7 @@ class BootStrap {
         BootStrapService.rolePatient = "Patient"
         BootStrapService.roleClinician = "Clinican"
         BootStrapService.roleVideoConsultant = "Video consultant"
+        BootStrapService.roleReadAllPatientsInSystem = "Access all patients"
 
         praeklampsi = 'preeclampsia'
         hjertepatient = 'heart patient'
@@ -190,6 +198,10 @@ class BootStrap {
         clinicianDoktorHansen = [
                 firstName: 'Doctor', lastName: 'Hansson',
                 email: 'drhansson@hospital'
+        ]
+        clinicianAllAccess = [
+                firstName: 'All', lastName: 'Access',
+                email: 'all@access'
         ]
 
         patientNancyAnn = [
@@ -278,6 +290,15 @@ class BootStrap {
 
         adminUser
     }
+
+    def createClinicianWithAccessToAllPatients(String code) {
+        def adminUser = setupUserIfNotExists('admin', code, 'admin', 'admin')
+        Role adminRole = Role.findByAuthority(BootStrapService.roleAdministrator)
+        bootStrapUtil.addUserToRoleIfNotExists(adminUser, adminRole)
+
+        adminUser
+    }
+
 
     User setupUserIfNotExists(String username, String password, String firstName, String lastName) {
         def user = User.findByUsername(username) ?: new User(
@@ -971,6 +992,12 @@ class BootStrap {
 
         // Doktor Hansen
         createClinicianIfNotExists(firstName: clinicianDoktorHansen.firstName, lastName:clinicianDoktorHansen.lastName, email:clinicianDoktorHansen.email, mobile:'12345678')
+
+        //
+        Clinician c = createClinicianIfNotExists(firstName: clinicianAllAccess.firstName, lastName:clinicianAllAccess.lastName, email:clinicianAllAccess.email, mobile:'12345678')
+        Role allAccessRole = Role.findByAuthority(BootStrapService.roleReadAllPatientsInSystem)
+        bootStrapUtil.addUserToRoleIfNotExists(c.user, allAccessRole)
+        bootStrapUtil.addUserToRoleIfNotExists(c.user, adminRole)
     }
 
     def createClinicianIfNotExists(Map params) {

@@ -31,20 +31,16 @@ class Measurement extends AbstractObject {
     
     // "Normal" measurements
     Double value
-    
+
+    // KIH-DB UUIDs
+    String kihUuid
+    String kihUuidSystolic
+    String kihUuidDiastolic
+
     // BloodPressure measurements
     Double systolic
     Double diastolic
     Double meanArterialPressure
-
-//    TODO mss/hra determine how these uuids should be represented, as csv's?
-//    value => uuid1,
-//    valueSystolic => uuid1,
-//    valueDiastolic => uuid2
-//
-//    Uuid uuidValue
-//    Uuid uuidDiastolic
-//    ...
 
     // CTG measurements
     String fhr                //Double[]// Fetal Heart Rate, fostrets hjerterytme)
@@ -81,7 +77,6 @@ class Measurement extends AbstractObject {
     Integer fevSoftwareVersion
 
 
-
     Unit unit
         
    	boolean unread
@@ -114,6 +109,9 @@ class Measurement extends AbstractObject {
         deviceIdentification(nullable:true)
         time(nullable:false)
         value(nullable:true)
+        kihUuid(nullable:true)
+        kihUuidSystolic(nullable:true)
+        kihUuidDiastolic(nullable:true)
         systolic(nullable:true)
         diastolic(nullable:true)
         meanArterialPressure(nullable:true)
@@ -151,7 +149,6 @@ class Measurement extends AbstractObject {
         fef2575(nullable:true)
         isGoodTest(nullable:true)
         fevSoftwareVersion(nullable:true)
-
 
         value validator: { val, obj ->
            if (obj.measurementType.name == MeasurementTypeName.BLOOD_PRESSURE) {

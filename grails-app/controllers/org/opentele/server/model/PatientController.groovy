@@ -280,7 +280,7 @@ class PatientController {
             return
         }
         sessionService.setPatient(session, patientInstance)
-        [patientInstance: patientInstance, groups:getPatientGroups(patientInstance), nextOfKin: getNextOfKin(patientInstance)]
+        createShowModel(patientInstance)
 	}
 
     @Secured(PermissionName.PATIENT_WRITE)
@@ -324,7 +324,7 @@ class PatientController {
                 // Setting up session values
                 sessionService.setPatient(session, patientInstance)
 
-                //Clear kits from patient if patient treatment is stopped, or if status is dischanged and
+                //Clear kits from patient if patient treatment is stopped, or if status is discharged and
                 //equipment is handed in
                 if (patientInstance.state == PatientState.DISCHARGED_EQUIPMENT_DELIVERED) {
                     MonitorKit.findAllByPatient(patientInstance).each { kit ->
@@ -345,7 +345,7 @@ class PatientController {
 
                 flash.message = message(code: 'default.updated.message', args: [message(code: 'patient.label', default: 'Patient')])
                 sessionService.setPatient(session, patientInstance)
-                redirect(action:  "show", params: [id: params.id])
+                render(view: "show", model: createShowModel(patientInstance))
             } else {
                 render(view: "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
             }
@@ -372,6 +372,10 @@ class PatientController {
             render(view: "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
         }
 	}
+
+    private def createShowModel(Patient patientInstance) {
+        [patientInstance: patientInstance, groups:getPatientGroups(patientInstance), nextOfKin: getNextOfKin(patientInstance)]
+    }
 
     private void clearDataFromInactivePatient(Patient patient) {
         // If patient is 'udmeldt' (discharged), or if patient is deceased (afdød)

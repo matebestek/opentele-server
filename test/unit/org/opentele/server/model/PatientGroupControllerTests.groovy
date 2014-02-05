@@ -129,29 +129,4 @@ class PatientGroupControllerTests {
         assert model.patientGroupInstance.errors.getFieldError('version')
         assert flash.message != null
     }
-
-    void testDelete() {
-        defineBeans {
-            patientGroupService(PatientGroupService)
-        }
-        controller.delete()
-        assert flash.message != null
-        assert response.redirectedUrl == '/patientGroup/list'
-
-        response.reset()
-
-        populateValidParams(params)
-        def patientGroup = new PatientGroup(params)
-
-        assert patientGroup.save() != null
-        assert PatientGroup.count() == 1
-
-        params.id = patientGroup.id
-
-        controller.delete()
-
-        assert PatientGroup.count() == 0
-        assert PatientGroup.get(patientGroup.id) == null
-        assert response.redirectedUrl == '/patientGroup/list'
-    }
 }

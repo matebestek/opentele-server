@@ -8,9 +8,6 @@ import pages.LoginPage
 
 @Stepwise
 class ScenarioZeroSpec extends GebReportingSpec {
-    String getBaseUrl() { "http://localhost:8080/" }
-
-    File getReportDir() { new File("target/reports/geb") }
 
     private String weightString = "Weight"
     private String bloodPressureString = "BloodPressure"

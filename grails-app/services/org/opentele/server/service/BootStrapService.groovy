@@ -17,6 +17,7 @@ class BootStrapService {
     public static String rolePatient = "Patient"
     public static String roleClinician = "Kliniker"
     public static String roleVideoConsultant = "Videokonsultør"
+    public static String roleReadAllPatientsInSystem = "Adgang til alle patienter"
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER = ISODateTimeFormat.dateTime();
 

@@ -27,7 +27,7 @@ class KihDbWebServiceClientService {
     boolean sendMeasurement(Measurement measurement, Request sosiRequest) {
         try {
             def result = send(measurement, sosiRequest);
-            log.info("Result from KihDB: ${result}")
+            log.info("\nResult from KihDB: ${result}")
             true
 
         } catch (Exception ex) {
@@ -106,18 +106,21 @@ class KihDbWebServiceClientService {
 
             def type = addExtendedType(measurement.getValue(), "Kg", measurement.getTime(), IupacCode.WEIGHT, "VÆGT", objectFactory)
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
-
+            measurement.setKihUuid(type.getUuidIdentifier())
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.PULSE)) {
 
             def type = addExtendedType(measurement.getValue(), "Slag/min", measurement.getTime(), IupacCode.PULSE, "PULS", objectFactory)
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
-
+            measurement.setKihUuid(type.getUuidIdentifier())
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.BLOOD_PRESSURE)) {
 
             def diastolic = addExtendedType(measurement.getDiastolic(), "mm Hg", measurement.getTime(), IupacCode.DIASTOLIC_HOME, "DIASTOLISK", objectFactory)
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(diastolic)
+            measurement.setKihUuidDiastolic(diastolic.getUuidIdentifier())
+
             def systolic = addExtendedType(measurement.getSystolic(), "mm Hg", measurement.getTime(), IupacCode.SYSTOLIC_HOME, "SYSTOLISK", objectFactory)
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(systolic)
+            measurement.setKihUuidSystolic(systolic.getUuidIdentifier())
 
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.BLOODSUGAR)) {
 
@@ -136,11 +139,12 @@ class KihDbWebServiceClientService {
                 type.measuringCircumstances = circumstances
             }
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
-
+            measurement.setKihUuid(type.getUuidIdentifier())
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.CRP)) {
 
             def type = addExtendedType(measurement.getValue(), Unit.MGRAM_L.value(), measurement.getTime(), IupacCode.CRP, "CRP", objectFactory)
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
+            measurement.setKihUuid(type.getUuidIdentifier())
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.CTG)) {
 
             // Not supported
@@ -149,46 +153,44 @@ class KihDbWebServiceClientService {
             // Not supported
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.LUNG_FUNCTION)) {
 
+            // FEV6 is not the same as FVC, which is what the KIH-DB supports!
+
             def fev1 = addExtendedType(measurement.getValue(), "Liter/sekund", measurement.getTime(), IupacCode.FEV1, "FEV1", objectFactory)
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(fev1)
-
-            // TODO: FEV6 er ikke det samme som FVC, som er det KIH DB kan modtage!
-//            def fev6 = addExtendedType(measurement.getFev6(), measurement.getMeasurementType(), measurement.getTime(), IupacCode.FVC, "FVC", objectFactory)
-//            selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(fev6)
-//
-//            def fev1Fev6Ratio = addExtendedType(measurement.getFev1Fev6Ratio(), measurement.getMeasurementType(), measurement.getTime(), IupacCode.FEV1_FVC, "FEV1/FVC", objectFactory)
-//            selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(fev1Fev6Ratio)
-
-
+            measurement.setKihUuid(fev1.getUuidIdentifier())
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.SATURATION)) {
 
             def type = addExtendedType(measurement.getValue(), "%", measurement.getTime(), IupacCode.SATURATION, "ILTMÆTNING", objectFactory)
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
-
+            measurement.setKihUuid(type.getUuidIdentifier())
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.TEMPERATURE)) {
 
             def type = addExtendedType(measurement.getValue(), "°C", measurement.getTime(), IupacCode.TEMPERATURE, "Legeme temp.;Pt", objectFactory)
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
-
+            measurement.setKihUuid(type.getUuidIdentifier())
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.URINE)) {
 
             def type = addExtendedType(measurement.getProtein().toString(), "g/L", measurement.getTime(), IupacCode.URINE, "Protein;U", objectFactory)
             type.resultEncodingIdentifier = EncodingIdentifierType.ALPHANUMERIC
 
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
-
+            measurement.setKihUuid(type.getUuidIdentifier())
         } else if (measurement.getMeasurementType().getName().equals(MeasurementTypeName.URINE_GLUCOSE)) {
 
             def type = addExtendedType(measurement.getGlucoseInUrine().value(), "mmol/L", measurement.getTime(), IupacCode.URINE_GLUCOSE, "Glukose;U", objectFactory)
             type.resultEncodingIdentifier = EncodingIdentifierType.ALPHANUMERIC
 
             selfMonitoredSampleType.laboratoryReportExtendedCollection.getLaboratoryReportExtended().add(type)
+            measurement.setKihUuid(type.getUuidIdentifier())
         } else  {
 
             // Perhaps not exception. Just message saying this measurement is ignored.
             log.error("Unsupported measurement type ${measurement.getMeasurementType().getName()} encountered.")
 
         }
+
+
+
 
         // Currently not handled - thus commented out
 //                r.healthCareProfessionalComment = new FormattedTextType()
@@ -206,6 +208,7 @@ class KihDbWebServiceClientService {
         def uuid = UUID.randomUUID()
 
         laboratoryReportExtendedType.uuidIdentifier = uuid.toString()
+
         laboratoryReportExtendedType.createdDateTime = XmlConverterUtil.getDateAsXml(time)
 
         laboratoryReportExtendedType.analysisText = analysisText

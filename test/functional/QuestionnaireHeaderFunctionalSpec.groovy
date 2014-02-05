@@ -8,9 +8,7 @@ import spock.lang.Stepwise
 
 @Stepwise
 class QuestionnaireHeaderFunctionalSpec extends GebReportingSpec {
-    String getBaseUrl() { "http://localhost:8080/" }
 
-    File getReportDir() { new File("target/reports/geb") }
     @Ignore  // TODO: Figure out, why it's not working
     def "Helle Andersen logs in"() {
         given: "I am at the login page"

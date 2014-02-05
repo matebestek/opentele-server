@@ -16,6 +16,7 @@ public class PermissionName {
 
     public static final String PATIENT_READ = 'ROLE_PATIENT_READ'
     public static final String PATIENT_READ_ALL = 'ROLE_PATIENT_READ_ALL'
+    public static final String PATIENT_READ_ALL_IN_SYSTEM = 'ROLE_PATIENT_READ_ALL_IN_SYSTEM'
     public static final String PATIENT_WRITE = 'ROLE_PATIENT_WRITE'
     public static final String PATIENT_CREATE = 'ROLE_PATIENT_CREATE'
     public static final String PATIENT_REMOVE_BLUE_ALARMS = 'ROLE_PATIENT_REMOVE_BLUE_ALARMS'

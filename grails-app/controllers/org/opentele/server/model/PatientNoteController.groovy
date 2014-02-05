@@ -3,7 +3,6 @@ package org.opentele.server.model
 import grails.plugins.springsecurity.Secured
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.constants.Constants
-import org.opentele.server.model.types.PatientState
 import org.opentele.server.model.types.PermissionName
 import org.springframework.dao.DataIntegrityViolationException
 
@@ -93,9 +92,20 @@ class PatientNoteController {
     @SecurityWhiteListController
     def save() {
         params.reminderDate = params.datePicker
+
         def patientNoteInstance = new PatientNote(params)
         patientNoteInstance.patient = Patient.get(params.patientId)
-        if (!patientNoteInstance.save(flush: true)) {
+
+        if (!isReminderDateFieldsValid(params)) {
+
+            patientNoteInstance.errors.reject(
+                    'patientnote.reminderdate.error',
+                    [] as Object[],
+                    "Påmindelsesdato feltet skal enten være helt udfyldt eller slet ikke udfyldt"
+            )
+        }
+
+        if (patientNoteInstance.hasErrors() || !patientNoteInstance.save(flush: true)) {
             render(view: "create", model: [patientNoteInstance: patientNoteInstance, patient: patientNoteInstance.patient])
             return
         }
@@ -169,41 +179,21 @@ class PatientNoteController {
             def version = params.version.toLong()
             if (patientNoteInstance.version > version) {
                 patientNoteInstance.errors.rejectValue("version", "default.optimistic.locking.failure",
-                        [message(code: 'patientNote.label', default: 'PatientNote')] as Object[],
+                        [message(code: 'patientNote.label')] as Object[],
                         "Another user has updated this PatientNote while you were editing")
                 render(view: "edit", model: [patientNoteInstance: patientNoteInstance])
                 return
             }
         }
 
+        // TODO - noget rod at bruge forretningsobjektet til at holde ikke-validerede props,
+        // og til at føre disse tilbage til GUI. Herved overskrives invalide data :-()
+        params.reminderDate = params.datePicker
         patientNoteInstance.properties = params
 
-        def params = params
-        //datePicker_day, datePicker_month, datePicker_year
-        /**
-         * We want to check if either all dataPicker fields have values or none of them do,
-         * which the following expression will do:
-         a  	b   c   ¬(a ? b) ? ¬(b ? c)
-         T      T  	T           T
-         T	    T	F           F
-         T	    F	T           F
-         T	    F	F           F
-         F	    T	T           F
-         F	    T	F           F
-         F	    F	T           F
-         F	    F	F           T
-         **/
-        def A = params.datePicker_day == ''
-        def B = params.datePicker_month == ''
-        def C = params.datePicker_year == ''
-        def expr = !(A ^ B) & !(B ^ C)
-        if(!expr) { //Only when our desired condition is _not_ true should we reject the error
-            patientNoteInstance.errors.reject(
-                    'default.date.datePicker.error',
-                    [] as Object[],
-                    "Påmindelsesdato feltet skal enten være helt udfyldt eller slet ikke udfyldt"
-            )
+        if (!isReminderDateFieldsValid(params)) {
 
+            patientNoteInstance.errors.reject(message(code:'patientnote.reminderdate.error'))
         }
 
         if (patientNoteInstance.hasErrors() || !patientNoteInstance.save(flush: true)) {
@@ -211,8 +201,23 @@ class PatientNoteController {
             return
         }
 
-        flash.message = message(code: 'default.updated.message', args: [message(code: 'patientNote.label', default: 'PatientNote'), patientNoteInstance.id])
+        flash.message = message(code: 'default.updated.message', args: [message(code: 'patientNote.label'), patientNoteInstance.id])
         redirect(action: "show", id: patientNoteInstance.id)
+    }
+
+    private boolean isReminderDateFieldsValid(def params) {
+
+        //Either all filled out or all empty
+        ((params.reminderDate_day?.trim() &&
+                params.reminderDate_month?.trim() &&
+                params.reminderDate_year?.trim() &&
+                params.reminderDate_hour?.trim() &&
+                params.reminderDate_minute?.trim())
+                || (!params.reminderDate_day?.trim() &&
+                !params.reminderDate_month?.trim() &&
+                !params.reminderDate_year?.trim() &&
+                !params.reminderDate_hour?.trim() &&
+                !params.reminderDate_minute?.trim()))
     }
 
     @Secured(PermissionName.PATIENT_NOTE_DELETE)

@@ -1,9 +1,11 @@
 package org.opentele.server
 
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.opentele.server.constants.Constants
 import org.opentele.server.exception.*
 import org.opentele.server.model.*
 import org.opentele.server.model.types.PatientState
+import org.opentele.server.model.types.PermissionName
 import org.springframework.transaction.annotation.Transactional
 
 @Transactional
@@ -108,8 +110,6 @@ class PatientService {
             throw new PatientNotFoundException()
         }
 
-
-
         if (params.version) {
             def v = params.version.toLong()
             if (patientInstance.version > v) {
@@ -136,12 +136,11 @@ class PatientService {
             user.validate(['cleartextPassword'])
         }
 
-        ArrayList<String> groupId = new ArrayList<String>()
-        if (params.groupid) {
-            groupId.addAll(params.groupid)
-        }
+        if (params.groupid != null) {
 
-        if (groupId) {
+            ArrayList<String> groupId = new ArrayList<String>()
+            groupId.addAll(params.groupid)
+
             def pGroups = []
 
             groupId.each { id ->
@@ -244,6 +243,9 @@ class PatientService {
             } else {
                 return false
             }
+        } else if (SpringSecurityUtils.ifAnyGranted(PermissionName.PATIENT_READ_ALL_IN_SYSTEM)) {
+
+            return true
         } else {
             def patientGroupsForPatient = Patient2PatientGroup.findAllByPatient(patient).collect { it.patientGroup }
             def patientGroupsForClinician = Clinician2PatientGroup.findAllByClinician(clinician).collect { it.patientGroup }
@@ -280,10 +282,16 @@ class PatientService {
      * are in patientGroups the clinician is associated with.
      */
     private def filterPatientsForClinician(Clinician clinician, Collection<Patient> patients) {
-        patients.findAll {
-            Patient2PatientGroup.findAllByPatient(it)*.patientGroup
-                    .intersect(Clinician2PatientGroup.findAllByClinician(clinician)*.patientGroup)
-                    .size() > 0
-        }.unique()
+
+        if (SpringSecurityUtils.ifAnyGranted(PermissionName.PATIENT_READ_ALL_IN_SYSTEM)) {
+            patients
+        } else {
+
+            patients.findAll {
+                Patient2PatientGroup.findAllByPatient(it)*.patientGroup
+                        .intersect(Clinician2PatientGroup.findAllByClinician(clinician)*.patientGroup)
+                        .size() > 0
+            }.unique()
+        }
     }
 }

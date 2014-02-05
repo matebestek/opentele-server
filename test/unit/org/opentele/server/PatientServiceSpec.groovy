@@ -3,10 +3,12 @@ package org.opentele.server
 import grails.buildtestdata.mixin.Build
 import grails.plugins.springsecurity.SpringSecurityService
 import grails.test.mixin.TestFor
+import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.opentele.server.constants.Constants
 import org.opentele.server.exception.PatientException
 import org.opentele.server.model.*
 import org.opentele.server.model.types.PatientState
+import org.opentele.server.model.types.PermissionName
 import org.opentele.server.model.types.Sex
 import org.opentele.server.service.MailSenderService
 import spock.lang.Specification
@@ -24,6 +26,14 @@ class PatientServiceSpec extends Specification {
         service.i18nService = Mock(I18nService)
         service.mailSenderService = Mock(MailSenderService)
         service.patientOverviewService = Mock(PatientOverviewService)
+
+        SpringSecurityUtils.metaClass.'static'.ifAnyGranted = { String roles ->
+            return false
+        }
+    }
+
+    def cleanup() {
+        SpringSecurityUtils.metaClass = null;
     }
 
     def "when I create a user with a valid CreatePatientCommand it works"() {
@@ -109,6 +119,27 @@ class PatientServiceSpec extends Specification {
         1 * service.patientOverviewService.updateOverviewFor(patient)
     }
 
+    def "when I remove all patientgroups they get removed"() {
+        setup:
+        Patient patient = buildPatientForUpdatePatientGroup()
+
+        def id = patient.patient2PatientGroups.find { true }.id
+        println "Id: ${id}"
+        def params = [groupId: []]
+
+        SpringSecurityUtils.metaClass.'static'.ifAnyGranted = { String roles ->
+            return false
+        }
+
+//        expect:
+//        !patient.patient2PatientGroups
+
+        when:
+        service.updatePatient(params, patient)
+
+        then:
+        1 * service.patientOverviewService.updateOverviewFor(patient)
+    }
 
     def "when I update a patient with invalid params it fails"() {
         setup:
@@ -187,6 +218,27 @@ class PatientServiceSpec extends Specification {
         def user = User.build(password: "password1", cleartextPassword: null)
         user.save(validate: false)
         return Patient.build(user: user)
+    }
+
+    private buildPatientForUpdatePatientGroup() {
+        def user = User.build(username: "c1", password: "password1", cleartextPassword: null)
+        Clinician clinician = Clinician.build(user: user)
+        def patientGroup = PatientGroup.build()
+
+        Clinician2PatientGroup.link(clinician, patientGroup)
+
+        def patientUser1 = User.build(username: "p1", password: "password1", cleartextPassword: null)
+        def patientUser2 = User.build(username: "p2", password: "password1", cleartextPassword: null)
+        def patient1 = Patient.build(user:patientUser1, firstName: "Patient1", cpr: "1777777777", phone: "20202020")
+        def patient2 = Patient.build(user:patientUser2, firstName: "Patient2", cpr: "2777777777")
+        patient1.save()
+        patient2.save()
+
+        Patient2PatientGroup.link(patient1, patientGroup)
+        Patient2PatientGroup.link(patient2, patientGroup)
+
+        patient1.refresh()
+        return patient1
     }
 
     private buildDataForSearch() {

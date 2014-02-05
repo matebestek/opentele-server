@@ -21,7 +21,7 @@ grails.project.dependency.resolution = {
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
     checksums true // Whether to verify checksums on resolve
 
-    def gebVersion = "0.9.0"
+    def gebVersion = "0.9.2"
     def seleniumVersion = "2.21.0"
 
 

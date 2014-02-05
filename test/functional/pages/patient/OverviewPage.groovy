@@ -12,5 +12,6 @@ class OverviewPage extends ScaffoldPage {
     static content = {
         messageLink { $("a", text: "Beskeder") }
         completedQuestionnariesLink { $("a", text: "Vis egne besvarede skemaer") }
+        createPatientLink { $("a", text: "Opret patient")}
     }
 }

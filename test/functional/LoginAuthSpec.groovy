@@ -1,14 +1,11 @@
 import geb.spock.GebReportingSpec
-import pages.patient.OverviewPage
-import pages.patient.QuestionnairesPage
-import pages.questionnaire.ListPage;
-import spock.lang.Stepwise;
 import pages.LoginPage
+import pages.patient.OverviewPage
+import pages.questionnaire.ListPage
+import spock.lang.Stepwise
 
 @Stepwise
 class LoginAuthSpec extends GebReportingSpec {
-    String getBaseUrl() { "http://localhost:8080/" }
-    File getReportDir() { new File("target/reports/geb") }
 
     def "invalid login"() {
         given: "I am at the login page"

@@ -322,6 +322,10 @@ class BootStrapUtil {
                 return [
                     PermissionName.VIDEO_CALL
                 ]
+            case BootStrapService.roleReadAllPatientsInSystem:
+                return [
+                        PermissionName.PATIENT_READ_ALL_IN_SYSTEM
+                ]
         }
     }
 }
