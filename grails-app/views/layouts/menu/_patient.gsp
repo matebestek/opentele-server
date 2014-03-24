@@ -10,6 +10,12 @@
         <br/>
         <g:message code="main.SSN"/>:${session[Constants.SESSION_CPR].encodeAsHTML()}
         <br/>
+
+        <g:if test="${session[Constants.SESSION_GESTATIONAL_AGE]}">
+        <g:message code="main.gestationalAge"/>:${session[Constants.SESSION_GESTATIONAL_AGE].encodeAsHTML()}
+        </g:if>
+        <br/>
+
         <hr/>
         <g:message code="main.phone"/>:
         <g:if test="${session[Constants.SESSION_PHONE]}">

@@ -5,8 +5,6 @@ import org.opentele.server.model.types.MeterTypeName
 import org.opentele.server.model.types.PermissionName
 import org.opentele.server.model.types.ProteinValue
 import org.opentele.server.service.BootStrapService
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class BootStrapUtil {
 	Date now = new Date()
@@ -53,11 +51,11 @@ class BootStrapUtil {
 		return dept
 	}
 
-	def createPatientGroupIfNotExists(String name, Department dep, Date date, StandardThresholdSet standardThresholdSet) {
-
+	def createPatientGroupIfNotExists(String name, Department dep, Date date, StandardThresholdSet standardThresholdSet, boolean supportsGestationalAge=false) {
         PatientGroup retVal = PatientGroup.findByNameAndDepartment(name, dep)
         if (!retVal) {
-    		retVal = new PatientGroup(name: name, department: dep, createdBy: "System", modifiedBy: "System", createdDate: date, modifiedDate: date, standardThresholdSet: standardThresholdSet)
+    		retVal = new PatientGroup(name: name, department: dep, createdBy: "System", showGestationalAge: supportsGestationalAge,
+                    modifiedBy: "System", createdDate: date, modifiedDate: date, standardThresholdSet: standardThresholdSet)
             retVal.standardThresholdSet = standardThresholdSet
             retVal.save(failOnError:true)
         }

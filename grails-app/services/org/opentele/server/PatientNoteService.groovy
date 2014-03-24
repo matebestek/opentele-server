@@ -34,4 +34,8 @@ class PatientNoteService {
                 [patientNoteIds: patientNotes*.id, clinicianId: clinician.id]
         ).toSet()
     }
+
+    def isNoteSeenByAnyUser(PatientNote note) {
+        return !note.seenBy.empty
+    }
 }

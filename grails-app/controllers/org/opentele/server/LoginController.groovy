@@ -4,8 +4,6 @@ import grails.converters.JSON
 import grails.plugins.springsecurity.Secured
 import org.codehaus.groovy.grails.plugins.springsecurity.SpringSecurityUtils
 import org.opentele.server.annotations.SecurityWhiteListController
-import org.opentele.server.constants.Constants
-import org.opentele.server.model.User
 import org.springframework.security.authentication.*
 import org.springframework.security.core.context.SecurityContextHolder as SCH
 import org.springframework.security.web.WebAttributes

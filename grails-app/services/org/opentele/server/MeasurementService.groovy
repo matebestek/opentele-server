@@ -56,9 +56,11 @@ class GraphData {
     long start, end
     double minY, maxY
     List<Long> ids
+    List<List<Long>> seriesIds
     List<List> series
     List<String> ticksX = []
     List<TickY> ticksY
+    List<String> seriesColors = []
 }
 
 class BloodsugarDataPerDate {
@@ -106,7 +108,7 @@ class MeasurementService {
         MeasurementType.list().each { type ->
             processMeasurements(patient, timeFilter, type) { List<Measurement> measurementsOfType ->
                 addTableData(type, measurementsOfType, tableData)
-                addBlodsugarData(type, measurementsOfType, bloodsugarData)
+                addBloodsugarData(type, measurementsOfType, bloodsugarData)
                 addGraphData(patient, type, timeFilter, measurementsOfType, graphData)
             }
         }
@@ -122,7 +124,7 @@ class MeasurementService {
         MeasurementType.list().each { type ->
             processMeasurements(patient, timeFilter, type) { List<Measurement> measurementsOfType ->
                 addTableData(type, measurementsOfType, tableData)
-                addBlodsugarData(type, measurementsOfType, bloodsugarData)
+                addBloodsugarData(type, measurementsOfType, bloodsugarData)
             }
         }
 
@@ -162,6 +164,8 @@ class MeasurementService {
             addGraphData(patient, measurementType, timeFilter, measurementsOfType, graphData)
         }
 
+        adjustStartAndEndTimes(graphData)
+
         graphData.find { it.type == measurementTypeName }
 
     }
@@ -184,7 +188,7 @@ class MeasurementService {
 
         MeasurementType.list().each { type ->
             processMeasurements(patient, timeFilter, type) { List<Measurement> measurementsOfType ->
-                addBlodsugarData(type, measurementsOfType, bloodsugarData)
+                addBloodsugarData(type, measurementsOfType, bloodsugarData)
             }
         }
 
@@ -213,7 +217,10 @@ class MeasurementService {
                     graphDataList << createSystolicGraphData(patient, validMeasurements, timeFilter)
                     graphDataList << createDiastolicGraphData(patient, validMeasurements, timeFilter)
                 }
-            } else {
+            } else if(type.name == MeasurementTypeName.BLOODSUGAR) {
+                graphDataList << createBloodsugarGraphData(patient, validMeasurements, timeFilter)
+            }
+            else {
                 graphDataList << createGraphData(patient, type.name, validMeasurements, timeFilter)
             }
         }
@@ -223,7 +230,7 @@ class MeasurementService {
         tableDataList << createTableData(type.name, measurementsOfType)
     }
 
-    private void addBlodsugarData(MeasurementType type, List<Measurement> measurementsOfType, List bloodsugarDataList) {
+    private void addBloodsugarData(MeasurementType type, List<Measurement> measurementsOfType, List bloodsugarDataList) {
         if (type.name == MeasurementTypeName.BLOODSUGAR) {
             bloodsugarDataList.addAll(createBloodsugarData(measurementsOfType))
         }
@@ -367,6 +374,39 @@ class MeasurementService {
                 series: series)
     }
 
+    private def createBloodsugarGraphData(Patient patient, List<Measurement> measurements, TimeFilter timeFilter) {
+        def beforeMealMeasurements = measurements.findAll {it.isBeforeMeal}
+        def beforeMealSeries = generalGraphSeries(beforeMealMeasurements).first()
+
+        def afterMealMeasurements = measurements.findAll {it.isAfterMeal}
+        def afterMealSeries = generalGraphSeries(afterMealMeasurements).first()
+
+        def unknownMealRelationMeasurements = measurements.findAll{ !(it.isAfterMeal || it.isBeforeMeal) }
+        def unknownMealRelationSeries = generalGraphSeries(unknownMealRelationMeasurements).first()
+
+
+
+        def series = [beforeMealSeries, afterMealSeries, unknownMealRelationSeries]
+        def (alertValues, warningValues) = findThresholdValues(MeasurementTypeName.BLOODSUGAR, patient)
+        def (double minY, double maxY) = calculateMinAndMaxY(series, alertValues, warningValues)
+        def (start, end) = calculateStartAndEnd(measurements, timeFilter)
+        def ids = measurements*.id
+        def seriesIds = [beforeMealMeasurements*.id, afterMealMeasurements*.id, unknownMealRelationMeasurements*.id]
+        def ticksY = YAxisTickCalculator.calculate(MeasurementTypeName.BLOODSUGAR, minY, maxY)
+        (minY, maxY) = [ticksY.first().value, ticksY.last().value]
+
+        //noinspection GroovyAssignabilityCheck
+        new GraphData(type: MeasurementTypeName.BLOODSUGAR.toString(),
+                alertValues: alertValues, warningValues: warningValues,
+                start: start, end: end,
+                minY: minY, maxY: maxY,
+                ticksY: ticksY,
+                ids: ids,
+                seriesIds: seriesIds,
+                series: series,
+                seriesColors: ['#fc494d', '#345dff', '#666668'])
+    }
+
     private GraphData createSystolicGraphData(Patient patient, List<Measurement> measurements, TimeFilter timeFilter) {
         def series = systolicGraphSeries(measurements)
         def (alertValues, warningValues) = systolicThresholdValues(patient.getThreshold(MeasurementTypeName.BLOOD_PRESSURE) as BloodPressureThreshold)
@@ -426,6 +466,7 @@ class MeasurementService {
             case MeasurementTypeName.HEMOGLOBIN:
             case MeasurementTypeName.SATURATION:
             case MeasurementTypeName.CRP:
+            case MeasurementTypeName.BLOODSUGAR:
                 return numericThresholdValues(threshold as NumericThreshold)
         }
         [[], []]
@@ -476,7 +517,8 @@ class MeasurementService {
     }
 
     private List<Double> calculateMinAndMaxY(series, alertValues, warningValues) {
-        def valuesFromSeries = series.inject([]) { values, aSeries -> values.plus(aSeries.collect { it[1] }) }
+        def allMeasurements = series.inject([]) { accumulator, value -> accumulator.plus(value)}
+        def valuesFromSeries = allMeasurements.collect { it[1] }
         def allValues = valuesFromSeries.plus(alertValues).plus(warningValues)
         [allValues.min(), allValues.max()] as List<Double>
     }

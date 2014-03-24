@@ -1,7 +1,9 @@
 package org.opentele.server.model
 import grails.plugins.springsecurity.Secured
+import org.opentele.server.MeasurementTypeService
 import org.opentele.server.ThresholdService
 import org.opentele.server.annotations.SecurityWhiteListController
+import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.PermissionName
 import org.springframework.dao.DataIntegrityViolationException
 
@@ -15,6 +17,7 @@ class StandardThresholdSetController {
 
     def sessionService
     ThresholdService thresholdService
+    def measurementTypeService
 
     @Secured(PermissionName.STANDARD_THRESHOLD_READ_ALL)
     def index() {
@@ -105,7 +108,7 @@ class StandardThresholdSetController {
                 standardThresholdSetInstance: standardThresholdSetInstance,
                 standardThresholdInstance: t,
                 thresholdType: params.thresholdtype,
-                notUsedThresholds: getUnusedThresholds(standardThresholdSetInstance),
+                notUsedThresholds: measurementTypeService.getUnusedMeasurementTypesForThresholds(standardThresholdSetInstance.thresholds*.type*.name),
                 patientGroup: standardThresholdSetInstance.patientGroup
         ])
     }
@@ -129,17 +132,6 @@ class StandardThresholdSetController {
         }
     }
 
-    private getUnusedThresholds(StandardThresholdSet standardThresholdSet) {
-        def currentMeasurementTypes = standardThresholdSet.thresholds*.type*.name
-
-        def list = (currentMeasurementTypes.size() < 1 ? MeasurementType.list() : MeasurementType.withCriteria {
-            not {
-                inList('name', currentMeasurementTypes)
-            }
-        })*.name.sort { it.name() }
-        list
-    }
-
     @Secured(PermissionName.STANDARD_THRESHOLD_DELETE)
     def removeThreshold(Long id, Long threshold) {
         def standardThresholdSetInstance = StandardThresholdSet.get(id)
@@ -158,7 +150,11 @@ class StandardThresholdSetController {
         Threshold threshold = thresholdService.createThreshold(params)
 
         if (!threshold.validate()) {
-            render(view:  "create", model: [standardThresholdSetInstance: standardThresholdSetInstance, standardThresholdInstance: threshold, thresholdType: threshold.type.name, notUsedThresholds: getUnusedThresholds(standardThresholdSetInstance), patientGroup: standardThresholdSetInstance.patientGroup])
+            render(view:  "create", model: [standardThresholdSetInstance: standardThresholdSetInstance,
+                                            standardThresholdInstance: threshold,
+                                            thresholdType: threshold.type.name,
+                                            notUsedThresholds: measurementTypeService.getUnusedMeasurementTypesForThresholds(standardThresholdSetInstance.thresholds*.type*.name),
+                                            patientGroup: standardThresholdSetInstance.patientGroup])
             return
         }
 

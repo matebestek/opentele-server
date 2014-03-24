@@ -107,6 +107,15 @@ $(document).ready(function() {
 		value="${patientInstance?.state}" />
 </div>
 
+<g:if test="${showDueDate}">
+    <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'dueDate', 'error')} " data-tooltip="${message(code: 'tooltip.patient.create.dueDate')}">
+        <label for="dueDate">
+            <g:message code="patient.dueDate.label" />
+        </label>
+        <jq:datePicker default="none" name="dueDate" precision="day" years="${2014..2050}" value="${patientInstance?.dueDate}" noSelection="['':'']"/>
+    </div>
+</g:if>
+
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'address', 'error')} required">
 	<label for="address">
         <g:message code="patient.address.label" />

@@ -22,3 +22,11 @@
     </label>
     <g:checkBox name="disableMessaging" value="${patientGroupInstance?.disableMessaging}" />
 </div>
+
+<div class="fieldcontain noborder ${hasErrors(bean: patientGroupInstance, field: 'showGestationalAge', 'error')}">
+    <label for="showGestationalAge">
+        <g:message code="patientGroup.showGestationalAge.label"/>
+    </label>
+    <g:checkBox name="showGestationalAge" value="${patientGroupInstance?.showGestationalAge}" />
+
+</div>

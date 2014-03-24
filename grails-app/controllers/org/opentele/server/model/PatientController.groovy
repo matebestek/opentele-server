@@ -1,4 +1,5 @@
 package org.opentele.server.model
+
 import grails.converters.JSON
 import grails.plugins.springsecurity.Secured
 import grails.util.Environment
@@ -8,11 +9,12 @@ import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.constants.Constants
 import org.opentele.server.cpr.CPRPerson
 import org.opentele.server.exception.OptimisticLockingException
-import org.opentele.server.exception.PasswordException
+
 import org.opentele.server.exception.PatientException
 import org.opentele.server.exception.PatientNotFoundException
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.questionnaire.QuestionnaireNode
+import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.PatientState
 import org.opentele.server.model.types.PermissionName
 import org.springframework.validation.Errors
@@ -30,6 +32,7 @@ class PatientController {
     def messageService
     def cprLookupService
     def clinicianService
+    def measurementTypeService
 
 	static allowedMethods = [index: "GET", save: "POST", update: "POST", delete: "POST", overview:["GET","POST"]]
     ThresholdService thresholdService
@@ -295,8 +298,11 @@ class PatientController {
         }
 
         sessionService.setPatient(session, patientInstance)
+
+        def showDueDate = patientInstance.shouldShowGestationalAge
+
         ArrayList groups = PatientGroup.list(sort:"name")
-        [patientInstance: patientInstance, groups: groups]
+        [patientInstance: patientInstance, groups: groups, showDueDate: showDueDate]
     }
 
 	private def getPatientGroups(def patientInstance) {
@@ -353,11 +359,6 @@ class PatientController {
 		} catch (PatientNotFoundException e) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'patient.label', default: 'Patient')])
 			redirect(action: "overview")
-		} catch (PasswordException e) {
-            //If exception, then update has exited with exception and patientInstance is null
-			patientInstance = Patient.get(params.id)
-			flash.error = message(code: e.message)
-			render(view: "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
 		} catch (OptimisticLockingException e) {
             patientInstance = Patient.findById(params.id)
             patientInstance.errors.reject("default.optimistic.locking.failure", [message(code:"patientNote.label")] as Object[] , "i18n error")
@@ -724,29 +725,13 @@ class PatientController {
         }
     }
 
-
-
     @Secured(PermissionName.PATIENT_WRITE)
     @SecurityWhiteListController
     def addThreshold(Long id) {
         def patientInstance = Patient.get(id)
-        [patientInstance: patientInstance, notUsedThresholds: getUnusedThresholds(patientInstance)]
+        [patientInstance: patientInstance,
+         notUsedThresholds: measurementTypeService.getUnusedMeasurementTypesForThresholds(patientInstance.thresholds*.type*.name)]
     }
-
-    private getUnusedThresholds(Patient patientInstance) {
-        def currentMeasurementTypes = patientInstance.thresholds*.type*.name
-
-
-        def list = (currentMeasurementTypes.size() < 1 ? MeasurementType.list() : MeasurementType.withCriteria {
-            not {
-                inList('name', currentMeasurementTypes)
-            }
-        })*.name.sort { it.name() }
-
-        list
-    }
-
-
 
     @Secured(PermissionName.PATIENT_WRITE)
     @SecurityWhiteListController
@@ -777,11 +762,13 @@ class PatientController {
                 render(view:  "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
             }
         } else {
-            render(view: "addThreshold", model: [patientInstance: patientInstance, standardThresholdInstance: threshold, thresholdType: threshold.type.name, notUsedThresholds: getUnusedThresholds(patientInstance)])
+            render(view: "addThreshold",
+                    model: [patientInstance: patientInstance,
+                            standardThresholdInstance: threshold,
+                            thresholdType: threshold.type.name,
+                            notUsedThresholds: measurementTypeService.getUnusedMeasurementTypesForThresholds(patientInstance.thresholds*.type*.name)])
         }
     }
-
-
 
     @Secured(PermissionName.SET_PATIENT_RESPONSIBILITY)
     @SecurityWhiteListController

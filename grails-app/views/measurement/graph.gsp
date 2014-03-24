@@ -1,3 +1,4 @@
+<%@ page import="org.opentele.server.model.types.MeasurementTypeName" %>
 <!doctype html>
 <html>
 <head>
@@ -7,12 +8,18 @@
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery.jqplot.css')}" type="text/css">
     <g:javascript src="jquery.js"/>
     <g:render template="graphFunctions"/>
-	<g:render template="measurementGraph" model='[patient: patient, measurement: measurement, title: message(code: "patient.graph.of",args: [message(code: "graph.legend.${measurement.type}"), patient.name.encodeAsHTML()])]'/>
+	<g:if test="${measurement.type != MeasurementTypeName.BLOODSUGAR.name()}">
+        <g:render template="measurementGraph" model='[patient: patient, measurement: measurement, title: message(code: "patient.graph.of",args: [message(code: "graph.legend.${measurement.type}"), patient.name.encodeAsHTML()])]'/>
+    </g:if>
+    <g:else>
+        <g:render template="bloodsugar_measurementGraphs" model='[patient: patient, measurement: measurement, title: message(code: "patient.graph.of",args: [message(code: "graph.legend.${measurement.type}"), patient.name.encodeAsHTML()])]'/>
+    </g:else>
     <style type="text/css">
    		body { height: 100% }
    		.front { position: absolute; z-index: 20 }
         .fullScreen { position: absolute; left: 0; right: 0; top: 0; bottom: 0; }
    		.fullScreenGraph { position: absolute; left: 3em; right: 0; bottom: 0; height:100%; }
+        .halfScreen { left: 3em; right: 0; height:50%; }
 	</style>
 </head>
 
@@ -25,7 +32,13 @@
 		<i>Der er desværre ikke support for grafer i Internet Explorer 7 eller mindre</i>
 		<![endif]-->
         <![if gt IE 7]>
-        <div id="${measurement.type}-${patient.id}" class="fullScreenGraph"></div>
+        <g:if test="${measurement.type == MeasurementTypeName.BLOODSUGAR.name()}">
+            <div id="${MeasurementTypeName.BLOODSUGAR.name()}-${patient.id}" class="halfScreen"></div>
+            <div id="${MeasurementTypeName.BLOODSUGAR.name()}-average-day-${patient.id}" class="halfScreen"></div>
+        </g:if>
+        <g:else>
+            <div id="${measurement.type}-${patient.id}" class="fullScreenGraph"></div>
+        </g:else>
         <![endif]>
 	</div>
 </body>

@@ -1,5 +1,5 @@
 
-<%@ page import="org.opentele.server.model.types.MeasurementFilterType; org.opentele.server.TimeFilter" contentType="text/html;charset=UTF-8" %>
+<%@ page import="org.opentele.server.model.types.MeasurementTypeName; org.opentele.server.model.types.MeasurementFilterType; org.opentele.server.TimeFilter" contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
     <title></title>
@@ -17,6 +17,17 @@
         border: 1px solid black;
     }
 </style>
+<link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery.jqplot.css')}" type="text/css">
+<g:if test="${graphData}">
+    <g:render template="/measurement/graphFunctions"/>
+    <g:if test="${type != MeasurementTypeName.BLOODSUGAR.name()}">
+        <g:render template="measurementGraph" model='[patient: patientInstance, measurement: graphData, title: message(code: "patient.graph.of",args: [message(code: "graph.legend.${type}"), patientInstance.name.encodeAsHTML()])]'/>
+    </g:if>
+    <g:else>
+        <g:render template="bloodsugar_measurementGraphs" model='[patient: patientInstance, measurement: graphData, title: message(code: "patient.graph.of",args: [message(code: "graph.legend.${type}"), patientInstance.name.encodeAsHTML()])]'/>
+    </g:else>
+</g:if>
+
 <script type="text/javascript">
     function underline(element) {
         element.css({ 'color': 'black', 'text-decoration': 'underline' });
@@ -74,6 +85,16 @@
     </div>
 
     <div class="measurements">
+        <div style="padding: 20px;">
+            <g:if test="${type == MeasurementTypeName.BLOODSUGAR.name()}">
+                <div id="${MeasurementTypeName.BLOODSUGAR.name()}-${patientInstance.id}" class="halfScreen"></div>
+                <div id="${MeasurementTypeName.BLOODSUGAR.name() + "-average-day"}-${patientInstance.id}" class="halfScreen"></div>
+            </g:if>
+            <g:else>
+                <div id="${type}-${patientInstance.id}" class="fullScreenGraph"></div>
+            </g:else>
+        </div>
+
         <g:if test="${type == 'BLOODSUGAR'}">
             <g:render template="../measurement/bloodSugar" model="bloodSugarData" />
             <div id="bloodsugar_details" />

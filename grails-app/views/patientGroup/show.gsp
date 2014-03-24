@@ -42,8 +42,15 @@
                         <g:checkBox name="disableMessaging" value="${patientGroupInstance?.disableMessaging}" disabled="true" />
                     </span>
                 </li>
+                <li class="fieldcontain">
+                    <span id="patientGroup.show_gestational_age.label" class="property-label">
+                        <g:message code="patientGroup.showGestationalAge.label"/>
+                    </span>
 
-
+                    <span class="property-value" aria-labelledby="patientGroup.show_gestational_age.label">
+                        <g:checkBox name="showGestationalAge" value="${patientGroupInstance?.showGestationalAge}" disabled="true" />
+                    </span>
+                </li>
 			</ol>
 			<g:form>
 				<fieldset class="buttons">

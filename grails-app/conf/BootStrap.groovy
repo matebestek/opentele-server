@@ -360,8 +360,8 @@ class BootStrap {
         def ppromStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['saturation', 'weight', 'urine'])
         def heartStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['bloodPressure', 'pulse'])
 
-        bootStrapUtil.createPatientGroupIfNotExists(praeklampsi, deptY, now, preEmpStandardThresholdSet)
-        bootStrapUtil.createPatientGroupIfNotExists(PPROM, deptY, now, ppromStandardThresholdSet)
+        bootStrapUtil.createPatientGroupIfNotExists(praeklampsi, deptY, now, preEmpStandardThresholdSet, true)
+        bootStrapUtil.createPatientGroupIfNotExists(PPROM, deptY, now, ppromStandardThresholdSet, true)
         bootStrapUtil.createPatientGroupIfNotExists(hjertepatient, deptB,now, heartStandardThresholdSet)
     }
 
@@ -415,6 +415,7 @@ class BootStrap {
                 postalCode:'7988',
                 city:'Store Obstetringe',
                 mobilePhone: '20827266',
+                dueDate: (new Date()+180),
                 phone: null,
                 email: 'lise.hansen@gmail.com')
 

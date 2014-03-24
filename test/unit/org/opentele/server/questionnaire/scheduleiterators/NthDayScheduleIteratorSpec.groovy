@@ -14,6 +14,7 @@ class NthDayScheduleIteratorSpec extends Specification {
 
         then:
         !iterator.hasNext()
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     def 'contains nothing if no times of day are specified'() {
@@ -26,6 +27,7 @@ class NthDayScheduleIteratorSpec extends Specification {
 
         then:
         !iterator.hasNext()
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     def 'gives an infinite list of intervals in days when given valid input'() {
@@ -63,6 +65,8 @@ class NthDayScheduleIteratorSpec extends Specification {
         iterator.next() == time('2013-09-12 10:30:00')
 
         // Etc.
+
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     def 'gives no dates before actual start date'() {
@@ -100,6 +104,8 @@ class NthDayScheduleIteratorSpec extends Specification {
         iterator.next() == time('2013-09-17 10:30:00')
 
         // Etc.
+
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     private Date time(String asString) {

@@ -271,19 +271,6 @@ class MeasurementServiceSpec extends Specification {
         bloodsugar == []
     }
 
-    void "test no bloodsugar in graphs"() {
-        setup:
-        new MeasurementBuilder().ofType(MeasurementTypeName.BLOODSUGAR).withValue(1.2).inQuestionnaire(completedQuestionnaire).build()
-
-        when:
-        def (graphs, tables, bloodsugar) = service.dataForGraphsAndTables(patient, TimeFilter.all())
-
-        then:
-        !graphs
-        tables
-        bloodsugar
-    }
-
     void "test bloodsugar data correct values are returned"() {
         setup:
         [34: 1.2, 35: 2.2, 36: 3.2].each { int second, value ->

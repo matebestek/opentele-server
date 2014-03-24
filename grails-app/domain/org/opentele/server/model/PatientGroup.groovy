@@ -4,6 +4,7 @@ class PatientGroup extends AbstractObject {
 
     String name
     boolean disableMessaging
+    boolean showGestationalAge
 	
     static belongsTo = [department: Department]
     
@@ -13,7 +14,8 @@ class PatientGroup extends AbstractObject {
 
     static constraints = {
         name(nullable:false, blank: false, unique: 'department')
-        disableMessaging(nullable:false)
+        disableMessaging(nullable: false)
+        showGestationalAge(nullable: false)
         standardThresholdSet(validator: {val, obj ->
             if (val == null) {
                 ["validate.patientgroup.nothresholdset", "Standard tærskelværdier"]

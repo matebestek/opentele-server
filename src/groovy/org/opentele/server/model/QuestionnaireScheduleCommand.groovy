@@ -14,13 +14,13 @@ class QuestionnaireScheduleCommand extends ScheduleCommand {
 
     QuestionnaireService questionnaireService
     Long version
-    QuestionnaireSchedule questionnaireSchedule
+    Schedule questionnaireSchedule
     MonitoringPlan monitoringPlan
 
     @SuppressWarnings("GroovyUnusedDeclaration") // Used in views
     List<QuestionnaireHeader> getSelectableQuestionnaireHeaders() {
         def list = questionnaireService.getUnusedQuestionnaireHeadersForMonitoringPlan(monitoringPlan)
-        if (questionnaireSchedule) {
+        if (questionnaireSchedule && questionnaireSchedule instanceof QuestionnaireSchedule) {
             selectedQuestionnaireHeader = questionnaireSchedule.questionnaireHeader
             list << questionnaireSchedule.questionnaireHeader
             list = list.sort { it.toString().toLowerCase() }

@@ -109,7 +109,7 @@ class YAxisTickCalculator implements MeasurementTypeNameVisitor {
 
     @Override
     void visitBloodSugar() {
-        throw new IllegalArgumentException('Cannot generate Y axis ticks for blood sugar')
+        createTicksFor(0, 20, 2, SINGLE_DIGIT_FORMATTER)
     }
 
     @Override

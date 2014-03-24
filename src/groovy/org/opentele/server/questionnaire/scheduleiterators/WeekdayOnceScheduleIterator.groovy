@@ -12,7 +12,6 @@ class WeekdayOnceScheduleIterator implements Iterator<Date> {
     final SortedSet<Integer> weekdaysIntroPeriod
     final SortedSet<Integer> weekdaysSecondPeriod
     final int introPeriodWeeks
-    final Schedule.TimeOfDay blueAlarmTime
 
     private Date currentDate
     private startWeek = 1
@@ -25,10 +24,9 @@ class WeekdayOnceScheduleIterator implements Iterator<Date> {
         // Get weekday numbers as integers from Monday(1) to Sunday(7)
         this.weekdaysIntroPeriod = weekdaysIntroPeriod.collect { adjustDayOfWeek(it.asCalendarWeekday()) } as SortedSet
         this.weekdaysSecondPeriod = weekdaysSecondPeriod.collect { adjustDayOfWeek(it.asCalendarWeekday()) } as SortedSet
-        this.blueAlarmTime = blueAlarmTime
 
         if (this.weekdaysIntroPeriod && this.weekdaysSecondPeriod) {
-            currentDate = startingDate
+            currentDate = startingDate.clone()
             currentDate[HOUR_OF_DAY] = blueAlarmTime.hour
             currentDate[MINUTE] = blueAlarmTime.minute
             startWeek = currentDate[WEEK_OF_YEAR]

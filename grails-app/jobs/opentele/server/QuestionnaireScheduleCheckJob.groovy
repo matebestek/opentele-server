@@ -5,7 +5,7 @@ import org.opentele.server.model.BlueAlarmCheck;
 import org.opentele.server.model.Patient
 
 class QuestionnaireScheduleCheckJob {
-	def questionnaireService
+    def questionnaireService
     def patientOverviewService
 
     static triggers = {
@@ -19,15 +19,26 @@ class QuestionnaireScheduleCheckJob {
     def concurrent = false
 
     def execute() {
-		log.debug "Checking for blue alarms.."
+        log.debug "Checking for blue alarms.."
 
         Calendar checkTo = Calendar.getInstance()
 
         Date checkFromDate = BlueAlarmCheck.findPreviousCheckTime(checkTo.time)
         Calendar checkFrom = checkFromDate.toCalendar()
 
-		Patient.findAllByMonitoringPlanIsNotNull().each { findBlueAlarmsForPatient(it, checkFrom, checkTo) }
+        Patient.findAllByMonitoringPlanIsNotNull().each { patient ->
+            Patient.withTransaction { status ->
 
+                try {
+                    patient.refresh()
+                    findBlueAlarmsForPatient(patient, checkFrom, checkTo)
+
+                } catch (Exception ex) {
+                    log.error("Got exception when updating blue alarms for ${patient?.id}.", ex)
+                    status.setRollbackOnly()
+                }
+            }
+        }
         BlueAlarmCheck.checkedAt(checkTo.time)
     }
 
@@ -35,12 +46,10 @@ class QuestionnaireScheduleCheckJob {
         def blueAlarms = questionnaireService.checkForBlueAlarms(patient, checkFrom, checkTo)
 
         if (blueAlarms) {
-            Patient.withTransaction {
-                patient.blueAlarmQuestionnaireIDs.addAll(blueAlarms)
-                patient.save(failOnError: true)
-                patientOverviewService.updateOverviewFor(patient)
-                log.debug "New blue alarms for " + patient + ": " + blueAlarms
-            }
+            patient.blueAlarmQuestionnaireIDs.addAll(blueAlarms)
+            patient.save(failOnError: true)
+            patientOverviewService.updateOverviewFor(patient)
+            log.debug "New blue alarms for " + patient + ": " + blueAlarms
         }
     }
 }

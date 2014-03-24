@@ -16,6 +16,7 @@ class WeekdayOnceScheduleIteratorSpec extends Specification {
 
         then:
         !iterator.hasNext()
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     def 'contains nothing if no weekdays are specified in the second period'() {
@@ -28,6 +29,7 @@ class WeekdayOnceScheduleIteratorSpec extends Specification {
 
         then:
         !iterator.hasNext()
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     def 'gives an infinite list of weekdays when given valid input'() {
@@ -78,7 +80,10 @@ class WeekdayOnceScheduleIteratorSpec extends Specification {
         iterator.hasNext()
         iterator.next() == asDate('2013-09-16 23:59:00') // Monday
         // Etc.
+
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
+
     def 'gives an infinite list of weekdays when given valid input and the first week does not produce output'() {
         when:
         Date startDate = Date.parse('yyyy-MM-dd', '2013-06-01') // Starts on a Thursday
@@ -104,6 +109,8 @@ class WeekdayOnceScheduleIteratorSpec extends Specification {
         iterator.next() == asDate('2013-06-18 23:59:00')  // Fourth week Tuesday
 
         // Etc.
+
+        startDate == Date.parse('yyyy-MM-dd', '2013-06-01') // Should not have been messed with
     }
 
     private Date asDate(String asString) {

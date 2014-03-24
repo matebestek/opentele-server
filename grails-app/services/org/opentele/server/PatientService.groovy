@@ -100,7 +100,6 @@ class PatientService {
     /**
      * Updates a patient. Handles updating of patient data, resetting og user password and updating patientgroup relationships
      * @param params Input parameters
-     * @throws PasswordException  Thrown when a problem has occurred with changing the associated users password
      * @throws PatientException Thrown when a problem has occurred when updating the patient information
      * @throws PatientGroupException Thrown when a problem has occurred when updating the patient group relationship
      */
@@ -155,7 +154,7 @@ class PatientService {
                         Patient2PatientGroup ref = new Patient2PatientGroup()
                         patientInstance.addToPatient2PatientGroups(ref)
                         pg.addToPatient2PatientGroups(ref)
-                        ref.save(flush: true)
+                        ref.save(failOnError: true, flush: true)
                         ref.refresh()
                         if (ref.hasErrors()) {
                             throw new PatientGroupException("patient.patientgroup.not.created", ref.errors)
@@ -171,7 +170,7 @@ class PatientService {
                     // Remove it.
                     patientInstance.removeFromPatient2PatientGroups(pg)
                     pg.patientGroup.removeFromPatient2PatientGroups(pg)
-                    pg.delete(flush: true)
+                    pg.delete(failOnError: true, flush: true)
                 }
             }
         }
@@ -189,15 +188,15 @@ class PatientService {
         }
 
         patientInstance.validate()
-        if(user.hasErrors()) {
+        if (user.hasErrors()) {
             user.errors.fieldErrors.each {
                 patientInstance.errors.rejectValue("user.${it.field}", it.code, it.arguments, it.defaultMessage)
             }
+            throw new PatientException("Error")
         }
-        if(!patientInstance.hasErrors()) {
-            patientInstance.save(failOnError: true)
-            patientOverviewService.updateOverviewFor(patientInstance)
-        }
+
+        patientInstance.save(failOnError: true)
+        patientOverviewService.updateOverviewFor(patientInstance)
 
         return patientInstance
     }

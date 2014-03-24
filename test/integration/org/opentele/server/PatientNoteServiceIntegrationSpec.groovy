@@ -59,6 +59,21 @@ class PatientNoteServiceIntegrationSpec extends IntegrationSpec {
         patientNoteService.idsOfSeenPatientNotes(clinician, allNotes) == [seenNote1.id, seenNote2.id].toSet()
     }
 
+    def 'can find out if a note has been seen or not'() {
+        when:
+        PatientNote seenNote1 = PatientNote.build(patient: patient1InPatientGroup, note: 'Note 1', type: NoteType.NORMAL, seenBy: [clinician])
+        PatientNote seenNote2 = PatientNote.build(patient: patient2InPatientGroup, note: 'Note 1', type: NoteType.NORMAL, seenBy: [clinician])
+        PatientNote unseenNote1 = PatientNote.build(patient: patient1InPatientGroup, note: 'Note 2', type: NoteType.NORMAL, seenBy: [])
+        PatientNote unseenNote2 = PatientNote.build(patient: patient2InPatientGroup, note: 'Note 3', type: NoteType.NORMAL, seenBy: [])
+        Set<PatientNote> allNotes = [seenNote1, seenNote2, unseenNote1, unseenNote2].toSet()
+
+        then:
+        patientNoteService.isNoteSeenByAnyUser(seenNote1) == true
+        patientNoteService.isNoteSeenByAnyUser(seenNote2) == true
+        patientNoteService.isNoteSeenByAnyUser(unseenNote1) == false
+        patientNoteService.isNoteSeenByAnyUser(unseenNote2) == false
+    }
+
     private Patient createPatient(PatientState state, PatientGroup group) {
         Patient patient = Patient.build(state: state)
         patient.addToPatient2PatientGroups(patientGroup: group)

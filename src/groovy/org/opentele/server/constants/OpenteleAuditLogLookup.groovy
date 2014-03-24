@@ -237,6 +237,7 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
 
         lookup["questionnaireSchedule"] = addStandardTexts("spørgeskema", "spørgeskemaer")
         lookup["questionnaireSchedule"] << [
+                "questionnaireScheduleData": "Hent skemalægning for enkelt spørgeskema",
                 "del": "Slet spørgeskemaplan",
                 "validateViewModel": "Valider spørgeskemaplan",
                 "showAddQuestionnaireGroup": "Tilføj gruppe af spørgeskemaer",

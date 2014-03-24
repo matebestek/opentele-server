@@ -1,4 +1,4 @@
-<%@ page import="org.opentele.server.model.types.MeasurementFilterType" %>
+<%@ page import="org.opentele.server.model.types.MeasurementTypeName; org.opentele.server.model.types.MeasurementFilterType" %>
 <!doctype html>
 <html>
 <head>
@@ -7,6 +7,7 @@
     <title>${pageTitle}</title>
     <g:render template="graphFunctions"/>
 	<g:render template="measurementGraph" collection="${measurements}" var="measurement" model="${[patient: patientInstance, patientIdForFullScreen: params.patientId]}"/>
+    <g:render template="bloodsugar_measurementGraphs" collection="${measurements}" var="measurement" model="${[patient: patientInstance, patientIdForFullScreen: params.patientId]}"/>
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'bloodsugartable.css')}" type="text/css">
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'font-awesome.min.css')}" type="text/css">
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery-ui.custom.css')}" type="text/css">
@@ -111,6 +112,11 @@
                         <span class="property-value">
                             <div id="${measurement.type}-${patientInstance.id}"></div>
                         </span>
+                        <g:if test="${measurement.type == MeasurementTypeName.BLOODSUGAR.name()}">
+                            <span class="property-value">
+                                <div id="${MeasurementTypeName.BLOODSUGAR.name() + "-average-day"}-${patientInstance.id}"></div>
+                            </span>
+                        </g:if>
                     </g:each>
                 </ol>
             </div>

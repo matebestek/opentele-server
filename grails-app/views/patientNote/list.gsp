@@ -23,6 +23,8 @@
                 <g:sortableColumn property="reminderDate" title="${message(code: 'patientNote.reminder.label')}"/>
 
                 <g:sortableColumn property="isSeen" title="${message(code: 'patientNote.isSeen.label')}"/>
+
+                <g:sortableColumn property="isSeenByAnyUser" title="${message(code: 'patientNote.isSeenByAnyUser.label')}"/>
             </tr>
         </thead>
         <tbody>
@@ -42,6 +44,8 @@
                 <td><g:formatDate date="${patientNoteInstance.reminderDate}"/></td>
 
                 <td><g:message code="default.yesno.${isSeen[patientNoteInstance]}"/></td>
+
+                <td><g:message code="default.yesno.${isSeenByAnyUser[patientNoteInstance]}"/></td>
             </tr>
         </g:each>
         </tbody>

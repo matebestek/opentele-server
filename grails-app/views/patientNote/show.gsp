@@ -88,17 +88,20 @@
         <fieldset class="buttons">
             <g:hiddenField name="id" value="${patientNoteInstance?.id}"/>
             <g:hiddenField name="comingFrom" value="${comingFrom}"/>
-            <g:link class="edit" action="edit" id="${patientNoteInstance?.id}">
-                <g:message code="default.button.edit.label"/>
-            </g:link>
-            <sec:ifAnyGranted roles="${PermissionName.PATIENT_NOTE_DELETE}">
-                <g:actionSubmit
-                        class="delete"
-                        action="delete"
-                        value="${message(code: 'default.button.delete.label')}"
-                        onclick="return confirm('${message(code: 'default.button.delete.confirm.message')}');"
-                />
-            </sec:ifAnyGranted>
+
+            <g:if test="${canEdit == true}">
+                <g:link class="edit" action="edit" id="${patientNoteInstance?.id}">
+                    <g:message code="default.button.edit.label"/>
+                </g:link>
+                <sec:ifAnyGranted roles="${PermissionName.PATIENT_NOTE_DELETE}">
+                    <g:actionSubmit
+                            class="delete"
+                            action="delete"
+                            value="${message(code: 'default.button.delete.label')}"
+                            onclick="return confirm('${message(code: 'default.button.delete.confirm.message')}');"
+                    />
+                </sec:ifAnyGranted>
+           </g:if>
             <cq:patientNoteMarkSeenButton id="${patientNoteInstance?.id}" note="${patientNoteInstance}" />
         </fieldset>
     </g:form>

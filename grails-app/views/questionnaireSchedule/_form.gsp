@@ -8,7 +8,7 @@
     <label for="selectedQuestionnaireHeader.id">
         <g:message code="questionnaireSchedule.patientQuestionnaire.label"/> <span class="required-indicator">*</span>
     </label>
-    <g:select name="selectedQuestionnaireHeader.id" from="${selectableQuestionnaireHeaders}" optionKey="id" optionValue="name" value="${selectedQuestionnaireHeader?.id}"/>
+    <g:select name="selectedQuestionnaireHeader.id" id="selectedQuestionnaireHeaderId" from="${selectableQuestionnaireHeaders}" optionKey="id" optionValue="name" value="${selectedQuestionnaireHeader?.id}"/>
 </div>
 <div class="fieldcontain">
     <label>

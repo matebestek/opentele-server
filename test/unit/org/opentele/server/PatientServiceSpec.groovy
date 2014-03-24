@@ -11,6 +11,7 @@ import org.opentele.server.model.types.PatientState
 import org.opentele.server.model.types.PermissionName
 import org.opentele.server.model.types.Sex
 import org.opentele.server.service.MailSenderService
+import org.springframework.validation.FieldError
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -131,9 +132,6 @@ class PatientServiceSpec extends Specification {
             return false
         }
 
-//        expect:
-//        !patient.patient2PatientGroups
-
         when:
         service.updatePatient(params, patient)
 
@@ -141,7 +139,7 @@ class PatientServiceSpec extends Specification {
         1 * service.patientOverviewService.updateOverviewFor(patient)
     }
 
-    def "when I update a patient with invalid params it fails"() {
+    def "when I update a patient with invalid clearTextPassword it fails"() {
         setup:
         def patient = createPatientForUpdate()
         def params = [cleartextPassword: 'new1']
@@ -150,10 +148,29 @@ class PatientServiceSpec extends Specification {
         service.updatePatient(params, patient)
 
         then:
+        thrown(PatientException)
         patient.hasErrors()
         0 * service.patientOverviewService.updateOverviewFor(patient)
     }
 
+    @Unroll
+    def "when I update a patient with a dataresponsible that is not included in the patients patientgroups it fails"() {
+        setup:
+        def patient = buildPatientForUpdatePatientGroup()
+        def pg = PatientGroup.build()
+        pg.save()
+        patient.dataResponsible = pg
+
+        def params = []
+
+        when:
+        service.updatePatient(params, patient)
+
+        then:
+        thrown(grails.validation.ValidationException)
+        patient.getErrors().getFieldError('patient2PatientGroups').code == 'validate.patient.dataResponsible'
+        0 * service.patientOverviewService.updateOverviewFor(patient)
+    }
 
     @Unroll
     def "when I search for patients with ssn starting with 1 only patients for the current clinician is returned"() {

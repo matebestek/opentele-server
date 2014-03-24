@@ -1,4 +1,8 @@
 package org.opentele.server.model
+
+import org.apache.commons.lang.time.DateUtils
+import org.joda.time.DateTime
+import org.joda.time.Days
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.PatientState
@@ -38,6 +42,8 @@ class Patient extends AbstractObject {
     String email
     String comment
 
+    Date dueDate
+
 	PatientState state
     User user
     PatientGroup dataResponsible
@@ -69,7 +75,7 @@ class Patient extends AbstractObject {
         "${cpr[0..5]}-${cpr[6..9]}"
     }
 
-    static transients = ['formattedCpr','name','latestQuestionnaireUploadDate','numberOfUnreadMessages','groups', 'patientOverview']
+    static transients = ['formattedCpr','name','latestQuestionnaireUploadDate','numberOfUnreadMessages','groups', 'patientOverview', 'shouldShowGestationalAge']
     
     static constraints = {
         cpr(validator: { val, obj ->
@@ -103,7 +109,8 @@ class Patient extends AbstractObject {
         comment(nullable:true, maxSize: 2048)
 		user(nullable:true)
         dataResponsible(nullable:true)
-		state(validator: {val, obj -> val != null && !val.equals("") ? true : obj.errors.reject("validate.patient.default.blank", ["Tilstand"] as Object[], "i18n Mising")})
+        dueDate(nullable:true)
+        state(validator: {val, obj -> val != null && !val.equals("") ? true : obj.errors.reject("validate.patient.default.blank", ["Tilstand"] as Object[], "i18n Mising")})
 
         monitoringPlan(nullable:true)
 
@@ -177,6 +184,35 @@ class Patient extends AbstractObject {
                 max('uploadDate')
             }
         }
+    }
+
+    boolean isShouldShowGestationalAge() {
+        def patientGroups = patient2PatientGroups*.patientGroup
+        patientGroups.any { it.showGestationalAge }
+    }
+
+    String getGestationalAge(Date now) {
+        if (dueDate != null && now != null) {
+            Date dueDateTruncated = DateUtils.truncate(dueDate, Calendar.DAY_OF_MONTH)
+            Date nowTruncated = DateUtils.truncate(now, Calendar.DAY_OF_MONTH)
+            Date pregnancyStartDate = DateUtils.addDays(dueDateTruncated, -280)
+
+            int totalNumberOfDays = daysBetween(pregnancyStartDate, nowTruncated)
+            int weeks = totalNumberOfDays / 7
+            int days  = totalNumberOfDays % 7
+
+            if (weeks in 1..42 || (weeks == 43 && days == 0)) {
+                return "${weeks}+${days}"
+            }
+        }
+
+        ''
+    }
+
+    private static int daysBetween(Date start, Date end) {
+        def startDateTime = new DateTime(start)
+        def endDateTime = new DateTime(end)
+        Days.daysBetween(startDateTime, endDateTime).days
     }
 
     def getGroups() {

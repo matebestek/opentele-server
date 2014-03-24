@@ -36,7 +36,8 @@ class PatientMeasurementMobileController {
             def table = tables.find { it.type.toString() == params.type }
             tableData = table ? table.measurements*.measurement : []
         }
+        def graphData = measurementService.dataForGraph(patient, timeFilter, params.type)
 
-        [patientInstance:patient, type: params.type, tableData: tableData, bloodSugarData: bloodsugarData]
+        [patientInstance:patient, type: params.type, tableData: tableData, bloodSugarData: bloodsugarData, graphData: graphData]
     }
 }

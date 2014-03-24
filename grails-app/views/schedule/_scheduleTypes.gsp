@@ -1,5 +1,5 @@
 <%@ page import="org.opentele.server.model.Schedule" %>
-<div>
+<div id="questionnaireScheduleDetails">
     <g:each in="${Schedule.ScheduleType.values() - Schedule.ScheduleType.UNSCHEDULED}" var="scheduleType">
         <div class="scheduleType ${scheduleType.toString()}">
             <h1 class="nav-header"><g:message code="schedule.scheduleType.${scheduleType.toString()}.label"/></h1>

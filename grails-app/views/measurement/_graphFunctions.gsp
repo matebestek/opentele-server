@@ -6,6 +6,7 @@
 <g:javascript src="jqplot/plugins/jqplot.dateAxisRenderer.js" />
 <g:javascript src="jqplot/plugins/jqplot.cursor.js" />
 <g:javascript src="jqplot/plugins/jqplot.highlighter.js" />
+
 <!--[if lt IE 9]>
 <g:javascript src="jqplot/excanvas.js"/>
 <![endif]-->
@@ -27,23 +28,51 @@
             var alarmValues = options['alarmValues'];
             var warningValues = options['warningValues'];
 
+            var seriesColors = options['seriesColors'];
+            var highlighterFormatString = options['highlighterFormatString'];
+
             var singleClickFunction = options['singleClickFunction'];
             var doubleClickFunction = options['doubleClickFunction'];
 
             var container = $('#' + containerId);
+            var showLegend = options['showLegend'];
 
             container.bind('jqplotDataClick', singleClickFunction);
             if (doubleClickFunction) {
                 container.bind('jqplotDblClick', doubleClickFunction);
             }
 
+            if(!highlighterFormatString) {
+                highlighterFormatString = '<table class="jqplot-highlighter-tooltip"><tr><td>%1$s %3$s, %5$s</td></tr><tr><td>${message(code:'patient.acknowledge.note')}:</td></tr><tr><td nowrap="wrap" style="width:160px;">%4$s</td></tr></table>';
+            }
+
+            var seriesConfig;
+
+            if(seriesColors) {
+                seriesConfig = [];
+                for(var i = 0; i < seriesColors.length; i++) {
+                    seriesConfig[i] = {
+                        showLine: false,
+                        color: seriesColors[i],
+                        markerOptions: {size: 5}
+                    }
+                }
+
+                seriesConfig[0].label = "Før måltid";
+                seriesConfig[1].label = "Efter måltid";
+                seriesConfig[2].label = "Ukendt";
+            } else {
+                seriesConfig = [{},{}, { // Third series is for heart rate (pulse) in blood pressure graph
+                    showLine: false,
+                    markerOptions: { style: "x", size: 7, color: 'blue'}
+                }];
+            }
+
             var graph = $.jqplot (containerId, series, {
                 title: title,
                 gridPadding: { left: 40 },
-                series: [{},{}, { // Third serie is for heart rate (pulse) in blood pressure graph
-                    showLine: false,
-                    markerOptions: { style: "x", size: 7, color: 'blue'}
-                }],
+                series: seriesConfig,
+
                 axes: {
                     xaxis: {
                         pad: 1.2,
@@ -65,6 +94,11 @@
                         ticks: ticksY
                     }
                 },
+                legend:{
+                    renderer: $.jqplot.EnhancedLegendRenderer,
+                    show: showLegend,
+                    location: 'nw'
+                },
                 highlighter: {
                     show: true,
                     sizeAdjust: 7.5,
@@ -72,7 +106,7 @@
                     fadeTooltip:true,
                     tooltipLocation: "s",
                     yvalues: 5,
-                    formatString: '<table class="jqplot-highlighter-tooltip"><tr><td>%1$s %3$s, %5$s</td></tr><tr><td>${message(code:'patient.acknowledge.note')}:</td></tr><tr><td nowrap="wrap" style="width:160px;">%4$s</td></tr></table>'
+                    formatString: highlighterFormatString
                 },
                 cursor: {
                     show: false

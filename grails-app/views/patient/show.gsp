@@ -108,7 +108,16 @@
                     ${message(code:'enum.patientstate.'+patientInstance.getState())}
     			</span>
             </li>
-
+            <g:if test="${patientInstance?.dueDate}">
+                <li class="fieldcontain">
+                    <span id="dueDate-label" class="property-label">
+                        <g:message code="patient.dueDate.label" />
+                    </span>
+                    <span class="property-value" aria-labelledby="dueDate-label">
+                        <g:formatDate formatName="default.date.format.notime" date="${patientInstance?.dueDate}" />
+                    </span>
+                </li>
+            </g:if>
 			<g:if test="${patientInstance.address}">
 				<li class="fieldcontain">
                     <span id="address-label" class="property-label">

@@ -1,11 +1,14 @@
 package org.opentele.server.model.questionnaire
 
+import dk.silverbullet.kih.api.auditlog.SkipAuditLog
+import grails.converters.JSON
 import grails.plugins.springsecurity.Secured
 import org.opentele.server.QuestionnaireScheduleService
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.model.AddQuestionnaireGroup2MonitoringPlanCommand
 import org.opentele.server.model.QuestionnaireSchedule
 import org.opentele.server.model.QuestionnaireScheduleCommand
+import org.opentele.server.model.Schedule
 import org.opentele.server.model.types.PermissionName
 import org.opentele.server.questionnaire.QuestionnaireService
 import org.springframework.dao.DataIntegrityViolationException
@@ -27,7 +30,34 @@ class QuestionnaireScheduleController {
         command.properties
     }
 
+    @Secured(PermissionName.QUESTIONNAIRE_SCHEDULE_CREATE)
+    @SkipAuditLog
+    def questionnaireScheduleData(long questionnaireHeaderId, QuestionnaireScheduleCommand command) {
 
+        def questionnaireHeader = QuestionnaireHeader.get(questionnaireHeaderId)
+
+        def activeQuestionnaire = questionnaireHeader.activeQuestionnaire
+
+        def questionnaireSchedule
+        if (activeQuestionnaire != null) {
+            questionnaireSchedule = questionnaireHeader.activeQuestionnaire.standardSchedule
+        } else {
+            questionnaireSchedule = new QuestionnaireSchedule()
+            questionnaireSchedule.type = Schedule.ScheduleType.UNSCHEDULED
+            questionnaireSchedule.monitoringPlan = command.monitoringPlan
+
+            command.questionnaireSchedule = questionnaireSchedule
+            bindData(command, questionnaireSchedule.properties)
+            adjustScheduleStartDate(command)
+        }
+
+        def result = [
+            scheduleType: questionnaireSchedule.type.name(),
+            details: g.render(template: '/schedule/scheduleTypesAsIndividualPage', model: command.properties)
+        ]
+
+        render result as JSON
+    }
 
     @Secured([PermissionName.QUESTIONNAIRE_SCHEDULE_CREATE, PermissionName.QUESTIONNAIRE_SCHEDULE_WRITE])
     def save(QuestionnaireScheduleCommand command) {
@@ -56,6 +86,8 @@ class QuestionnaireScheduleController {
 
     @Secured(PermissionName.QUESTIONNAIRE_SCHEDULE_WRITE)
     def update(QuestionnaireScheduleCommand command) {
+        // Since questionnaireSchedule in the command has type Schedule, Grails cannot infer that it's actually a QuestionnaireSchedule
+        command.questionnaireSchedule = QuestionnaireSchedule.get(params['questionnaireSchedule.id'])
         if (!command.questionnaireSchedule) {
             flash.message = message(code: 'default.not.found.message', args: [message(code: 'questionnaireSchedule.label', default: 'QuestionnaireSchedule')])
             redirect(controller: "monitoringPlan", action: "show", id: session[SESSION_PATIENT_ID])

@@ -140,7 +140,7 @@ class YAxisTickCalculatorSpec extends Specification {
               0 | 10000000 | ['0', '1.000.000', '2.000.000', '3.000.000', '4.000.000', '5.000.000', '6.000.000', '7.000.000', '8.000.000', '9.000.000', '10.000.000']
     }
 
-    def 'gives ticks for lung function (not verified with customer yet)'() {
+    def 'gives ticks for lung function'() {
         expect:
         ticks(MeasurementTypeName.LUNG_FUNCTION, minimum, maximum) == expectedTicks
 
@@ -182,6 +182,17 @@ class YAxisTickCalculatorSpec extends Specification {
             105 |     110 | [60, 80, 100, 120, 140]
              45 |     110 | [40, 60, 80, 100, 120, 140]
             105 |     165 | [60, 80, 100, 120, 140, 160, 180]
+    }
+
+    def 'gives correct ticks for blood sugar'() {
+        expect:
+        ticks(MeasurementTypeName.BLOODSUGAR, minimum, maximum) == expectedTicks
+
+        where:
+        minimum | maximum | expectedTicks
+              0 |      20 | [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+              5 |      10 | [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+              2 |      30 | [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
     }
 
     private def systolicTicks(double minimum, double maximum) {

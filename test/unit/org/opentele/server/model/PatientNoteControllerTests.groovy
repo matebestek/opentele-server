@@ -3,6 +3,7 @@ package org.opentele.server.model
 import grails.test.mixin.*
 import grails.buildtestdata.mixin.Build
 import org.opentele.server.PatientService
+import org.opentele.server.PatientNoteService
 import org.opentele.server.SessionService
 import org.opentele.server.model.types.NoteType
 
@@ -42,7 +43,7 @@ class PatientNoteControllerTests {
 
     void testGives10PatientNotesOutOf20ForPagination() {
         def (Patient patient, patientId) = createPatient()
-        20.times { patient.addToNotes(PatientNote.build()) }
+        20.times { patient.addToNotes(PatientNote.build(seenBy: [])) }
         patient.save(failOnError: true)
 
         def sessionServiceControl = mockFor(SessionService)
@@ -54,6 +55,10 @@ class PatientNoteControllerTests {
         def patientServiceControl = mockFor(PatientService, true)
         patientServiceControl.demand.isNoteSeenByUser(10..10) { false }
         controller.patientService = patientServiceControl.createMock()
+
+        def patientNoteServiceControl = mockFor(PatientNoteService, true)
+        patientNoteServiceControl.demand.isNoteSeenByAnyUser(10..10) { false }
+        controller.patientNoteService = patientNoteServiceControl.createMock()
 
         controller.params.id = patientId
 
@@ -129,6 +134,10 @@ class PatientNoteControllerTests {
     }
 
     void testDelete() {
+        def patientNoteServiceControl = mockFor(PatientNoteService, true)
+        patientNoteServiceControl.demand.isNoteSeenByAnyUser {note -> false }
+
+
         def (Patient patient, patientId) = createPatient()
         def note1 = PatientNote.build()
         patient.addToNotes(note1)
@@ -138,6 +147,7 @@ class PatientNoteControllerTests {
         patient.addToNotes(note3)
         patient.save(failOnError: true)
 
+        controller.patientNoteService = patientNoteServiceControl.createMock()
         controller.params.id = note2.id
         controller.delete()
 

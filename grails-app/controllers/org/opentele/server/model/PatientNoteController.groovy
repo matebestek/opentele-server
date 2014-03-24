@@ -29,11 +29,13 @@ class PatientNoteController {
 
         def notes = PatientNote.findAllByPatient(patient, [sort: 'createdDate', order: 'desc', max: params.max, offset: params.offset])
         def isSeen = notes.collectEntries { [it, patientService.isNoteSeenByUser(it)] }
-        sortNotes(notes, isSeen)
+        def isSeenByAnyUser = notes.collectEntries { [it, patientNoteService.isNoteSeenByAnyUser(it)] }
+        sortNotes(notes, isSeen, isSeenByAnyUser)
 
         [
                 patientNoteInstanceList: notes,
                 isSeen: isSeen,
+                isSeenByAnyUser: isSeenByAnyUser,
                 patientNoteInstanceTotal: patient.notes.size(),
                 patient: patient
         ]
@@ -48,17 +50,20 @@ class PatientNoteController {
         Set<Long> idsOfSeenNotes = patientNoteService.idsOfSeenPatientNotes(clinician, notes)
 
         def isSeen = notes.collectEntries { [it, idsOfSeenNotes.contains(it.id)] }
+        def isSeenByAnyUser = notes.collectEntries { [it, patientNoteService.isNoteSeenByAnyUser(it)] }
+
         List<PatientNote> sortedNotes = notes.toList()
-        sortNotes(sortedNotes, isSeen)
+        sortNotes(sortedNotes, isSeen, isSeenByAnyUser)
 
         [
                 patientNoteInstanceList: sortedNotes,
                 isSeen: isSeen,
+                isSeenByAnyUser: isSeenByAnyUser,
                 patientNoteInstanceTotal: sortedNotes.size()
         ]
     }
 
-    private List<PatientNote> sortNotes(List<PatientNote> notes, Map<PatientNote, Boolean> isSeen) {
+    private List<PatientNote> sortNotes(List<PatientNote> notes, Map<PatientNote, Boolean> isSeen, Map<PatientNote, Boolean> isSeenByAnyUser) {
         switch (params.sort) {
             case 'note':
                 notes.sort { it.note }
@@ -71,6 +76,9 @@ class PatientNoteController {
                 break;
             case 'isSeen':
                 notes.sort { isSeen[it] }
+                break;
+            case 'isNoteSeenByAnyUser':
+                notes.sort { isSeenByAnyUser[it] }
                 break;
             case 'patient':
             default:
@@ -124,13 +132,17 @@ class PatientNoteController {
             redirect(action: "list", id: patient.id)
             return
         }
+        def canEdit = !patientNoteService.isNoteSeenByAnyUser(patientNoteInstance)
+        if (!canEdit) {
+            flash.message = message(code: 'patientNote.cannotEditSeenNotes')
+        }
 
         sessionService.setPatient(session, patientNoteInstance.patient)
         // Maintain which view show is called from
         if (params.comingFrom) {
-            [patientNoteInstance: patientNoteInstance, comingFrom: params.comingFrom]
+            [patientNoteInstance: patientNoteInstance, comingFrom: params.comingFrom, canEdit: canEdit]
         } else {
-            [patientNoteInstance: patientNoteInstance]
+            [patientNoteInstance: patientNoteInstance, canEdit: canEdit]
         }
     }
 
@@ -155,6 +167,15 @@ class PatientNoteController {
             def patient = Patient.get(session[Constants.SESSION_PATIENT_ID])
             sessionService.setPatient(session, patient)
             redirect(action: "list", id: patient.id)
+            return
+        }
+
+        if (patientNoteService.isNoteSeenByAnyUser(patientNoteInstance)) {
+            flash.message = message(code: 'patientNote.cannotEditSeenNote')
+            def patient = Patient.get(session[Constants.SESSION_PATIENT_ID])
+            sessionService.setPatient(session, patient)
+
+            redirect(action: "show", id: patientNoteInstance.id)
             return
         }
 
@@ -232,7 +253,14 @@ class PatientNoteController {
             redirect(action: "list", id: patient.id)
             return
         }
+        if (patientNoteService.isNoteSeenByAnyUser(patientNoteInstance)) {
+            flash.message = message(code: 'patientNote.cannotDeleteSeenNote')
+            def patient = Patient.get(session[Constants.SESSION_PATIENT_ID])
+            sessionService.setPatient(session, patient)
 
+            redirect(action: "show", id: patientNoteInstance.id)
+            return
+        }
         try {
             patientNoteInstance.delete(flush: true)
             flash.message = message(code: 'default.deleted.message', args: [message(code: 'patientNote.label'), params.id])

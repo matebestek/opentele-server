@@ -14,6 +14,7 @@ class WeekdayScheduleIteratorSpec extends Specification {
 
         then:
         !iterator.hasNext()
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     def 'contains nothing if no times of day are specified'() {
@@ -25,6 +26,7 @@ class WeekdayScheduleIteratorSpec extends Specification {
 
         then:
         !iterator.hasNext()
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     def 'gives an infinite list of weekdays when given valid input'() {
@@ -61,6 +63,8 @@ class WeekdayScheduleIteratorSpec extends Specification {
         iterator.next() == time('2013-08-12 10:30:00')
 
         // Etc.
+
+        startDate == Date.parse('yyyy-MM-dd', '2013-08-01') // Should not have been messed with
     }
 
     private Date time(String asString) {
