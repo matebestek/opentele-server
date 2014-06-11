@@ -128,6 +128,12 @@ abstract class ThresholdPredicate implements MeasurementTypeNameVisitor {
         visitNumericMeasurement(patient.getThreshold(MeasurementTypeName.LUNG_FUNCTION))
     }
 
+    @Override
+    void visitContinuousBloodSugarMeasurement() {
+        // Not applicable to continuous blood sugar measurements
+        result = false
+    }
+
     private void visitNumericMeasurement(NumericThreshold threshold) {
         if (threshold == null) {
             result = false

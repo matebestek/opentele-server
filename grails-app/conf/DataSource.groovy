@@ -32,10 +32,9 @@ environments {
             password = ""
             driverClassName = "org.h2.Driver"
             dialect = "org.opentele.server.util.H2Dialect"
-//            dbCreate = "update" // one of 'create', 'create-drop', 'update', 'validate', ''
+            // dbCreate = "create-drop" // one of 'create', 'create-drop', 'update', 'validate', ''
             url = "jdbc:h2:devDb;MVCC=TRUE;IGNORECASE=TRUE"
-//            dbCreate = "create-drop" // one of 'create', 'create-drop', 'update', 'validate', ''
-//            url = "jdbc:h2:mem:devDb;MVCC=TRUE;IGNORECASE=TRUE"
+            // url = "jdbc:h2:mem:devDb;MVCC=TRUE;IGNORECASE=TRUE"
         }
     }
     test {

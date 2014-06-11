@@ -11,12 +11,11 @@ class ThresholdTagLib {
 
         def value = attrs.threshold."${propertyName}"
 
-        if(value) {
+        if (value != null && value != "") {
 
             if (value.getClass() == Float) {
                 value = String.format(locale, "%.1f", value)
             }
-
             out << value
         } else {
             out << '-'

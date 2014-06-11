@@ -16,6 +16,11 @@
         <param-value>@grails.project.key@</param-value>
     </context-param>
 
+    <!-- KIH -->
+    <session-config>
+        <session-timeout>@grails.session.timeout.default@</session-timeout>
+    </session-config>
+
     <filter>
         <filter-name>sitemesh</filter-name>
         <filter-class>org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter</filter-class>

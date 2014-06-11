@@ -1,6 +1,5 @@
 <%@ page import="org.opentele.server.model.Patient"%>
 <%@ page import="org.opentele.server.model.PatientGroup"%>
-<%@ page import="org.opentele.server.model.types.PatientState"%>
 <%@ page import="org.opentele.server.util.NumberFormatUtil"%>
 
 <script>

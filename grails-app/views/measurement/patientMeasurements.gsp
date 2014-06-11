@@ -109,7 +109,12 @@
                                             <g:if test="${measurement.conference()}">
                                                 <g:img file="conferenceshow.png" width="20" height="20"
                                                        style="vertical-align:middle" data-tooltip="${message(code: 'tooltip.measurement.isfromconference')}"
-                                                       />
+                                                />
+                                            </g:if>
+                                            <g:if test="${measurement.consultation()}">
+                                                <g:img file="consultationaddmeasurements.png" width="20" height="20"
+                                                       style="vertical-align:middle" data-tooltip="${message(code: 'tooltip.measurement.isfromconsultation')}"
+                                                />
                                             </g:if>
                                         </td>
                                         <td class="${measurement.alert() ? 'alert' : (measurement.warning() ? 'warning' : '')}">${measurement.value()}</td>

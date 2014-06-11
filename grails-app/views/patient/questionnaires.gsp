@@ -40,7 +40,7 @@
 			</div>
 		</g:if>
         <h1 class="fieldcontain">${title}</h1>
-        <g:if test="${questionnairesNumber > 0 && completedNumber > 0}">
+        <g:if test="${consultations > 0 || (questionnairesNumber > 0 && completedNumber > 0)}">
             <sec:ifAnyGranted roles="${PermissionName.PATIENT_PREFERENCES_WRITE}">
 
                 <!-- Time interval chooser -->

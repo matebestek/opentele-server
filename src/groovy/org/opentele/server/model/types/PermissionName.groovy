@@ -19,8 +19,10 @@ public class PermissionName {
     public static final String PATIENT_READ_ALL_IN_SYSTEM = 'ROLE_PATIENT_READ_ALL_IN_SYSTEM'
     public static final String PATIENT_WRITE = 'ROLE_PATIENT_WRITE'
     public static final String PATIENT_CREATE = 'ROLE_PATIENT_CREATE'
+    public static final String PATIENT_DISABLE_ALARM_IF_UNREAD_MESSAGES_TO_PATIENT = 'ROLE_PATIENT_DISABLE_ALARM_IF_UNREAD_MESSAGE_TO_PATIENT'
     public static final String PATIENT_REMOVE_BLUE_ALARMS = 'ROLE_PATIENT_REMOVE_BLUE_ALARMS'
     public static final String PATIENT_PREFERENCES_WRITE = 'ROLE_PATIENT_PREFERENCES_WRITE'
+    public static final String PATIENT_CONSULTATION = 'ROLE_CONSULTATION'
 
     public static final String NEXT_OF_KIN_READ = 'ROLE_NEXT_OF_KIN_READ'
     public static final String NEXT_OF_KIN_WRITE = 'ROLE_NEXT_OF_KIN_WRITE'
@@ -149,6 +151,7 @@ public class PermissionName {
     public static final String SCHEDULEWINDOW_READ_ALL = 'ROLE_SCHEDULEWINDOW_READ_ALL'
 
     public static final String CONFERENCE_READ = 'ROLE_CONFERENCE_READ'
+    public static final String CONSULTATION_READ = 'ROLE_CONSULTATION_READ'
 
     public static List<String> allValues() {
         PermissionName.fields.findAll { it.name.matches("\\p{Upper}+(_?|\\p{Upper})*") }.collect()*.get(PermissionName)

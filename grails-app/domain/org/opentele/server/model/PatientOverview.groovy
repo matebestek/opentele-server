@@ -2,7 +2,7 @@ package org.opentele.server.model
 
 import org.opentele.server.model.types.Severity
 
-class PatientOverview {
+class PatientOverview extends AbstractObject {
     Patient patient
 
     String name

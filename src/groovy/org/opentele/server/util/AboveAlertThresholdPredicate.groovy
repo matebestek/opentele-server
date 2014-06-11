@@ -54,4 +54,9 @@ class AboveAlertThresholdPredicate extends ThresholdPredicate {
     List<Float> low(BloodPressureThreshold threshold) {
         [threshold.systolicAlertLow, threshold.diastolicAlertLow]
     }
+
+    @Override
+    void visitUrineCombi() {
+        // TODO KM: Har ingen ide om hvad der skal stå her....
+    }
 }

@@ -24,7 +24,7 @@ class MeasurementBuilder {
         this
     }
 
-    MeasurementBuilder atTime(int year, int month, int day, int hour, int minute) {
+    MeasurementBuilder atTime(int year, int month, int day, int hour=0, int minute=0) {
         Calendar calendar = Calendar.getInstance()
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.MONTH, month)
@@ -93,6 +93,8 @@ class MeasurementBuilder {
                 return buildSimpleMeasurement(patient, measurementType)
             case MeasurementTypeName.BLOODSUGAR:
                 return buildBloodsugarMeasurement(patient, measurementType)
+            case MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT:
+                return buildContinuousBloodSugarMeasurement(patient, measurementType)
             default:
                 throw new RuntimeException('No measurement type name specified')
         }
@@ -132,6 +134,12 @@ class MeasurementBuilder {
 
     private Measurement buildBloodsugarMeasurement(patient, measurementType) {
         def result = Measurement.build(patient: patient, measurementType: measurementType, value: value, time: time, isBeforeMeal: isBeforeMeal, isAfterMeal: isAfterMeal)
+        result.save(failOnError: true)
+        result
+    }
+
+    private Measurement buildContinuousBloodSugarMeasurement(patient, measurementType) {
+        def result = Measurement.build(patient: patient, measurementType: measurementType, time: time)
         result.save(failOnError: true)
         result
     }

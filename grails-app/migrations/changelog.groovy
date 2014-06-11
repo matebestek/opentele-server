@@ -11,6 +11,7 @@ databaseChangeLog = {
     property name: "id.type", value:"bigint", dbms:"mssql"
     property name: "float.type", value:"float", dbms:"mssql"
     property name: "double.type", value:"double precision", dbms:"mssql"
+    property name: "long.type", value:"bigint", dbms:"mssql"
     property name: "integer.type", value:"int", dbms:"mssql"
     property name: "boolean.type", value:"bit", dbms:"mssql"
     property name: "datetime.type", value:"datetime2(7)", dbms:"mssql"
@@ -19,6 +20,7 @@ databaseChangeLog = {
     property name: "string255.type", value:"varchar(255)", dbms:"mssql"
     property name: "string2000.type", value:"varchar(2000)", dbms:"mssql"
     property name: "string2048.type", value:"varchar(2048)", dbms:"mssql"
+    property name: "string4000.type", value:"nvarchar(4000)", dbms:"mssql"
     property name: "text.type", value:"varchar(max)", dbms:"mssql"
     property name: "blob.type", value:"varbinary(max)", dbms:"mssql"
     property name: "now", value:"getdate()", dbms:"mssql"
@@ -33,6 +35,7 @@ databaseChangeLog = {
     property name: "id.type", value:"bigint", dbms:"mysql"
     property name: "float.type", value:"float", dbms:"mysql"
     property name: "double.type", value:"double precision", dbms:"mysql"
+    property name: "long.type", value:"bigint", dbms:"mysql"
     property name: "integer.type", value:"integer", dbms:"mysql"
     property name: "boolean.type", value:"bit", dbms:"mysql"
     property name: "datetime.type", value:"datetime", dbms:"mysql"
@@ -41,6 +44,7 @@ databaseChangeLog = {
     property name: "string255.type", value:"varchar(255)", dbms:"mysql"
     property name: "string2000.type", value:"varchar(2000)", dbms:"mysql"
     property name: "string2048.type", value:"varchar(2048)", dbms:"mysql"
+    property name: "string4000.type", value:"varchar(4000)", dbms:"mysql"
     property name: "text.type", value:"longtext", dbms:"mysql"
     property name: "blob.type", value:"blob", dbms:"mysql"
     property name: "now", value:"now()", dbms:"mysql"
@@ -51,6 +55,7 @@ databaseChangeLog = {
     property name: "id.type", value:"bigint", dbms:"h2"
     property name: "float.type", value:"float", dbms:"h2"
     property name: "double.type", value:"double precision", dbms:"h2"
+    property name: "long.type", value:"bigint", dbms:"h2"
     property name: "integer.type", value:"integer", dbms:"h2"
     property name: "boolean.type", value:"bit", dbms:"h2"
     property name: "datetime.type", value:"datetime", dbms:"h2"
@@ -59,6 +64,7 @@ databaseChangeLog = {
     property name: "string255.type", value:"varchar(255)", dbms:"h2"
     property name: "string2000.type", value:"varchar(2000)", dbms:"h2"
     property name: "string2048.type", value:"varchar(2048)", dbms:"h2"
+    property name: "string4000.type", value:"varchar(4000)", dbms:"h2"
     property name: "text.type", value:"clob", dbms:"h2"
     property name: "blob.type", value:"blob", dbms:"h2"
     property name: "now", value:"CURRENT_TIMESTAMP()", dbms:"h2"
@@ -92,5 +98,12 @@ databaseChangeLog = {
     include file: '1_16_0_update.groovy'
 
     include file: '1_18_0_update.groovy'
+
+    include file: '1_19_0_update.groovy'
+
+    include file: '1_20_0_update.groovy'
+
+    include file: '1_21_0_update.groovy'
+    include file: '1_22_0_update.groovy'
 }
 

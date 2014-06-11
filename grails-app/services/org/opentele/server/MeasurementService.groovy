@@ -38,6 +38,8 @@ class TableMeasurement {
     def shouldBeExportedToKih() { measurement.shouldBeExportedToKih() }
 
     def conference() { measurement.conference }
+
+    def consultation() { measurement.consultation }
 }
 
 class TickY {
@@ -147,7 +149,7 @@ class MeasurementService {
         def graphData = []
 
         MeasurementType.list().each { type ->
-            processMeasurements(patient, timeFilter, type) {List<Measurement> measurementsOfType ->
+            processMeasurements(patient, timeFilter, type) { List<Measurement> measurementsOfType ->
                 addGraphData(patient, type, timeFilter, measurementsOfType, graphData)
             }
         }
@@ -167,7 +169,6 @@ class MeasurementService {
         adjustStartAndEndTimes(graphData)
 
         graphData.find { it.type == measurementTypeName }
-
     }
 
     private MeasurementType resolveMeasurementType(String type) {
@@ -203,13 +204,17 @@ class MeasurementService {
     }
 
     private void addGraphData(Patient patient, MeasurementType type, TimeFilter timeFilter, List<Measurement> measurementsOfType, List graphDataList) {
-        if (type.name in MeasurementTypeName.TABLE_CAPABLE_MEASUREMENT_TYPE_NAME) {
-            def validMeasurements = measurementsOfType.findAll { !it.isIgnored() }
-            if (!validMeasurements) {
-                return
-            }
+        if(!(type.name in MeasurementTypeName.TABLE_CAPABLE_MEASUREMENT_TYPE_NAME)) {
+            return
+        }
 
-            if (type.name == MeasurementTypeName.BLOOD_PRESSURE) {
+        def validMeasurements = measurementsOfType.findAll { !it.isIgnored() }
+        if (!validMeasurements) {
+            return
+        }
+
+        switch (type.name) {
+            case MeasurementTypeName.BLOOD_PRESSURE:
                 def heartRateGraphData = dataForGraph(patient, timeFilter, MeasurementTypeName.PULSE.toString())
 
                 graphDataList << createBloodPressureGraphData(validMeasurements, timeFilter, heartRateGraphData)
@@ -217,13 +222,22 @@ class MeasurementService {
                     graphDataList << createSystolicGraphData(patient, validMeasurements, timeFilter)
                     graphDataList << createDiastolicGraphData(patient, validMeasurements, timeFilter)
                 }
-            } else if(type.name == MeasurementTypeName.BLOODSUGAR) {
+                return
+            case MeasurementTypeName.BLOODSUGAR:
                 graphDataList << createBloodsugarGraphData(patient, validMeasurements, timeFilter)
-            }
-            else {
+                return
+            case MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT:
+                graphDataList << createContinuousBloodGlucoseGraphData(patient, validMeasurements, timeFilter)
+                return
+            default:
                 graphDataList << createGraphData(patient, type.name, validMeasurements, timeFilter)
-            }
+                return
+
         }
+    }
+
+    def lastContinuousBloodSugarRecordNumberForPatient(Patient patient) {
+        return ContinuousBloodSugarMeasurement.executeQuery("select MAX(continuousBloodSugarMeasurement.recordNumber) from ContinuousBloodSugarMeasurement continuousBloodSugarMeasurement where continuousBloodSugarMeasurement.measurement.patient = ?", patient);
     }
 
     private void addTableData(MeasurementType type, List<Measurement> measurementsOfType, List tableDataList) {
@@ -374,6 +388,27 @@ class MeasurementService {
                 series: series)
     }
 
+    private def createContinuousBloodGlucoseGraphData(Patient patient, List<Measurement> measurements, TimeFilter timeFilter) {
+        def series = continuousBloodGlucoseGraphSeries(measurements, timeFilter)
+        def (alertValues, warningValues) = [[], []]
+        def (double minY, double maxY) = calculateMinAndMaxY(series, alertValues, warningValues)
+        def cgmMeasurements = measurements*.continuousBloodPressureMeasurements.flatten()
+        def timestamps = cgmMeasurements.collect { it.time }
+        def (start, end) = calculateStartAndEndFromDates(timestamps, timeFilter)
+
+        def ticksY = YAxisTickCalculator.calculate(MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT, minY, maxY)
+        (minY, maxY) = [ticksY.first().value, ticksY.last().value]
+
+        //noinspection GroovyAssignabilityCheck
+        new GraphData(type: MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT.toString(),
+                alertValues: [], warningValues: [],
+                start: start, end: end,
+                minY: minY, maxY: maxY,
+                ticksY: ticksY,
+                ids: null,
+                series: series)
+    }
+
     private def createBloodsugarGraphData(Patient patient, List<Measurement> measurements, TimeFilter timeFilter) {
         def beforeMealMeasurements = measurements.findAll {it.isBeforeMeal}
         def beforeMealSeries = generalGraphSeries(beforeMealMeasurements).first()
@@ -449,7 +484,14 @@ class MeasurementService {
         if (type.name == MeasurementTypeName.CTG) {
             Measurement.findAllByPatientAndMeasurementType(patient, type, [sort: "time", order: "desc", max: 1])
         } else if (timeFilter.isLimited) {
-            Measurement.findAllByPatientAndMeasurementTypeAndTimeBetween(patient, type, timeFilter.start, timeFilter.end, [sort: "time"])
+            if(type.name == MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT) {
+                def measurements = Measurement.findAllByPatientAndMeasurementType(patient, type, [sort: "time", order: "desc"])
+                def cgmMeasurements = ContinuousBloodSugarMeasurement.findAllByMeasurementInListAndTimeBetween(measurements, timeFilter.start, timeFilter.end, [sort: "time", order: "desc"])
+
+                cgmMeasurements*.measurement.unique() //The list of measurement holding ContinuousBloodSugarMeasurement that fall within the timefilter period
+            } else {
+                Measurement.findAllByPatientAndMeasurementTypeAndTimeBetween(patient, type, timeFilter.start, timeFilter.end, [sort: "time"])
+            }
         } else {
             Measurement.findAllByPatientAndMeasurementType(patient, type, [sort: "time"])
         }
@@ -507,6 +549,20 @@ class MeasurementService {
         [series]
     }
 
+    private def continuousBloodGlucoseGraphSeries(List<Measurement> measurements, TimeFilter timeFilter) {
+        def series = []
+        measurements.each { measurement ->
+            measurement.continuousBloodPressureMeasurements.each { cgmDataPoint ->
+                if(timeFilter.isLimited && (cgmDataPoint.time.before(timeFilter.start)|| cgmDataPoint.time.after(timeFilter.end))) {
+                    return  // The datapoint falls outside the time filter period
+                }
+                series << [cgmDataPoint.time.time, cgmDataPoint.value, hourAndMinute(cgmDataPoint.time), note(measurement), "${cgmDataPoint.value}"]
+            };
+        }
+
+        [series]
+    }
+
     private def hourAndMinute(time) {
         "'${hourAndMinuteDateFormatter.get().format(time)}'"
     }
@@ -524,11 +580,14 @@ class MeasurementService {
     }
 
     private def calculateStartAndEnd(List<Measurement> measurements, TimeFilter timeFilter) {
+        def timestamps = measurements.collect { it.time }
+        calculateStartAndEndFromDates(timestamps, timeFilter)
+    }
+
+    private def calculateStartAndEndFromDates(List<Date> timestamps, TimeFilter timeFilter) {
         if (timeFilter.isLimited) {
             [timeFilter.start.getTime(), timeFilter.end.getTime()]
         } else {
-            def timestamps = measurements.collect { it.time }
-
             Calendar startTime = Calendar.getInstance()
             startTime.setTime(timestamps.min())
             setToMidnightBefore(startTime)

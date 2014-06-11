@@ -184,6 +184,16 @@
                 </li>
 			</g:if>
 
+            <li class="fieldcontain">
+                <span id="noAlarmIfUnreadMessagesToPatient.label" class="property-label">
+                    <g:message code="patient.noAlarmIfUnreadMessagesToPatient.label"/>
+                </span>
+
+                <span class="property-value" aria-labelledby="patientGroup.noAlarmIfUnreadMessagesToPatient.label">
+                    <g:checkBox name="noAlarmIfUnreadMessagesToPatient" value="${patientInstance?.noAlarmIfUnreadMessagesToPatient}" disabled="true" />
+                </span>
+            </li>
+
 			<g:if test="${nextOfKin.size() > 0}">
 				<li class="fieldcontain">
                     <span id="nextOfKin-label" class="property-label">

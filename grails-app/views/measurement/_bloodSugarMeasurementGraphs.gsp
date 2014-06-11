@@ -26,12 +26,7 @@
 
             newDate.setYear(2014);
             newDate.setMonth(0);
-            if(newDate.getHours() < 8) {
-                newDate.setDate(2);
-            } else {
-                newDate.setDate(1);
-            }
-
+            newDate.setDate(1);
             return newDate;
         };
 
@@ -102,31 +97,32 @@
             showLegend: true,
 
             formatStringX: '${message(code:"graph.label.x.format.BLOODSUGAR_AVERAGE_DAY")}',
-            ticksX: [new Date("Jan 01, 2014 07:59:00"),
-                new Date("Jan 01, 2014 09:00:00"),
-                new Date("Jan 01, 2014 10:00:00"),
-                new Date("Jan 01, 2014 11:00:00"),
-                new Date("Jan 01, 2014 12:00:00"),
-                new Date("Jan 01, 2014 13:00:00"),
-                new Date("Jan 01, 2014 14:00:00"),
-                new Date("Jan 01, 2014 15:00:00"),
-                new Date("Jan 01, 2014 16:00:00"),
-                new Date("Jan 01, 2014 17:00:00"),
-                new Date("Jan 01, 2014 18:00:00"),
-                new Date("Jan 01, 2014 19:00:00"),
-                new Date("Jan 01, 2014 20:00:00"),
-                new Date("Jan 01, 2014 21:00:00"),
-                new Date("Jan 01, 2014 22:00:00"),
-                new Date("Jan 01, 2014 23:00:00"),
-                new Date("Jan 02, 2014 00:00:00"),
-                new Date("Jan 02, 2014 01:00:00"),
-                new Date("Jan 02, 2014 02:00:00"),
-                new Date("Jan 02, 2014 03:00:00"),
-                new Date("Jan 02, 2014 04:00:00"),
-                new Date("Jan 02, 2014 05:00:00"),
-                new Date("Jan 02, 2014 06:00:00"),
-                new Date("Jan 02, 2014 07:00:00"),
-                new Date("Jan 02, 2014 08:00:00")],
+            ticksX: [new Date("Jan 01, 2014 00:00:00"),
+            new Date("Jan 01, 2014 01:00:00"),
+            new Date("Jan 01, 2014 02:00:00"),
+            new Date("Jan 01, 2014 03:00:00"),
+            new Date("Jan 01, 2014 03:00:00"),
+            new Date("Jan 01, 2014 04:00:00"),
+            new Date("Jan 01, 2014 05:00:00"),
+            new Date("Jan 01, 2014 06:00:00"),
+            new Date("Jan 01, 2014 07:00:00"),
+            new Date("Jan 01, 2014 08:00:00"),
+            new Date("Jan 01, 2014 09:00:00"),
+            new Date("Jan 01, 2014 10:00:00"),
+            new Date("Jan 01, 2014 11:00:00"),
+            new Date("Jan 01, 2014 12:00:00"),
+            new Date("Jan 01, 2014 13:00:00"),
+            new Date("Jan 01, 2014 14:00:00"),
+            new Date("Jan 01, 2014 15:00:00"),
+            new Date("Jan 01, 2014 16:00:00"),
+            new Date("Jan 01, 2014 17:00:00"),
+            new Date("Jan 01, 2014 18:00:00"),
+            new Date("Jan 01, 2014 19:00:00"),
+            new Date("Jan 01, 2014 20:00:00"),
+            new Date("Jan 01, 2014 21:00:00"),
+            new Date("Jan 01, 2014 22:00:00"),
+            new Date("Jan 01, 2014 23:00:00"),
+            new Date("Jan 01, 2014 23:59:59")],
 
 
             minimumY: ${measurement.minY},
@@ -147,7 +143,4 @@
             highlighterFormatString: '<table class="jqplot-highlighter-tooltip"><tr><td>%3$s, %5$s</td></tr><tr><td>${message(code:'patient.acknowledge.note')}:</td></tr><tr><td nowrap="wrap" style="width:160px;">%4$s</td></tr></table>'
         });
     </script>
-
-
-    <!--  -->
 </g:if>

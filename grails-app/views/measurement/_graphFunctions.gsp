@@ -25,8 +25,15 @@
             var maximumY = options['maximumY'];
             var labelY = options['labelY'];
             var ticksY = options['ticksY'];
-            var alarmValues = options['alarmValues'];
-            var warningValues = options['warningValues'];
+
+            <g:if test="${request.showThresholds}">
+                var alarmValues = options['alarmValues'];
+                var warningValues = options['warningValues'];
+            </g:if>
+            <g:else>
+                var alarmValues = [];
+                var warningValues = [];
+            </g:else>
 
             var seriesColors = options['seriesColors'];
             var highlighterFormatString = options['highlighterFormatString'];
@@ -36,19 +43,24 @@
 
             var container = $('#' + containerId);
             var showLegend = options['showLegend'];
-
-            container.bind('jqplotDataClick', singleClickFunction);
-            if (doubleClickFunction) {
-                container.bind('jqplotDblClick', doubleClickFunction);
-            }
-
-            if(!highlighterFormatString) {
-                highlighterFormatString = '<table class="jqplot-highlighter-tooltip"><tr><td>%1$s %3$s, %5$s</td></tr><tr><td>${message(code:'patient.acknowledge.note')}:</td></tr><tr><td nowrap="wrap" style="width:160px;">%4$s</td></tr></table>';
-            }
+            <g:if test="${request.showThresholds}">
+                container.bind('jqplotDataClick', singleClickFunction);
+                if (doubleClickFunction) {
+                    container.bind('jqplotDblClick', doubleClickFunction);
+                }
+            </g:if>
+            <g:if test="${request.showThresholds}">
+                if(!highlighterFormatString) {
+                    highlighterFormatString = '<table class="jqplot-highlighter-tooltip"><tr><td>%1$s %3$s, %5$s</td></tr><tr><td>${message(code:'patient.acknowledge.note')}:</td></tr><tr><td nowrap="wrap" style="width:160px;">%4$s</td></tr></table>';
+                }
+            </g:if>
+            <g:else>
+                highlighterFormatString = '<div>%5$s</div>';
+            </g:else>
 
             var seriesConfig;
 
-            if(seriesColors) {
+            if (seriesColors) {
                 seriesConfig = [];
                 for(var i = 0; i < seriesColors.length; i++) {
                     seriesConfig[i] = {
@@ -58,9 +70,13 @@
                     }
                 }
 
-                seriesConfig[0].label = "Før måltid";
-                seriesConfig[1].label = "Efter måltid";
-                seriesConfig[2].label = "Ukendt";
+                seriesConfig[0].label = "${message(code: 'patient.overview.bloodsugar.beforemeal')}";
+                if (seriesColors.length > 1) {
+                    seriesConfig[1].label = "${message(code: 'patient.overview.bloodsugar.aftermeal')}";
+                }
+                if (seriesColors.length > 2) {
+                    seriesConfig[2].label = "${message(code: 'patient.overview.bloodsugar.unknown')}";
+                }
             } else {
                 seriesConfig = [{},{}, { // Third series is for heart rate (pulse) in blood pressure graph
                     showLine: false,
@@ -140,7 +156,6 @@
                     drawLine('yellow', warningValues[i]);
                 }
             }
-
             // A bit hacky... if the div for the graph has style "display:none" when the graph is defined, JQPlot
             // does not plot the diagram. When the diagram is later shown, the code showing the graph must then
             // "trigger" the 'visibilityChanged' event to allow us to replot the graph.

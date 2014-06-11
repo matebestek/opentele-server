@@ -58,7 +58,9 @@ class EditorQuestionnaireBuilder {
 
                     if(it.measurementSkipped == "true") {
                         source.nextFail = target
+                        source.nextFailSeverity = getSeverity(it)
                     } else {
+                        source.defaultSeverity = getSeverity(it)
                         source.defaultNext = target
                     }
 
@@ -74,7 +76,7 @@ class EditorQuestionnaireBuilder {
     }
 
     private Severity getSeverity(connection) {
-        if (connection.severity.isEmpty()) {
+        if (connection.severity == null || connection.severity.isEmpty()) {
             return null
         } else {
             return connection.severity

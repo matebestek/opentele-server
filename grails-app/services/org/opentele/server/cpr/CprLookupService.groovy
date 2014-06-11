@@ -9,7 +9,9 @@ import org.opentele.server.cpr.stamdatalookup.generated.PersonLookupRequestType
 import org.opentele.server.model.types.Sex
 import org.opentele.server.util.SosiUtil
 import org.w3c.dom.Document
+import org.w3c.dom.Element
 import wslite.soap.SOAPClient
+import wslite.soap.SOAPResponse
 
 import javax.xml.bind.JAXBContext
 import javax.xml.bind.Marshaller
@@ -18,7 +20,6 @@ import javax.xml.parsers.DocumentBuilderFactory
 import wslite.soap.SOAPFaultException
 
 class CprLookupService {
-
     def grailsApplication
 
     /**
@@ -30,32 +31,19 @@ class CprLookupService {
         String cprUrl = grailsApplication.config.cpr.service.url
 
         SosiUtil sosiUtil = new SosiUtil(grailsApplication.config)
-        ObjectFactory objectFactory = new ObjectFactory()
-
         SOSIFactory sosiFactory = sosiUtil.getFactory()
 
         def soapClient = new SOAPClient(cprUrl)
-
-        PersonLookupRequestType requestMsg = objectFactory.createPersonLookupRequestType()
-        requestMsg.civilRegistrationNumberPersonQuery = cpr
-
         Request sosiRequest = sosiFactory.createNewRequest(false, "flow")
 
-        String soapRequest = generateRequest(requestMsg, sosiRequest, sosiUtil)
+        String soapRequest = generateRequest(cpr, sosiRequest, sosiUtil)
         CPRPerson person = new CPRPerson()
         if (soapRequest) {
             try {
                 log.debug "Calling CPR service"
                 def response = soapClient.send(soapRequest)
-                person = new CPRPerson()
-                handleSimpleCprPerson(response?.PersonLookupResponse?.PersonInformationStructure?.RegularCPRPerson?.SimpleCPRPerson,person)
-                String sexCode = response.PersonLookupResponse?.PersonInformationStructure?.RegularCPRPerson?.PersonGenderCode?.text()
-                handleAddressStructure(response?.PersonLookupResponse?.PersonInformationStructure?.PersonAddressStructure,person)
 
-                if (sexCode.equalsIgnoreCase("female")) { person.sex = Sex.FEMALE}
-                if (sexCode.equalsIgnoreCase("male")) { person.sex = Sex.MALE}
-                person.hasErrors = false
-
+                parseResponse(response, person)
             } catch (SOAPFaultException e) {
                 person.hasErrors = true
                 person.errorMessage = e.message
@@ -71,6 +59,59 @@ class CprLookupService {
         }
 
         return person
+    }
+
+    /**
+     * Handle the pain of adding the CXF request into the Sosi Request.
+     * @param cpr The CPR number.
+     * @param sosiRequest The SOSI request
+     * @param sosiUtil SosiUtil for handling interaction with SEAL
+     * @return The string representing the request
+     */
+    private String generateRequest(String cpr, Request sosiRequest, SosiUtil sosiUtil) {
+        IDCard signedIdCard = sosiUtil.getSignedIDCard()
+
+        if (signedIdCard) {
+            sosiRequest.setIDCard(signedIdCard)
+            sosiRequest.body = generateRequestBody(cpr)
+            return XmlUtil.node2String(sosiRequest.serialize2DOMDocument(), false, true)
+        }
+
+        return null
+    }
+
+    Element generateRequestBody(String cpr) {
+        ObjectFactory objectFactory = new ObjectFactory()
+        PersonLookupRequestType msg = objectFactory.createPersonLookupRequestType()
+        msg.civilRegistrationNumberPersonQuery = cpr
+
+        //Create Marshaller
+        JAXBContext context = JAXBContext.newInstance(PersonLookupRequestType.class);
+        Marshaller marshaller = context.createMarshaller();
+        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+        //Create document
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.newDocument();
+
+        // Stringify document
+        marshaller.marshal(msg, doc)
+
+        doc.getDocumentElement()
+    }
+
+    void parseResponse(def response, CPRPerson person) {
+        handleSimpleCprPerson(response?.PersonLookupResponse?.PersonInformationStructure?.RegularCPRPerson?.SimpleCPRPerson, person)
+        handleAddressStructure(response?.PersonLookupResponse?.PersonInformationStructure?.PersonAddressStructure, person)
+
+        String sexCode = response.PersonLookupResponse?.PersonInformationStructure?.RegularCPRPerson?.PersonGenderCode?.text()
+        if (sexCode.equalsIgnoreCase("female")) {
+            person.sex = Sex.FEMALE
+        } else if (sexCode.equalsIgnoreCase("male")) {
+            person.sex = Sex.MALE
+        }
     }
 
     private CPRPerson handleAddressStructure(def xml, CPRPerson person) {
@@ -98,42 +139,5 @@ class CprLookupService {
         person.civilRegistrationNumber = (cpr.size() > 0? cpr : null)
 
         return person
-    }
-
-
-    /**
-     * Handle the pain of adding the CXF request into the Sosi Request.
-     * @param msg The CXF request.
-     * @param request The SOSI request
-     * @param util SosiUtil for handling interaction with SEAL
-     * @return The string representing the request
-     */
-    private String generateRequest(PersonLookupRequestType msg, Request request, SosiUtil util) {
-        String retVal
-        IDCard signedIdCard = util.getSignedIDCard()
-
-        if (signedIdCard) {
-            //Create Marshaller
-            JAXBContext context = JAXBContext.newInstance(PersonLookupRequestType.class);
-            Marshaller marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-
-            //Create document
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.newDocument();
-
-            // Stringify document
-            marshaller.marshal(msg, doc)
-
-            request.setIDCard(signedIdCard)
-            request.body = doc.getDocumentElement()
-            retVal = XmlUtil.node2String(request.serialize2DOMDocument(), false, true)
-        } else {
-            retVal = null
-        }
-
-        return retVal
     }
 }

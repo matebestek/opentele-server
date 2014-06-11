@@ -54,18 +54,21 @@ class User extends AbstractObject {
 	}
 
 	def beforeInsert() {
+
+        def createdDate =  new Date()
+
+        this.createdDate = createdDate
+        this.createdBy = SecurityContextHolder.context.authentication?.name ?: "Unknown"
+        this.modifiedDate = createdDate
         this.modifiedBy = SecurityContextHolder.context.authentication?.name ?: "Unknown"
-        this.modifiedDate = new Date()
 
 		encodePassword()
 	}
 
 	def beforeUpdate() {
-        Date now = new Date()
-        this.createdDate = now
-        this.createdBy = SecurityContextHolder.context.authentication?.name ?: "Unknown"
-        this.modifiedBy = createdBy
-        this.modifiedDate = now
+
+        this.modifiedBy = SecurityContextHolder.context.authentication?.name ?: "Unknown"
+        this.modifiedDate = new Date()
 
         if (!password || password.empty) {
             return; //Don't encode empty passwords. They will cause the constraint password: 'blank:false' not to fail

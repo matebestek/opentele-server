@@ -2,7 +2,7 @@
 <%-- functionality needed by this file.                                                                     --%>
 
 <%@ page import="grails.converters.JSON; org.opentele.server.model.NumericThreshold; org.opentele.server.model.types.MeasurementTypeName" %>
-<g:if test="${measurement.type != MeasurementTypeName.BLOODSUGAR.name()}">
+<g:if test="${measurement.type != MeasurementTypeName.BLOODSUGAR.name() && measurement.type != MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT.name()}">
     <script type="text/javascript">
         window.drawGraph({
             containerId: '${measurement.type}-${patient.id}',

@@ -759,7 +759,7 @@ function addMeasurementNode(model) {
     addNode(node, true, false, true);
 }
 function addStartNode(model) {
-    var node = baseNodeBuilder('circle-blank', ' Start', 'start', true, null);
+    var node = baseNodeBuilder('circle-blank', i18n.startNodeName, 'start', true, null);
     if (!model) {
         model = {type: 'start', id: $(node).attr('id')};
         addNodeToModel(model);
@@ -771,7 +771,7 @@ function addStartNode(model) {
     $('#menu_add_node_start').addClass('disabled-link').unbind('click');
 }
 function addEndNode(model) {
-    var node = baseNodeBuilder('circle', ' Slut', 'end', true, model);
+    var node = baseNodeBuilder('circle', i18n.endNodeName, 'end', true, model);
     if (!model) {
         model = {type: 'end', id: $(node).attr('id')};
         addNodeToModel(model);

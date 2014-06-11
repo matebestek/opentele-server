@@ -43,9 +43,9 @@
                     </sec:ifAnyGranted>
                 </fieldset>
             </g:form>
-			<div class="pagination">
-				<g:paginate total="${passiveIntervalInstanceTotal}" />
-			</div>
+            <div class="pagination">
+                <g:paginate total="${passiveIntervalInstanceTotal}" id="${patient.id}" />
+            </div>
 		</div>
 	</body>
 </html>

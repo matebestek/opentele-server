@@ -11,6 +11,7 @@ import org.opentele.server.model.types.PermissionName
 class PatientOverviewController {
     def sessionService
     def patientService
+    def patientNoteService
     def completedQuestionnaireService
     def questionnaireService
     def messageService
@@ -28,19 +29,18 @@ class PatientOverviewController {
             session[Constants.SESSION_PATIENT_GROUP_ID] = params.long('patientgroup.filter.id')
         }
 
-        List<PatientOverview> patients = fetchPatients(clinician)
-        Set<Long> idsOfPatientsWithMessaging = patientOverviewService.getIdsOfPatientsWithMessagingEnabled(clinician, patients)
-        Map<Long, List<PatientNote>> patientNotes = patientOverviewService.fetchUnseenNotesForPatients(clinician, patients)
+        List<PatientOverview> patientOverviews = fetchPatientOverviews(clinician)
+        Set<Long> idsOfPatientsWithMessaging = patientOverviewService.getIdsOfPatientsWithMessagingEnabled(clinician, patientOverviews)
+        Set<Long> idsOfPatientsWithAlarmIfUnreadMessagesDisabled = patientOverviewService.getIdsOfPatientsWithAlarmIfUnreadMessagesDisabled(clinician, patientOverviews)
+        Map<Long, List<PatientNote>> patientNotes = patientOverviewService.fetchUnseenNotesForPatients(clinician, patientOverviews)
 
-        //Sort patient list by severity
-        patients.sort { a, b ->
-            b.questionnaireSeverity <=> a.questionnaireSeverity
-        }
+        sortPatientOverviews(patientOverviews, patientNotes)
 
         [
-            patients: patients,
+            patients: patientOverviews,
             patientNotes: patientNotes,
             idsOfPatientsWithMessaging: idsOfPatientsWithMessaging,
+            idsOfPatientsWithAlarmIfUnreadMessagesDisabled: idsOfPatientsWithAlarmIfUnreadMessagesDisabled,
             questionPreferences: questionPreferencesForClinician(clinician),
             clinicianPatientGroups: clinicianService.patientGroupsForCurrentClinician
         ]
@@ -122,7 +122,7 @@ class PatientOverviewController {
     @Secured(PermissionName.QUESTIONNAIRE_ACKNOWLEDGE)
     def acknowledgeAllForAll(boolean withAutoMessage) {
         Clinician clinician = clinicianService.currentClinician
-        List<PatientOverview> patients = fetchPatients(clinician)
+        List<PatientOverview> patients = fetchPatientOverviews(clinician)
 
         List<Long> unacknowledgedGreenQuestionnaireIds = []
         patients.findAll {
@@ -152,11 +152,52 @@ class PatientOverviewController {
         }
     }
 
-    private List<PatientOverview> fetchPatients(Clinician clinician) {
+    private List<PatientOverview> fetchPatientOverviews(Clinician clinician) {
         PatientGroup patientGroupFilter = session[Constants.SESSION_PATIENT_GROUP_ID] ? PatientGroup.get(session[Constants.SESSION_PATIENT_GROUP_ID]) : null
 
         patientGroupFilter == null ?
             patientOverviewService.getPatientsForClinicianOverview(clinician) :
             patientOverviewService.getPatientsForClinicianOverviewInPatientGroup(clinician, patientGroupFilter)
     }
+
+    private void sortPatientOverviews(List<PatientOverview> patientOverviews, Map<Long, List<PatientNote>> patientNotes) {
+        //Sort patient list by severity
+
+        patientOverviews.sort { a, b ->
+
+            def result = b.questionnaireSeverity <=> a.questionnaireSeverity
+
+            if (result == 0) {
+                result = b.numberOfUnreadMessagesFromPatient <=> a.numberOfUnreadMessagesFromPatient
+
+                if (result == 0) {
+                    result = b.numberOfUnreadMessagesToPatient <=> a.numberOfUnreadMessagesToPatient
+
+                    if (result == 0) {
+                        result = patientNoteService.countImportantWithReminder(patientNotes[b.id]) <=> patientNoteService.countImportantWithReminder(patientNotes[a.id])
+
+                        if (result == 0) {
+
+                            result = patientNoteService.countNormalWithReminder(patientNotes[b.id]) <=> patientNoteService.countNormalWithReminder(patientNotes[a.id])
+                            if (result == 0) {
+
+                                result = patientNoteService.countImportantWithoutDeadline(patientNotes[b.id]) <=> patientNoteService.countImportantWithoutDeadline(patientNotes[a.id])
+                                if (result == 0) {
+
+                                    result = patientNotes[b.id].size() <=> patientNotes[a.id].size()
+                                    if (result == 0) {
+                                        result = a.name <=> b.name
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            result
+        }
+    }
 }
+
+
+

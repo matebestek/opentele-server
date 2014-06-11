@@ -87,7 +87,7 @@ grails.project.dependency.resolution = {
         runtime ":hibernate:$grailsVersion"
         runtime ":jquery:1.7.1"
         runtime ":resources:1.1.5"
-        runtime ":kih-auditlog:0.36" // Our very own audit log plugin
+        runtime ":kih-auditlog:0.37"
         compile ":webflow:2.0.0"
         runtime ":database-migration:1.3.1"
         compile ":quartz:1.0-RC2"

@@ -1,6 +1,7 @@
 package org.opentele.server.questionnaire
 
 import org.hibernate.Criteria
+import org.hibernate.criterion.CriteriaSpecification
 import org.hibernate.criterion.Projections
 import org.hibernate.criterion.Restrictions
 import org.hibernate.criterion.Order
@@ -22,6 +23,7 @@ class QuestionnaireService {
     def sessionFactory
     def questionnaireNodeService
     def grailsApplication
+    def i18nService
 
     /**
      *
@@ -94,6 +96,9 @@ class QuestionnaireService {
                     pqn.monicaMeasuringTimeInputVar = qn.monicaMeasuringTimeInputVar
                     pqn.mapToInputFields = qn.mapToInputFields
                     pqn.meterType = qn.meterType
+
+                    pqn.defaultSeverity = qn.defaultSeverity
+                    pqn.nextFailSeverity = qn.nextFailSeverity
 
                 } else {
                     log.warn("Unknown node type encountered 1..${qn}")
@@ -189,10 +194,78 @@ class QuestionnaireService {
             completedQuestionnaireResultModel.questions.addAll(0, conferenceResultModel.questions)
             completedQuestionnaireResultModel.results.putAll(conferenceResultModel.results)
 
+            def consultationResultModel = extractConsultationResults(patientID, timeFilter)
+            completedQuestionnaireResultModel.columnHeaders.addAll(consultationResultModel.columnHeaders)
+            completedQuestionnaireResultModel.questions.addAll(0, consultationResultModel.questions)
+            completedQuestionnaireResultModel.results.putAll(consultationResultModel.results)
         }
 
         completedQuestionnaireResultModel.columnHeaders.sort({a, b -> b.uploadDate <=> a.uploadDate} as Comparator)
         return completedQuestionnaireResultModel
+    }
+
+    def extractConsultationResults(Long patientID, TimeFilter timeFilter = null) {
+        ResultTableViewModel result = new ResultTableViewModel()
+        def patient = Patient.findById(patientID)
+
+        def completedConsultations
+        if (timeFilter && timeFilter.isLimited) {
+            // Filter created date
+            completedConsultations = Consultation.findAllByPatientAndCreatedDateBetween(patient, timeFilter.start, timeFilter.end)
+        } else {
+            completedConsultations = Consultation.findAllByPatient(patient)
+        }
+
+        result.columnHeaders = completedConsultations.collect {
+            new OverviewColumnHeader(type: MeasurementParentType.CONSULTATION, uploadDate: it.createdDate, id: it.id)
+        }
+
+        List<Measurement> measurements = (completedConsultations*.measurements).flatten()
+
+        def types = [:]
+        measurements.each {
+            types[it.measurementType.name] = it.unit
+        }
+
+        result.questions = types.keySet().collect { typeName ->
+
+            MeasurementDescription md = new MeasurementDescription(type: MeasurementParentType.CONSULTATION)
+            md.measurementTypeNames = new HashSet<MeasurementTypeName>()
+            md.measurementTypeNames.add(typeName)
+
+            md.units = new HashSet<Unit>()
+            md.units.add(types[typeName])
+            md
+        }
+
+        result.results = [:]
+        measurements.each { measurement ->
+            //Severity, ignored, ignoredReason, ignoredBy left out
+            //exported, cqId, tqnId, pqnId not relevant for this type
+            def value
+            switch (measurement.measurementType.name) {
+                case MeasurementTypeName.URINE:
+                    value = "${measurement.protein}"
+                    break
+                case MeasurementTypeName.URINE_GLUCOSE:
+                    value = "${measurement.glucoseInUrine}"
+                    break
+
+                case MeasurementTypeName.BLOOD_PRESSURE:
+                    value = "${measurement.systolic},${measurement.diastolic}"
+                    break
+                default:
+                    value = measurement.value
+                    break;
+            }
+            def key = new ResultKey(rowId: "cons-${measurement.measurementType.name}", colId: "cons-${measurement.consultation.id}")
+            if(!result.results.containsKey(key)) {
+                result.results[key] = []
+            }
+            result.results[key] << new MeasurementResult(type: measurement.measurementType.name, unit: measurement.unit, value: value, id: measurement.id)
+        }
+
+        result
     }
 
     def extractConferenceResults(Long patientID, TimeFilter timeFilter = null) {
@@ -367,34 +440,35 @@ class QuestionnaireService {
                         .add(Projections.property("severity"))
                     ).addOrder(Order.asc("INR.id"))
 
-        Criteria measurementNodeResultsCriteria = session.createCriteria(Measurement.class, "MEAS")
-                    .createAlias("measurementNodeResult", "MNR")
-                    .createAlias("MNR.completedQuestionnaire", "CQ")
-                    .createAlias("MNR.patientQuestionnaireNode", "PQN")
-                    .createAlias("PQN.templateQuestionnaireNode", "TQN")
-                    .createAlias("measurementType", "MTYPE")
-                    .add(Restrictions.in("CQ.id", completedQuestionnairesIds))
-                    .setProjection(
-                        Projections.projectionList()
-                        .add(Projections.property("MNR.id"))
-                        .add(Projections.property("MNR.nodeIgnored"))
-                        .add(Projections.property("MNR.nodeIgnoredReason"))
-                        .add(Projections.property("MNR.nodeIgnoredBy"))
+        Criteria measurementNodeResultsCriteria = session.createCriteria(MeasurementNodeResult.class, "MNR")
+                .createAlias("measurements", "MEAS", CriteriaSpecification.LEFT_JOIN)
+                .createAlias("completedQuestionnaire", "CQ")
+                .createAlias("patientQuestionnaireNode", "PQN")
+                .createAlias("PQN.templateQuestionnaireNode", "TQN")
+                .createAlias("MEAS.measurementType", "MTYPE", CriteriaSpecification.LEFT_JOIN)
+                .add(Restrictions.in("CQ.id", completedQuestionnairesIds))
+                .setProjection(
+                Projections.projectionList()
+                        .add(Projections.property("id"))
+                        .add(Projections.property("nodeIgnored"))
+                        .add(Projections.property("nodeIgnoredReason"))
+                        .add(Projections.property("nodeIgnoredBy"))
                         .add(Projections.property("CQ.id"))
                         .add(Projections.property("TQN.id"))    //5
                         .add(Projections.property("PQN.id"))
-                        /* Now get each property and make nice afterwards */
+                /* Now get each property and make nice afterwards */
                         .add(Projections.property("MTYPE.name"))
-                        .add(Projections.property("unit"))         //8
-                        .add(Projections.property("exported"))     //9
-                        .add(Projections.property("value"))
-                        .add(Projections.property("systolic"))        //11
-                        .add(Projections.property("diastolic"))
-                        .add(Projections.property("protein"))
-                        .add(Projections.property("glucoseInUrine"))
-                        .add(Projections.property("MNR.severity"))            //15
-                        /* Don't get CTG - that is not for us to show, but shown in Milou */
-                    ).addOrder(Order.asc("MEAS.id"))
+                        .add(Projections.property("MEAS.unit"))         //8
+                        .add(Projections.property("MEAS.exported"))     //9
+                        .add(Projections.property("MEAS.value"))
+                        .add(Projections.property("MEAS.systolic"))        //11
+                        .add(Projections.property("MEAS.diastolic"))
+                        .add(Projections.property("MEAS.protein"))
+                        .add(Projections.property("MEAS.glucoseInUrine"))
+                        .add(Projections.property("severity"))            //15
+                        .add(Projections.property("wasOmitted"))            //16
+                /* Don't get CTG - that is not for us to show, but shown in Milou */
+        ).addOrder(Order.asc("MEAS.id"))
 
         def inputNodeResults = inputNodeResultsCriteria.list()
         def measurementNodeResults = measurementNodeResultsCriteria.list()
@@ -418,7 +492,12 @@ class QuestionnaireService {
                 // glucoseInUrine
                 _value = "${it[14]}"
             } else {
-                _value = "NO_VALUE"
+
+                if (it[16] != null && it[16] != false) {
+                    _value = i18nService.message(code: 'measurement.wasOmitted')
+                } else {
+                    _value = "NO_VALUE"
+                }
             }
 
             //TQN = it[5]
@@ -435,7 +514,9 @@ class QuestionnaireService {
 
                 } else {
 
-                    descForThisRow.units.add(it[8])
+                    if (it[8] != null) {
+                        descForThisRow.units.add(it[8])
+                    }
 
                     descForThisRow.measurementTypeNames.add(it[7])
                     normalizedResults.add(new MeasurementResult(id: it[0], value: _value, type: it[7], unit: it[8], severity: it[15],exported: it[9], ignored: it[1], ignoredReason: it[2], ignoredBy: it[3], cqId: it[4], tqnId: it[5], pqnId: it[6]))
@@ -546,8 +627,8 @@ class QuestionnaireService {
         object.setModifiedDate(new Date())
     }
 
-    def getNextReminders(def patient, Calendar requestDate)  {
-        if (patient.state != PatientState.ACTIVE || patient.monitoringPlan == null || patient.isPaused()) {
+    def getNextReminders(Patient patient, Calendar requestDate)  {
+        if (patient.stateWithPassiveIntervals != PatientState.ACTIVE || patient.monitoringPlan == null) {
             return []
         }
 
@@ -623,7 +704,7 @@ class QuestionnaireService {
     }
 
     def checkForBlueAlarms(Patient patient, def checkFrom, def checkTo) {
-        if (patient.state != PatientState.ACTIVE || patient.isPaused()) {
+        if (patient.stateWithPassiveIntervals != PatientState.ACTIVE) {
             return []
         }
 
@@ -755,15 +836,14 @@ class QuestionnaireService {
 
         if (severity == Severity.BLUE) {
             StringBuilder sb = new StringBuilder()
-            sb.append('Følgende spørgeskemaer er ikke besvaret til tiden:<br/>')
             patient.blueAlarmQuestionnaireIDs.each {
                 sb.append(PatientQuestionnaire.get(it).name).append("<br/>")
             }
-            [severity.icon(), sb.toString()]
+            [severity.icon(), g.message(code: 'patientOverview.questionnairesNotAnsweredOnTime.tooltip', args: [sb.toString()])]
         } else if (severity != Severity.NONE) {
-            [severity.icon(), "Fra skema: ${questionnaireOfWorstSeverity.patientQuestionnaire.name} (${g.formatDate(date: questionnaireOfWorstSeverity.uploadDate)})"]
+            [severity.icon(), g.message(code: 'patientOverview.questionnaireAlarmDetails.tooltip', args: ["${questionnaireOfWorstSeverity.patientQuestionnaire.name}", "${g.formatDate(date: questionnaireOfWorstSeverity.uploadDate)}"])]
         } else {
-            [Severity.NONE.icon(), "Ingen nye besvarelser fra denne patient"]
+            [Severity.NONE.icon(), g.message(code: 'patientOverview.noNewCompletedQuestionnairesFromPatient.tooltip')]
         }
     }
 
@@ -1025,7 +1105,8 @@ public class OverviewColumnHeader {
 
 public enum MeasurementParentType {
     QUESTIONNAIRE,
-    CONFERENCE;
+    CONFERENCE,
+    CONSULTATION;
 }
 
 public class MeasurementResult {

@@ -33,9 +33,9 @@ databaseChangeLog = {
 
             column(name: 'most_severe_questionnaire_date', type: '${datetime.type}')
 
-            column(name: 'blue_alarm_text', type: '${string.type}')
+            column(name: 'blue_alarm_text', type: '${string4000.type}')
 
-            column(name: 'green_questionnaire_ids', type: '${string.type}')
+            column(name: 'green_questionnaire_ids', type: '${string4000.type}')
 
             column(name: 'number_of_unread_messages_to_patient', type: '${integer.type}') {
                 constraints(nullable: 'false')

@@ -6,6 +6,7 @@ enum MeterTypeName {
     CTG,
     TEMPERATURE,
     URINE, //protein in urine
+    URINE_COMBI,
     WEIGHT,
     HEMOGLOBIN,
     SATURATION,
@@ -13,7 +14,8 @@ enum MeterTypeName {
     CRP,
     BLOODSUGAR,
     URINE_GLUCOSE,
-    LUNG_FUNCTION
+    LUNG_FUNCTION,
+    CONTINUOUS_BLOOD_SUGAR_MEASUREMENT
 
     String getKey() {
         name()

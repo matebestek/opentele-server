@@ -15,6 +15,7 @@ import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.NoteType
 import org.opentele.server.model.types.PermissionName
 import org.opentele.server.model.types.Severity
+import org.opentele.server.model.types.Unit
 import org.opentele.server.questionnaire.*
 import org.opentele.server.util.NumberFormatUtil
 
@@ -125,9 +126,22 @@ class CompletedQuestionnaireTagLib {
             case MeasurementParentType.CONFERENCE:
                 renderQuestionForConference(builder, measurementDescription, patientID)
                 break;
+            case MeasurementParentType.CONSULTATION:
+                renderQuestionForConsultation(builder, measurementDescription, patientID)
+                break;
             default:
                 throw new IllegalArgumentException("Unknown measurementParentType: ${measurementDescription.type}")
         }
+    }
+
+    private void renderQuestionForConsultation(MarkupBuilder builder, MeasurementDescription measurementDescription, patientID) {
+        def thresholdTooltipMessage = getThresholdValuesForQuestion(patientID as Long, measurementDescription.measurementTypeNames)
+        def tooltip = message(code: "result.table.question.tooltip.consultation", args: [measurementDescription.questionnaireName])
+        tooltip = thresholdTooltipMessage ? tooltip + "<br/>" + thresholdTooltipMessage : tooltip
+        def units = measurementDescription.units ? measurementDescription.orderedUnits() : null
+        def cellText = message(code: "enum.measurementType." + measurementDescription.measurementTypeNames?.find{true})
+
+        renderQuestionCell(builder, tooltip, cellText, null, units)
     }
 
     private void renderQuestionForConference(MarkupBuilder builder, MeasurementDescription measurementDescription, patientID) {
@@ -156,7 +170,7 @@ class CompletedQuestionnaireTagLib {
             builder.td('data-tooltip': tooltip) {
                 builder.div(args ? [class: "question", questionnaireName: args['questionnaireName'], name: "question", id: args['templateQuestionnaireNodeId']] : [class: "question"]) {
                     builder.b(cellText)
-                    if (units) {
+                    if (units != null) {
                        builder.getMkp().yieldUnescaped(buildUnitString(units))
                     }
                 }
@@ -166,8 +180,17 @@ class CompletedQuestionnaireTagLib {
 
     private String buildUnitString(units) {
         def unitString = " ("
+
+        def separator = "/"
+
+        if (units != null && units.containsAll([Unit.BPM, Unit.MMHG])) {
+            separator = ", "
+        }
+
         units.eachWithIndex { unit, idx ->
-            if (idx > 0) { unitString += "/" }
+            if (idx > 0) {
+                unitString += separator
+            }
             unitString += message(code: "enum.unit." + unit)
         }
         unitString += ")"
@@ -177,6 +200,14 @@ class CompletedQuestionnaireTagLib {
 
     ResultKey getKeyForThisCell(MeasurementDescription question, OverviewColumnHeader columnHeader) {
         switch (columnHeader.type) {
+            case MeasurementParentType.CONSULTATION:
+                if(question.type == MeasurementParentType.CONSULTATION) {
+                    // TODO: Den holder nu, men er på ingen måde pæn!
+                    return new ResultKey(rowId: "cons-${question.measurementTypeNames.find{true}}", colId: "cons-${columnHeader.id}", type: MeasurementParentType.CONSULTATION)
+                } else {
+                    return new ResultKey(rowId: "", colId: "")
+                }
+                break;
             case MeasurementParentType.QUESTIONNAIRE:
                 return new ResultKey(rowId: "cq-${question.templateQuestionnaireNodeId}", colId: "cq-${columnHeader.id}", type: MeasurementParentType.QUESTIONNAIRE)
             case MeasurementParentType.CONFERENCE:
@@ -199,6 +230,9 @@ class CompletedQuestionnaireTagLib {
                 break;
             case MeasurementParentType.CONFERENCE:
                 renderMeasurementCellForConference(builder, measurementResultList)
+                break;
+            case MeasurementParentType.CONSULTATION:
+                renderMeasurementCellForConsultation(builder, measurementResultList)
                 break;
             default:
                 throw new IllegalArgumentException("Unknown measurementParentType: ${parentType}")
@@ -236,6 +270,13 @@ class CompletedQuestionnaireTagLib {
         })
     }
 
+    private void renderMeasurementCellForConsultation(MarkupBuilder builder, List<MeasurementResult> measurementResultList) {
+        String results = measurementResultList.collect {getPrettyResultString(it)}.join(" <br/> ")
+        renderCellContents(builder, results, {
+            builder.getMkp().yieldUnescaped(results)
+        })
+    }
+
     private void renderCellContents(MarkupBuilder builder, tooltipText, cellContent) {
         def toolTip = tooltipForMeasurementResult(tooltipText)
         builder.td {
@@ -257,11 +298,22 @@ class CompletedQuestionnaireTagLib {
             case MeasurementParentType.CONFERENCE:
                 renderHeaderForConference(builder, columnHeader)
                 break;
+            case MeasurementParentType.CONSULTATION:
+                renderHeaderForConsultation(builder, columnHeader)
+                break;
             case MeasurementParentType.QUESTIONNAIRE:
                 renderHeaderForQuestionnaire(builder, columnHeader)
                 break;
             default:
                 throw new IllegalArgumentException("Unknown measurementParentType: ${columnType}")
+        }
+    }
+
+    private void renderHeaderForConsultation(MarkupBuilder builder, OverviewColumnHeader columnHeader) {
+        builder.div(columnHeader.uploadDate.toCalendar().format(g.message(code:"default.date.format.short"))) {
+            builder.br()
+            def conference_image = """<img src=${g.resource(dir: 'images', file: 'consultationaddmeasurements.png')} data-tooltip="${g.message(code: 'patientOverview.measurementsFromConsultation')}"/>"""
+            builder.getMkp().yieldUnescaped(g.link(controller:"patient", action:"consultation", id:columnHeader.id, conference_image))
         }
     }
 
@@ -423,6 +475,7 @@ class CompletedQuestionnaireTagLib {
 		PatientOverview patientOverview = (PatientOverview) attributes['patientOverview']
         List<PatientNote> patientNotes = (List<PatientNote>) attributes['patientNotes']
         boolean messagingEnabled = (boolean) attributes['messagingEnabled']
+        boolean alarmIfUnreadMessagesToPatientDisabled = (boolean) attributes['alarmIfUnreadMessagesToPatientDisabled']
 
         def (icon, severityTooltip) = iconAndTooltip(g, patientOverview)
 
@@ -436,6 +489,10 @@ class CompletedQuestionnaireTagLib {
                 writeRemoveBlueAlarmsButton(builder, patientOverview.patientId)
             }
 
+            // IF has grey alarm caused by unread messages from clinician
+            if (!alarmIfUnreadMessagesToPatientDisabled && patientOverview.numberOfUnreadMessagesToPatient > 0) {
+                writeNoAlarmIfUnreadMessagesToPatientButton(builder, patientOverview.patientId)
+            }
             // First entry item: Patient status
             def imageArguments = [src: g.resource(dir: "images", file: icon), id: "statusIcon"]
             if (severityTooltip) {
@@ -500,12 +557,12 @@ class CompletedQuestionnaireTagLib {
         def severity = patientOverview.questionnaireSeverity
 
         if (severity == Severity.BLUE) {
-            String tooltip = 'Følgende spørgeskemaer er ikke besvaret til tiden:<br/>' + patientOverview.blueAlarmText.replace('\n', '<br/>')
+            String tooltip = g.message(code: 'patientOverview.questionnairesNotAnsweredOnTime.tooltip', args: [patientOverview.blueAlarmText.replace('\n', '<br/>')])
             [severity.icon(), tooltip]
         } else if (severity != Severity.NONE) {
-            [severity.icon(), "Fra skema: ${patientOverview.mostSevereQuestionnaireName} (${g.formatDate(date: patientOverview.mostSevereQuestionnaireDate)})"]
+            [severity.icon(), g.message(code: 'patientOverview.questionnaireAlarmDetails.tooltip', args: ["${patientOverview.mostSevereQuestionnaireName}", "${g.formatDate(date: patientOverview.mostSevereQuestionnaireDate)}"])]
         } else {
-            [Severity.NONE.icon(), "Ingen nye besvarelser fra denne patient"]
+            [Severity.NONE.icon(), g.message(code: 'patientOverview.noNewCompletedQuestionnairesFromPatient.tooltip')]
         }
     }
 
@@ -604,7 +661,24 @@ class CompletedQuestionnaireTagLib {
             )
         }
 	}
-	
+
+    private void writeNoAlarmIfUnreadMessagesToPatientButton(MarkupBuilder builder, patientId) {
+        builder.div(id: "noAlarmIfUnreadMessagesToPatient") {
+            def tooltip = message(code:"patientOverview.noAlarmIfUnreadMessagesToPatient")
+            builder.getMkp().yieldUnescaped(
+                    g.form(controller: "patient", action: "noAlarmIfUnreadMessagesToPatient",
+                            """<fieldset class="buttons">
+                        <input type="hidden" name="patientID" value="${patientId}" />
+                        <input 	type="submit" name="_action_noAlarmIfUnreadMessagesToPatient"
+                        data-tooltip="${tooltip}"
+                        value="" class="noAlarmIfUnreadMessagesToPatient"
+                        onclick="return confirm('${message(code: 'patientOverview.noAlarmIfUnreadMessagesToPatient.confirm')}');" />
+				    </fieldset>"""
+                    )
+            )
+        }
+    }
+
 	def writeAcknowledgeAllGreenButtons(PatientOverview patientOverview, boolean messagingEnabled, createDivWrapper = true) {
         def idsOfGreenQuestionnaires = patientOverview.greenQuestionnaireIds?.split(',') ?: []
 

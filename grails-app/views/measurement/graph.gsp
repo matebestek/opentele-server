@@ -8,11 +8,15 @@
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery.jqplot.css')}" type="text/css">
     <g:javascript src="jquery.js"/>
     <g:render template="graphFunctions"/>
-	<g:if test="${measurement.type != MeasurementTypeName.BLOODSUGAR.name()}">
-        <g:render template="measurementGraph" model='[patient: patient, measurement: measurement, title: message(code: "patient.graph.of",args: [message(code: "graph.legend.${measurement.type}"), patient.name.encodeAsHTML()])]'/>
+
+    <g:if test="${measurement.type == MeasurementTypeName.BLOODSUGAR.name()}">
+        <g:render template="bloodSugarMeasurementGraphs" model='[patient: patient, measurement: measurement]'/>
     </g:if>
+    <g:elseif test="${measurement.type == MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT.name()}">
+        <g:render template="continuousBloodSugarMeasurementGraphs" model='[patient: patient, measurement: measurement]'/>
+    </g:elseif>
     <g:else>
-        <g:render template="bloodsugar_measurementGraphs" model='[patient: patient, measurement: measurement, title: message(code: "patient.graph.of",args: [message(code: "graph.legend.${measurement.type}"), patient.name.encodeAsHTML()])]'/>
+        <g:render template="measurementGraph" model='[patient: patient, measurement: measurement, title: message(code: "patient.graph.of",args: [message(code: "graph.legend.${measurement.type}"), patient.name.encodeAsHTML()])]'/>
     </g:else>
     <style type="text/css">
    		body { height: 100% }
@@ -36,6 +40,10 @@
             <div id="${MeasurementTypeName.BLOODSUGAR.name()}-${patient.id}" class="halfScreen"></div>
             <div id="${MeasurementTypeName.BLOODSUGAR.name()}-average-day-${patient.id}" class="halfScreen"></div>
         </g:if>
+        <g:elseif test="${measurement.type == MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT.name()}">
+            <div id="${MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT.name()}-${patient.id}" class="halfScreen"></div>
+            <div id="${MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT.name()}-average-day-${patient.id}" class="halfScreen"></div>
+        </g:elseif>
         <g:else>
             <div id="${measurement.type}-${patient.id}" class="fullScreenGraph"></div>
         </g:else>

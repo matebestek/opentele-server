@@ -226,7 +226,7 @@ class BootStrapUtil {
                     PermissionName.QUESTIONNAIRE_GROUP_READ_ALL,
                     PermissionName.QUESTIONNAIRE_GROUP_WRITE,
                     PermissionName.QUESTIONNAIRE_GROUP_CREATE,
-                    PermissionName.QUESTIONNAIRE_GROUP_DELETE,
+                    PermissionName.QUESTIONNAIRE_GROUP_DELETE
                 ]
             case BootStrapService.roleClinician:
                 return [
@@ -238,6 +238,7 @@ class BootStrapUtil {
                     PermissionName.PATIENT_DELETE,
                     PermissionName.PATIENT_CREATE,
                     PermissionName.PATIENT_REMOVE_BLUE_ALARMS,
+                    PermissionName.PATIENT_DISABLE_ALARM_IF_UNREAD_MESSAGES_TO_PATIENT,
                     PermissionName.PATIENT_PREFERENCES_WRITE,
                     PermissionName.NEXT_OF_KIN_READ,
                     PermissionName.NEXT_OF_KIN_CREATE,
@@ -294,7 +295,9 @@ class BootStrapUtil {
                     PermissionName.PASSIVE_INTERVAL_WRITE,
                     PermissionName.PASSIVE_INTERVAL_READ,
                     PermissionName.PASSIVE_INTERVAL_READ_ALL,
-                    PermissionName.CONFERENCE_READ
+                    PermissionName.CONFERENCE_READ,
+                    PermissionName.CONSULTATION_READ,
+                    PermissionName.PATIENT_CONSULTATION,
                 ]
             case BootStrapService.rolePatient:
                 return [
@@ -322,7 +325,7 @@ class BootStrapUtil {
                 ]
             case BootStrapService.roleReadAllPatientsInSystem:
                 return [
-                        PermissionName.PATIENT_READ_ALL_IN_SYSTEM
+                    PermissionName.PATIENT_READ_ALL_IN_SYSTEM
                 ]
         }
     }

@@ -64,6 +64,11 @@ class NumberFormatUtil {
         }
 
         @Override
+        void visitUrineCombi() {
+            result = measurement.value
+        }
+
+        @Override
         void visitUrineGlucose() {
             result = measurement.value
         }
@@ -107,6 +112,11 @@ class NumberFormatUtil {
         void visitLungFunction() {
             result = formatDouble(measurement.value)
         }
+
+        @Override
+        void visitContinuousBloodSugarMeasurement() {
+            result = 'CGM'
+        }
     }
 
     private static class MeasurementFormatter implements MeasurementTypeNameVisitor {
@@ -137,6 +147,11 @@ class NumberFormatUtil {
         @Override
         void visitUrine() {
             result = measurement.protein?.value
+        }
+
+        @Override
+        void visitUrineCombi() {
+            result = formatDouble(measurement.value)
         }
 
         @Override
@@ -177,6 +192,12 @@ class NumberFormatUtil {
         @Override
         void visitLungFunction() {
             result = formatDouble(measurement.value)
+        }
+
+        @Override
+        void visitContinuousBloodSugarMeasurement() {
+            // Not applicable to continuous blood sugar measurements
+            result = ''
         }
     }
 

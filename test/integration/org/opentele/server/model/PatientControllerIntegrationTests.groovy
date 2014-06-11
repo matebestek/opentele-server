@@ -97,7 +97,7 @@ class PatientControllerIntegrationTests extends AbstractControllerIntegrationTes
 
     @Test
     void testUpdateWorksWithGroups() {
-        Patient p = Patient.findById(10) //Assume nancy
+        Patient p = Patient.findByFirstName("Nancy Ann") //Assume nancy
         assert p != null
         patientController.response.reset()
         Department deptB = Department.findByName("Afdeling-B Test")
@@ -105,7 +105,7 @@ class PatientControllerIntegrationTests extends AbstractControllerIntegrationTes
 
 
         //Pre-check
-        assert p.groups.size() == 1 //Nancy as 1 pg from bootstrap
+        assert p.groups.size() == 1 //Nancy has 2 pg from bootstrap
 
         //Execute
         patientController.params.groupid = pg.id

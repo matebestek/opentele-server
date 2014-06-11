@@ -72,6 +72,11 @@ class YAxisTickCalculator implements MeasurementTypeNameVisitor {
     }
 
     @Override
+    void visitUrineCombi() {
+        // TODO KM: Har ingen ide om hvad der skal stå her....
+    }
+
+    @Override
     void visitUrineGlucose() {
         createTicksFor(0, 5, 1, INTEGER_FORMATTER)
     }
@@ -115,6 +120,11 @@ class YAxisTickCalculator implements MeasurementTypeNameVisitor {
     @Override
     void visitLungFunction() {
         createTicksFor(2, 5, 0.5, SINGLE_DIGIT_FORMATTER)
+    }
+
+    @Override
+    void visitContinuousBloodSugarMeasurement() {
+        createTicksFor(0, 20, 2, SINGLE_DIGIT_FORMATTER)
     }
 
     private void createTicksFor(double rangeStart, double rangeEnd, double stepSize, ThreadLocal<NumberFormat> formatter) {

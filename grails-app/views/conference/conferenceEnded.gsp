@@ -4,7 +4,7 @@
     <meta name="layout" content="main">
     <title><g:message code="conference.conferenceEnded.title"/></title>
 
-    <g:render template="popups"/>
+    <r:require module="popup"/>
 </head>
 <body>
     <h1><g:message code="conference.conferenceEnded.header"/></h1>

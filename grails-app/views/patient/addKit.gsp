@@ -31,9 +31,7 @@
 								</g:link>
                             </td>
 							<td>
-                                <g:link controller="department" action="show" id="${kit.department.id}">
-									${fieldValue(bean: kit, field: "department")}
-								</g:link>
+								${fieldValue(bean: kit, field: "department")}
                             </td>
 							<td>
 								<ul class="table">

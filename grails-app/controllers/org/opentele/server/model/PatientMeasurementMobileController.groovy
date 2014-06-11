@@ -1,4 +1,5 @@
 package org.opentele.server.model
+
 import grails.plugins.springsecurity.Secured
 import org.opentele.server.TimeFilter
 import org.opentele.server.annotations.SecurityWhiteListController
@@ -38,6 +39,6 @@ class PatientMeasurementMobileController {
         }
         def graphData = measurementService.dataForGraph(patient, timeFilter, params.type)
 
-        [patientInstance:patient, type: params.type, tableData: tableData, bloodSugarData: bloodsugarData, graphData: graphData]
+        [patientInstance:patient, type: params.type, tableData: tableData, bloodSugarData: bloodsugarData, graphData: graphData, hasCgmGraphs: !patient.cgmGraphs.empty]
     }
 }

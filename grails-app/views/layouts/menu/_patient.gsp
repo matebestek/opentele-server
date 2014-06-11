@@ -49,6 +49,12 @@
                                        code="default.patient.questionnaire.label"/>
                 </li>
             </sec:ifAnyGranted>
+            <sec:ifAnyGranted roles="${PermissionName.PATIENT_CONSULTATION}">
+                <li>
+                    <otformat:menuLink controller="consultation" action="addmeasurements" paramId="${session.patientId}"
+                                       code="default.patient.addmeasurements.label"/>
+                </li>
+            </sec:ifAnyGranted>
             <sec:ifAnyGranted roles="${PermissionName.PATIENT_READ}">
                 <li>
                     <otformat:menuLink controller="patient" action="show" paramId="${session.patientId}"

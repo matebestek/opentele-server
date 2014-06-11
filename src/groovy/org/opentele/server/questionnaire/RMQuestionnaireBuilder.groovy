@@ -20,7 +20,7 @@ class RMQuestionnaireBuilder {
 
     // RM Prod questionnaires
 
-    def createRMProdTemperatureQuestionnaire(String title, String revision) {
+    def createRMProdTemperatureQuestionnaire(String title, String revision, Severity omitSeverity) {
 
         Questionnaire questionnaire = Questionnaire.findByNameAndRevision(title, revision)
         if (!questionnaire) {
@@ -68,6 +68,7 @@ class RMQuestionnaireBuilder {
                     defaultSeverity: Severity.GREEN,
                     defaultNext:tempNormalChoiceNode,
                     nextFail:endNode,
+                    nextFailSeverity:omitSeverity,
                     simulate: false,
                     mapToInputFields: true,
                     shortText: "Temperatur",
@@ -97,7 +98,7 @@ class RMQuestionnaireBuilder {
         questionnaire
     }
 
-    def createRMProdBloodpressureAndPulseQuestionnaire(String title, String revision) {
+    def createRMProdBloodpressureAndPulseQuestionnaire(String title, String revision, Severity omitSeverity) {
 
         Questionnaire questionnaire = Questionnaire.findByNameAndRevision(title, revision)
         if (!questionnaire) {
@@ -145,6 +146,7 @@ class RMQuestionnaireBuilder {
                     defaultSeverity: Severity.GREEN,
                     defaultNext:normalChoiceNode,
                     nextFail:endNode,
+                    nextFailSeverity:omitSeverity,
                     simulate: false,
                     mapToInputFields: true,
                     shortText: "Blodtryk/puls",
@@ -174,7 +176,92 @@ class RMQuestionnaireBuilder {
         questionnaire
     }
 
-    def createRMProdUrineQuestionnaire(String title, String revision) {
+    def createRMProdBloodpressureQuestionnaire(String title, boolean mapToInputFields, String revision, Severity omitSeverity) {
+
+        Questionnaire questionnaire = Questionnaire.findByNameAndRevision(title, revision)
+        if (!questionnaire) {
+
+            def nodes = []
+
+            EndNode endNode = questionnaireUtil.createEndNode(createdBy: createdByName, modifiedBy: createdByName);
+            nodes << endNode
+
+            TextNode contactNode = questionnaireUtil.createTextNode(defaultNext:endNode,
+                    text: "Ring til jordemoder", createdBy: createdByName, modifiedBy: createdByName)
+            nodes << contactNode
+
+            InputNode moreThanNormalNode = questionnaireUtil.createInputNode(text:"Er blodtrykket højere end vanligt?",
+                    inputType: DataType.BOOLEAN,
+                    defaultNext: contactNode,
+                    defaultSeverity: Severity.RED,
+                    alternativeNext: endNode,
+                    alternativeSeverity: Severity.YELLOW,
+                    createdBy: createdByName, modifiedBy: createdByName)
+            nodes << moreThanNormalNode
+
+            ChoiceNode highChoiceNode = questionnaireUtil.createChoiceNode(operation: Operation.LESS_THAN,
+                    dataType: DataType.INTEGER,
+                    defaultNext: contactNode, // 110 >= X (Below or eq)
+                    defaultSeverity: Severity.RED,
+                    alternativeNext: moreThanNormalNode, // 110 < X (above)
+                    alternativeSeverity: Severity.GREEN,
+                    nodeValue: 110,
+                    createdBy: createdByName, modifiedBy: createdByName)
+            nodes << highChoiceNode
+
+            ChoiceNode normalChoiceNode = questionnaireUtil.createChoiceNode(operation: Operation.LESS_THAN,
+                    dataType: DataType.INTEGER,
+                    defaultNext: highChoiceNode, // 90 >= X (Below or eq)
+                    defaultSeverity: Severity.YELLOW,
+                    alternativeNext: endNode, // 90 < X (above)
+                    alternativeSeverity: Severity.GREEN,
+                    nodeValue: 90,
+                    createdBy: createdByName, modifiedBy: createdByName)
+            nodes << normalChoiceNode
+
+            MeasurementNode measurementNode = questionnaireUtil.createMeasurementNode(text: "Indtast blodtryk og puls",
+                    inputType: DataType.INTEGER,
+                    defaultSeverity: Severity.GREEN,
+                    defaultNext:normalChoiceNode,
+                    nextFail:endNode,
+                    nextFailSeverity: omitSeverity,
+                    simulate: false,
+                    mapToInputFields: mapToInputFields,
+                    shortText: "Blodtryk/puls",
+                    meterType: MeterType.findByName(MeterTypeName.BLOOD_PRESSURE_PULSE),
+                    createdBy: createdByName, modifiedBy: createdByName)
+            nodes << measurementNode
+
+           TextNode instruksMaalBlodtryk
+            if (!mapToInputFields){
+                instruksMaalBlodtryk = questionnaireUtil.createTextNode(defaultNext:measurementNode,
+                        text:"Sæt manchetten på armen og tryk på næste når du er klar.", createdBy: createdByName, modifiedBy: createdByName)
+                nodes << instruksMaalBlodtryk
+            }
+
+            highChoiceNode.setInputNode(measurementNode)
+            highChoiceNode.setInputVar(MeasurementNode.DIASTOLIC_VAR)
+            highChoiceNode.save(failOnError:true)
+
+            normalChoiceNode.setInputNode(measurementNode)
+            normalChoiceNode.setInputVar(MeasurementNode.DIASTOLIC_VAR)
+            normalChoiceNode.save(failOnError:true)
+
+            questionnaire = questionnaireUtil.createQuestionnaire(name: title,
+                    revision:revision,
+                    startNode: (mapToInputFields ? measurementNode : instruksMaalBlodtryk),
+                    creationDate: new Date(),
+                    createdBy: createdByName, modifiedBy: createdByName)
+
+            nodes.reverseEach() { node ->
+                questionnaire.addToNodes(node)
+            }
+            questionnaire.save(failOnError:true)
+        }
+        questionnaire
+    }
+
+    def createRMProdUrineQuestionnaire(String title, String revision, Severity omitSeverity) {
 
         Questionnaire questionnaire = Questionnaire.findByNameAndRevision(title, revision)
         if (!questionnaire) {
@@ -213,6 +300,7 @@ class RMQuestionnaireBuilder {
                     defaultSeverity: Severity.GREEN,
                     defaultNext:normalChoiceNode,
                     nextFail:endNode,
+                    nextFailSeverity:omitSeverity,
                     simulate: false,
                     mapToInputFields: true,
                     shortText: "Proteinindhold i urin",
@@ -242,7 +330,7 @@ class RMQuestionnaireBuilder {
         questionnaire
     }
 
-    def createRMProdCRPQuestionnaire(String title, String revision) {
+    def createRMProdCRPQuestionnaire(String title, String revision, Severity omitSeverity) {
 
         Questionnaire questionnaire = Questionnaire.findByNameAndRevision(title, revision)
         if (!questionnaire) {
@@ -281,6 +369,7 @@ class RMQuestionnaireBuilder {
                     defaultSeverity: Severity.GREEN,
                     defaultNext:normalChoiceNode,
                     nextFail:endNode,
+                    nextFailSeverity:omitSeverity,
                     simulate: false,
                     mapToInputFields: true,
                     shortText: "CRP",
@@ -310,7 +399,7 @@ class RMQuestionnaireBuilder {
         questionnaire
     }
 
-    def createPPROMQuestionnaire(String title, String revision) {
+    def createPPROMQuestionnaire(String title, String revision, Severity omitSeverity) {
 
         Questionnaire questionnaire = Questionnaire.findByNameAndRevision(title, revision)
         if (!questionnaire) {
@@ -479,6 +568,7 @@ class RMQuestionnaireBuilder {
                     defaultSeverity: Severity.GREEN,
                     defaultNext:tempNormalChoiceNode,
                     nextFail:stomachNode,
+                    nextFailSeverity:omitSeverity,
                     mapToInputFields: true,
                     shortText: "Temperatur",
                     meterType: MeterType.findByName(MeterTypeName.TEMPERATURE),
@@ -535,6 +625,7 @@ class RMQuestionnaireBuilder {
                     defaultSeverity: Severity.GREEN,
                     defaultNext:normalPulseChoiceNode,
                     nextFail:temperatureNode,
+                    nextFailSeverity:omitSeverity,
                     mapToInputFields: true,
                     simulate: false,
                     shortText: "Blodtryk/puls",
@@ -572,7 +663,7 @@ class RMQuestionnaireBuilder {
         questionnaire
     }
 
-    def createPraeeklampsiOrDiabetesQuestionnaire(String title, String revision) {
+    def createPraeeklampsiOrDiabetesQuestionnaire(String title, String revision, Severity omitSeverity) {
 
         Questionnaire questionnaire = Questionnaire.findByNameAndRevision(title, revision)
         if (!questionnaire) {
@@ -731,6 +822,7 @@ class RMQuestionnaireBuilder {
             MeasurementNode weightNode = questionnaireUtil.createMeasurementNode(text: "Indtast din vægt",
                     defaultNext:headacheNode,
                     nextFail: headacheNode,
+                    nextFailSeverity:omitSeverity,
                     shortText: "Vægt",
                     mapToInputFields: true,
                     meterType: MeterType.findByName(MeterTypeName.WEIGHT),
@@ -769,6 +861,7 @@ class RMQuestionnaireBuilder {
                     defaultSeverity: Severity.GREEN,
                     defaultNext:normalUrineChoiceNode,
                     nextFail:weightNode,
+                    nextFailSeverity:omitSeverity,
                     mapToInputFields: true,
                     shortText: "Proteinindhold i urin",
                     meterType: MeterType.findByName(MeterTypeName.URINE),
@@ -824,6 +917,7 @@ class RMQuestionnaireBuilder {
                     defaultSeverity: Severity.GREEN,
                     defaultNext: normalChoiceNode,
                     nextFail: urineNode,
+                    nextFailSeverity:omitSeverity,
                     mapToInputFields: true,
                     shortText: "Blodtryk/puls",
                     meterType: MeterType.findByName(MeterTypeName.BLOOD_PRESSURE_PULSE),
@@ -862,7 +956,7 @@ class RMQuestionnaireBuilder {
     /**
      * Create CTG questionnaire, with an added node for determining how many minutes CTG measurement should continue
      */
-    def createTimedCTGQuestionnaire(String title, boolean simulate, String revision) {
+    def createTimedCTGQuestionnaire(String title, boolean simulate, String revision, Severity omitSeverity) {
 
         Questionnaire questionnaire = Questionnaire.findByNameAndRevision(title, revision)
         if (!questionnaire) {
@@ -874,6 +968,7 @@ class RMQuestionnaireBuilder {
             MeasurementNode ctgNode = questionnaireUtil.createMeasurementNode(text: "CTG (m/tid)",
                     defaultNext:ctgEndNode,
                     nextFail: ctgEndNode,
+                    nextFailSeverity:omitSeverity,
                     meterType: ctgMeterType,
                     shortText: "CTG (m/tid)",
                     simulate: simulate,

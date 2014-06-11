@@ -28,7 +28,7 @@
 				<li class="fieldcontain">
 					<span id="department-label" class="property-label"><g:message code="patientGroup.department.label" /></span>
 					
-					<span class="property-value" aria-labelledby="department-label"><g:link controller="department" action="show" id="${patientGroupInstance?.department?.id}">${patientGroupInstance?.department?.encodeAsHTML()}</g:link></span>
+					<span class="property-value" aria-labelledby="department-label">${patientGroupInstance?.department?.encodeAsHTML()}</span>
 				</li>
 				</g:if>
 

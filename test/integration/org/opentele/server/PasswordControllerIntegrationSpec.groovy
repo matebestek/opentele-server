@@ -2,13 +2,16 @@ package org.opentele.server
 
 import grails.converters.JSON
 import grails.plugin.spock.IntegrationSpec
+import org.apache.log4j.Logger
+
 import org.opentele.server.model.User
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import spock.lang.Ignore
-import spock.lang.Unroll
 
 class PasswordControllerIntegrationSpec extends IntegrationSpec {
+
+    Logger log = Logger.getLogger(PasswordControllerIntegrationSpec.class)
 
     protected static final String PASSWORD = "abcd1234"
     protected static final String USERNAME = 'passwordtestuser'
@@ -17,10 +20,11 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
     PasswordController controller
 
     def setup() {
+        log.info 'Calling setup...'
         controller = new PasswordController()
         controller.passwordService = passwordService
 
-        user = User.findByUsername(USERNAME) ?: new User(username: 'passwordtestuser', enabled: true)
+        user = User.findByUsername(USERNAME) ?: new User(username: USERNAME, enabled: true)
         user.password = PASSWORD
         user.cleartextPassword = PASSWORD
         user.save(flush: true, failOnError: true)
@@ -28,6 +32,8 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
 
     @Ignore('Fails only on build server, for some unknown reason')
     def "test change password on user in sunshine scenario"() {
+        log.info 'Calling sunshine...'
+
         setup:
         authenticate(USERNAME, PASSWORD)
         populateParams(PASSWORD, "1234abcd")
@@ -37,7 +43,7 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
         controller.update()
 
         then:
-        controller.flash.message == "Password changed for user: passwordtestuser"
+        controller.flash.message == "Password changed for user: " + USERNAME
         !user.cleartextPassword
         user.version > version
         controller.response.redirectUrl == '/password/changed'
@@ -45,6 +51,7 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
 
     @Ignore('Fails only on build server, for some unknown reason')
     def "test change password on user with json in sunshine scenario"() {
+
         setup:
         authenticate(USERNAME, PASSWORD)
         populateParams(PASSWORD, "1234abcd")
@@ -59,13 +66,14 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
 
         then:
         json.status == 'ok'
-        json.message == 'Password changed for user: passwordtestuser'
+        json.message == 'Password changed for user: ' + USERNAME
         !user.cleartextPassword
         user.version > version
     }
 
     @Ignore('Fails only on build server, for some unknown reason')
     def "test change password on user where old password is wrong"() {
+
         setup:
         authenticate(USERNAME, PASSWORD)
         populateParams("abcd12", "1234abcd")
@@ -83,8 +91,9 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
     }
 
     @Ignore('Fails only on build server, for some unknown reason')
-//    @Unroll
+    //  @Unroll
     def "test change password on user with json with errors"() {
+
         setup:
         authenticate(USERNAME, PASSWORD)
         populateParams(currentPassword, password, passwordRepeat)
@@ -105,10 +114,10 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
         user.version == version
 
         where:
-        currentPassword | password   | passwordRepeat | errorField
-        'abc123'        | '1234abcd' | '1234abcd'     | "currentPassword"
-        PASSWORD        | '12345678' | '12345678'     | "password"
-        PASSWORD        | 'abcd1234' | '12345678'     | "passwordRepeat"
+        currentPassword | password | passwordRepeat | errorField
+        'abc123' | '1234abcd' | '1234abcd' | "currentPassword"
+        PASSWORD | '12345678' | '12345678' | "password"
+        PASSWORD | 'abcd1234' | '12345678' | "passwordRepeat"
     }
 
 
@@ -118,9 +127,8 @@ class PasswordControllerIntegrationSpec extends IntegrationSpec {
         controller.params.passwordRepeat = passwordRepeat ?: password
     }
 
-
-
     def caseInsensitivePasswordAuthenticationProvider
+
     protected authenticate = { String login, String password ->
         def authtoken, auth
         auth = new UsernamePasswordAuthenticationToken(login, password)

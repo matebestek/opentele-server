@@ -269,6 +269,28 @@ class PatientControllerUnitTests {
     }
 
     @Test
+    void setNoAlarmIfUnreadMessagesToPatientWorks() {
+        //Setup
+        Patient patient = new PatientBuilder().build()
+        patient.save(flush: true)
+
+        assert !patient.noAlarmIfUnreadMessagesToPatient
+
+        def patientOverviewServiceControl = mockFor(PatientOverviewService)
+        patientOverviewServiceControl.demand.updateOverviewFor { it == patient }
+        controller.patientService.patientOverviewService = patientOverviewServiceControl.createMock()
+
+        //Execute
+        params.patientID = patient.id
+        controller.noAlarmIfUnreadMessagesToPatient()
+        patient.refresh()
+
+        //Check
+        assert response.redirectedUrl != null
+        assert patient.noAlarmIfUnreadMessagesToPatient
+    }
+
+    @Test
     void testChangeDataResponsibleToNoneWorks() {
         //Setup
         Patient patient = new PatientBuilder().build()

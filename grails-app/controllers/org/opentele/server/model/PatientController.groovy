@@ -427,11 +427,12 @@ class PatientController {
 		if (params.sort) {
 			if (params.sort == 'severity') {
                 patientList.sort { questionnaireService.severity(it) }
-
+            } else if (params.sort == 'state') {
+                patientList.sort { g.message(code: "enum.patientstate.${it.stateWithPassiveIntervals}") }
 			} else {
-
-				patientList.sort{ normalizeSortValue(it."${params.sort}") }
+				patientList.sort { normalizeSortValue(it."${params.sort}") }
 			}
+
             if (params.order.equals("desc")) {
                 patientList.reverse(true)
             }
@@ -467,7 +468,6 @@ class PatientController {
 		[completedQuestionnaire:completedQuestionnaire]
 	}
 
-
     @Secured(PermissionName.CONFERENCE_READ)
     def conference() {
         def conference = Conference.get(params.id)
@@ -475,7 +475,14 @@ class PatientController {
         [conference:conference]
     }
 
-	/**
+    @Secured(PermissionName.CONSULTATION_READ)
+    def consultation() {
+        def consultation = Consultation.get(params.id)
+        sessionService.setPatient(session, consultation.patient)
+        [consultation:consultation]
+    }
+
+    /**
 	 * Closure for presenting the results of a patients response to questionnaires
 	 */
     @Secured(PermissionName.COMPLETED_QUESTIONNAIRE_READ_ALL)
@@ -496,6 +503,7 @@ class PatientController {
 		def completed
         def greenCompletedQuestionnaires = []
         def resultModel
+        def consultations
 
         if (patient) {
 			// Setting up session values
@@ -518,11 +526,13 @@ class PatientController {
 
 			completed = CompletedQuestionnaire.countByPatient(patient)
 
+            consultations = Consultation.countByPatient(patient)
+
             greenCompletedQuestionnaires = CompletedQuestionnaire.unacknowledgedGreenQuestionnairesByPatient(patient, timeFilter).list()
 
         }
 
-        [patientInstance: patient, questionnairesNumber: questionnairesNumber, completedQuestionnaireResultModel: resultModel, questionPreferences: questionPreferences, completedNumber: completed, greenCompletedAndUnacknowledgedQuestionnaires: greenCompletedQuestionnaires]
+        [patientInstance: patient, questionnairesNumber: questionnairesNumber, completedQuestionnaireResultModel: resultModel, questionPreferences: questionPreferences, completedNumber: completed, greenCompletedAndUnacknowledgedQuestionnaires: greenCompletedQuestionnaires, consultations: consultations]
 	}
 
     @Secured([PermissionName.METER_READ_ALL, PermissionName.MONITOR_KIT_READ_ALL])
@@ -703,8 +713,17 @@ class PatientController {
 		Patient patient = Patient.get(params.patientID)
         patientService.removeAllBlueAlarms(patient)
 
-		redirect(controller: session.lastController, action: session.lastAction)
+		redirect(controller: 'patientOverview', action: 'index')
 	}
+
+    @Secured(PermissionName.PATIENT_DISABLE_ALARM_IF_UNREAD_MESSAGES_TO_PATIENT)
+    @SecurityWhiteListController
+    def noAlarmIfUnreadMessagesToPatient() {
+        Patient patient = Patient.get(params.patientID)
+        patientService.noAlarmIfUnreadMessagesToPatient(patient)
+
+        redirect(controller: 'patientOverview', action: 'index')
+    }
 
     @Secured(PermissionName.PATIENT_WRITE)
     @SecurityWhiteListController

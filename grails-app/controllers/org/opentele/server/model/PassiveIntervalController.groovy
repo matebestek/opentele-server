@@ -20,13 +20,18 @@ class PassiveIntervalController {
 
     @Secured(PermissionName.PASSIVE_INTERVAL_READ_ALL)
     def list() {
-
         params.max = Math.min(params.max ? params.int('max') : 10, 100)
+
+        if (!params.sort)
+            params.sort = 'intervalStartDate'
+
+        if (!params.order)
+            params.order = 'asc'
 
         Patient patient = Patient.get(params.id)
         sessionService.setPatient(session, patient)
 
-        def intervals = PassiveInterval.findAllByPatient(patient, [sort: 'createdDate', order: 'desc', max: params.max, offset: params.offset])
+        def intervals = PassiveInterval.findAllByPatient(patient, [sort: params.sort, order: params.order, max: params.max, offset: params.offset])
         [passiveIntervalInstanceList: intervals, passiveIntervalInstanceTotal: PassiveInterval.countByPatient(patient), patient: patient]
     }
     @Secured(PermissionName.PASSIVE_INTERVAL_CREATE)

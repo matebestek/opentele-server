@@ -16,7 +16,7 @@
                 <textarea rows="2" type="text" id="headline" placeholder="${g.message(code: 'questionnaireEditor.modal.headline')}" class="span5"></textarea>
 
                 <label><g:message code="questionnaireEditor.modal.measurementType"/> </label>
-                <g:select name="measurementType" from="${MeterTypeName.values().collect{it}}" valueMessagePrefix="questionnaireEditor.metertype" class="span5"/>
+                <g:select name="measurementType" from="${MeterTypeName.values().collect{it}.minus(MeterTypeName.URINE_COMBI)}" valueMessagePrefix="questionnaireEditor.metertype" class="span5"/>
 
                 <span class="help-block"><g:message code="questionnaireEditor.modal.measurementForm"/></span>
                 <label class="radio">

@@ -1,5 +1,4 @@
 <%@ page import="org.opentele.server.model.PatientGroup" %>
-<%@ page import="org.opentele.server.model.types.PatientState" %>
 <%@ page import="org.opentele.server.model.Patient" %>
 <!doctype html>
 <html>
@@ -22,9 +21,6 @@
     <g:if test="${patients?.size() > 0}">
         <tmpl:patientlist/>
     </g:if>
-
-
 </div>
 </body>
-
 </html>

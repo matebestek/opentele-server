@@ -1,5 +1,4 @@
 <%@ page import="org.opentele.server.questionnaire.QuestionnaireService; org.opentele.server.model.types.Severity; org.opentele.server.model.PatientGroup"%>
-<%@ page import="org.opentele.server.model.types.PatientState"%>
 <%@ page import="org.opentele.server.model.Patient"%>
 <%@ page import="org.opentele.server.PatientService" %>
 <%
@@ -75,7 +74,7 @@
 						</ul>
                     </td>
 					<td>
-						<g:message code="enum.patientstate.${patientInstance.state}"/>
+                        <g:message code="enum.patientstate.${patientInstance.stateWithPassiveIntervals}"/>
 					</td>
 				</tr>
 			</g:each>

@@ -201,6 +201,21 @@ class PatientOverviewServiceSpec extends Specification {
         createdOverview.important
     }
 
+    def 'does not trigger alarm if alarm is disabled for messages sent to patient'() {
+
+        setup:
+        Patient patientNo = Patient.build(firstName: 'No To', lastName: 'Alarms', cpr: '1234567891', noAlarmIfUnreadMessagesToPatient: true)
+
+        Message.build(patient: patientNo, isRead: false, sentByPatient: false, sendDate: parseDate('2013-03-04'))
+
+        when:
+        service.createOverviewFor(patientNo)
+
+        then:
+        createdOverview.numberOfUnreadMessagesToPatient == 1
+        !createdOverview.important
+    }
+
     def 'calculates number of unread messages from patient, along with date of oldest unread'() {
         setup:
         Message.build(patient: patient, isRead: false, sentByPatient: true, sendDate: parseDate('2013-05-12'))

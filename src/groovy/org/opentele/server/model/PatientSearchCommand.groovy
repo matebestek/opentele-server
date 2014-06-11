@@ -10,6 +10,7 @@ class PatientSearchCommand {
     String phone
     String firstName
     String lastName
+    String username
     PatientState status = PatientState.ACTIVE
     PatientGroup patientGroup
 

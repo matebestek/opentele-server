@@ -23,10 +23,12 @@
                 <g:message code="patient.overview.form.status"/>
             </td>
             <td>
-                <g:select name="status" from="${PatientState.values()}" valueMessagePrefix="enum.patientstate"
+                <g:select name="status" from="${PatientState.valuesForPersisting}" valueMessagePrefix="enum.patientstate"
                           value="${searchCommand.status}"
                           noSelection="${['': message(code: "patient.search.state.all")]}"/>
             </td>
+            <td><g:message code="patient.overview.form.username"/></td>
+            <td><g:textField name="username" value="${searchCommand.username}"/></td>
         </tr>
         <tr>
             <td data-tooltip="${message(code: 'tooltip.patient.search.patientgroup')}">

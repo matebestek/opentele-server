@@ -21,7 +21,8 @@ class Patient extends AbstractObject {
         notes: PatientNote,
         thresholds: Threshold,
         passiveIntervals: PassiveInterval,
-        patientOverviews: PatientOverview
+        patientOverviews: PatientOverview,
+        cgmGraphs: CgmGraphs
 	]
 
 	MonitoringPlan monitoringPlan //The current monitoring plan, null initially and if patient is discharged
@@ -41,6 +42,8 @@ class Patient extends AbstractObject {
     String mobilePhone
     String email
     String comment
+
+    boolean noAlarmIfUnreadMessagesToPatient
 
     Date dueDate
 
@@ -75,7 +78,7 @@ class Patient extends AbstractObject {
         "${cpr[0..5]}-${cpr[6..9]}"
     }
 
-    static transients = ['formattedCpr','name','latestQuestionnaireUploadDate','numberOfUnreadMessages','groups', 'patientOverview', 'shouldShowGestationalAge']
+    static transients = ['formattedCpr','name','latestQuestionnaireUploadDate','numberOfUnreadMessages','groups', 'patientOverview', 'shouldShowGestationalAge', 'stateWithPassiveIntervals']
     
     static constraints = {
         cpr(validator: { val, obj ->
@@ -107,10 +110,11 @@ class Patient extends AbstractObject {
         mobilePhone(nullable:true)
         email(nullable:true)
         comment(nullable:true, maxSize: 2048)
+        noAlarmIfUnreadMessagesToPatient(nullable:false)
 		user(nullable:true)
         dataResponsible(nullable:true)
         dueDate(nullable:true)
-        state(validator: {val, obj -> val != null && !val.equals("") ? true : obj.errors.reject("validate.patient.default.blank", ["Tilstand"] as Object[], "i18n Mising")})
+        state(validator: {val, obj -> val != null && !val.equals("") ? val in PatientState.valuesForPersisting : obj.errors.reject("validate.patient.default.blank", ["Tilstand"] as Object[], "i18n Mising")})
 
         monitoringPlan(nullable:true)
 
@@ -141,6 +145,11 @@ class Patient extends AbstractObject {
                 }
                 if (searchCommand.lastName) {
                     ilike("lastName", "%${searchCommand.lastName}%")
+                }
+                if (searchCommand.username) {
+                    user {
+                        ilike("username", "%${searchCommand.username}%")
+                    }
                 }
                 if (searchCommand.phone) {
                     or {
@@ -184,6 +193,10 @@ class Patient extends AbstractObject {
                 max('uploadDate')
             }
         }
+    }
+
+    PatientState getStateWithPassiveIntervals() {
+        paused ? PatientState.PAUSED : state
     }
 
     boolean isShouldShowGestationalAge() {

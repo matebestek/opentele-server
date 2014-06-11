@@ -1,6 +1,7 @@
 package org.opentele.server.model.questionnaire
 
 import org.opentele.server.model.MeterType
+import org.opentele.server.model.types.Severity
 
 class MeasurementNode extends QuestionnaireNode {
     public static final String DEVICE_ID_VAR = "DEVICE_ID"
@@ -22,6 +23,7 @@ class MeasurementNode extends QuestionnaireNode {
     public static final String CRP_VAR = "CRP"
 
     public static final String BLOODSUGAR_VAR = "BLOODSUGARMEASUREMENTS"
+    public static final String CONTINUOUS_BLOOD_SUGAR_MEASUREMENTS_VAR = "CONTINUOUS_BLOOD_SUGAR_MEASUREMENTS"
     
     // Monica vars
     public static final String FHR_VAR = "FHRX"; // Varname must be unique
@@ -57,6 +59,9 @@ class MeasurementNode extends QuestionnaireNode {
     MeterType meterType
     
     QuestionnaireNode nextFail
+
+    Severity defaultSeverity
+    Severity nextFailSeverity
     
     void setMonicaMeasuringTimeInputNode(QuestionnaireNode inNode) {
         monicaMeasuringTimeInputNode = inNode
@@ -74,6 +79,9 @@ class MeasurementNode extends QuestionnaireNode {
         monicaMeasuringTimeInputVar(nullable: true)
         mapToInputFields(nullable: false)
         nextFail(nullable:false)
+
+        defaultSeverity(nullable:true)
+        nextFailSeverity(nullable:true)
     }
 	
 	String toString() {

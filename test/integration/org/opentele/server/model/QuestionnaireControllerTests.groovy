@@ -433,6 +433,7 @@ class QuestionnaireControllerTests extends AbstractControllerIntegrationTest {
         def signalToNoiseId
         def fetalHeightId
         def qfhrId
+        def deviceId
 
         boolean foundMonica = false
         controller.response.json.nodes.each() { node ->
@@ -451,6 +452,7 @@ class QuestionnaireControllerTests extends AbstractControllerIntegrationTest {
                 assertNotNull monicaNode.qfhr
                 assertNotNull monicaNode.signalToNoise
                 assertNotNull monicaNode.fetalHeight
+                assertNotNull monicaNode.deviceId
 
                 startTimeId = monicaNode.startTime.name
                 endTimeId = monicaNode.endTime.name
@@ -463,6 +465,7 @@ class QuestionnaireControllerTests extends AbstractControllerIntegrationTest {
                 signalId = monicaNode.signal.name
                 signalToNoiseId = monicaNode.signalToNoise.name
                 fetalHeightId = monicaNode.fetalHeight.name
+                deviceId = monicaNode.deviceId.name
             }
         }
 
@@ -494,6 +497,7 @@ class QuestionnaireControllerTests extends AbstractControllerIntegrationTest {
                 ["name":signalId, "type":"Integer[]", "value": signal],
                 ["name":signalToNoiseId, type:"Integer[]", "value": signalToNoise],
                 ["name":fetalHeightId, type:"Integer[]", "value": fetalHeight],
+                ["name":deviceId, type:"String", "value": "1234"],
             ]
         ]
 
@@ -512,6 +516,7 @@ class QuestionnaireControllerTests extends AbstractControllerIntegrationTest {
         assert newestMeasurement.signals == '[10,30]'
         assert newestMeasurement.fetalHeight == '[10,11,10]'
         assert newestMeasurement.signalToNoise == '[1,2,3]'
+        assert newestMeasurement.deviceIdentification == "1234"
     }
 
     @Test

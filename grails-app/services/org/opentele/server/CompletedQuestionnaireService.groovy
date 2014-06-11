@@ -217,6 +217,11 @@ class CompletedQuestionnaireService {
                 return
             }
             handleBloodSugarNode(completed, node, date, resultHolder, resultList, patient)
+        } else if (MeterTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT == node.meterType.getName()) {
+            if (!isValidVariableName(variableName, "CGM", resultHolder)) {
+                return
+            }
+            handleContinuousBloodSugarMeasurementNode(completed, node, date, resultHolder, resultList, patient)
         } else if (MeterTypeName.LUNG_FUNCTION == node.meterType.getName()) {
             if (!isValidVariableName(variableName, "LF", resultHolder)) {
                 return
@@ -278,6 +283,8 @@ class CompletedQuestionnaireService {
                         // Since "SIGNAL" is a substring of "SIGNAL_TO_NOISE", this case must be after the SIGNAL_TO_NOISE_VAR
                         // case above. (There's a test for that, but it's not that elegant...)
                         ctg.setSignals(result.value.toString())
+                    } else if (containsString(result.name, MeasurementNode.DEVICE_ID_VAR)) {
+                        ctg.setDeviceIdentification(result.value.toString())
                     } else {
                         log.error("Received unknown CTG variable: ${result.name}")
                         appendErrors(resultHolder, "Received unknown CTG variable: ${result.name}")
@@ -412,21 +419,29 @@ class CompletedQuestionnaireService {
     private void handleWeightNode(CompletedQuestionnaire completed, PatientQuestionnaireNode node, Date date, Map resultHolder, def results, Patient patient) {
         MeasurementNodeResult measurementNodeResult = createMeasurementNodeResult(MeasurementTypeName.WEIGHT, completed, node, date, resultHolder)
         Measurement measurement = null
-                    
+
+        String deviceId = null
+
         for (def result : results) {
             if (isPrimaryResultObject(result)) {
                 measurement = createMeasurement(patient, MeasurementTypeName.WEIGHT, measurementNodeResult, Unit.KILO, date)
 
-                // oops.. TODO: should check for correct var-name, if we are sending deviceIdentification as well...
                 if (result.value != null) {
                     measurement.setValue(getDoubleVal(result.value))
                 }
+            } else if (containsString(result.name, MeasurementNode.DEVICE_ID_VAR) && result.value != null) {
+                deviceId = result.value
+
             } else if (handleSecondaryFields(result, measurementNodeResult, resultHolder.errors)) {
                 resultHolder.hasErrors = true
                 break
             }
         }
-
+        if (!measurementNodeResult.wasOmitted) {
+            if (measurement != null) {
+                measurement.setDeviceIdentification(deviceId)
+            }
+        }
         setSeverityAndOmission(measurementNodeResult, measurement, resultHolder)
     }
 
@@ -537,6 +552,9 @@ class CompletedQuestionnaireService {
 
         // Handle different result objects
         for (def result : resultList) {
+            def tokens = result.name.tokenize("#")
+            def objectType = tokens?.last()
+
             if (result.type == "BloodSugarMeasurements") {
                 for (def measurementFromDevice: result.value.measurements) {
                     def measurementTime = ISO8601DateParser.parse(measurementFromDevice.timeOfMeasurement)
@@ -559,13 +577,56 @@ class CompletedQuestionnaireService {
 
                     bloodSugarMeasurements.add(measurement)
                 }
+
+                bloodSugarMeasurements.each {Measurement measurement ->
+                    measurement.deviceIdentification = result.value.serialNumber
+                }
+            } else if (objectType.equalsIgnoreCase("DEVICE_ID")) {
+                //Ignored
+            } else if (handleSecondaryFields(result, measurementNodeResult, resultHolder.errors)) {
+                resultHolder.hasErrors = true
+                break
             }
         }
 
         if (!measurementNodeResult.wasOmitted) {
-            for(Measurement measurement: bloodSugarMeasurements) {
+            for (Measurement measurement: bloodSugarMeasurements) {
+                setSeverityOn(measurementNodeResult, measurement)
                 saveResultAndMeasurement(measurementNodeResult, measurement, resultHolder)
             }
+        }
+    }
+
+    private void handleContinuousBloodSugarMeasurementNode(CompletedQuestionnaire completed, PatientQuestionnaireNode node, Date date, Map resultHolder, def resultList, Patient patient) {
+        MeasurementNodeResult measurementNodeResult = createMeasurementNodeResult(MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT, completed, node, date, resultHolder)
+        def measurement
+
+        // Handle different result objects
+        for (def result : resultList) {
+            if (result.type == "ContinuousBloodSugarMeasurements") {
+                def transferTime = ISO8601DateParser.parse(result.value.transferTime)
+                measurement = createMeasurement(patient, MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT, measurementNodeResult, Unit.MMOL_L, transferTime)
+                measurement.cgmGraphsCreated = false
+
+                for (def measurementFromDevice: result.value.measurements) {
+                    def measurementTime = ISO8601DateParser.parse(measurementFromDevice.timeOfMeasurement)
+
+                    ContinuousBloodSugarMeasurement bloodSugarMeasurement = new ContinuousBloodSugarMeasurement(
+                        recordNumber: measurementFromDevice.recordId,
+                        time: measurementTime,
+                        value: Double.parseDouble(measurementFromDevice.value)  //Parsing it directly as double helps avoid locale-based errors (as these measurements are always sent with '.' decimal seperator)
+                    )
+
+                    measurement.addToContinuousBloodPressureMeasurements(bloodSugarMeasurement)
+                }
+            } else if (handleSecondaryFields(result, measurementNodeResult, resultHolder.errors)) {
+                resultHolder.hasErrors = true
+                break
+            }
+        }
+
+        if (!measurementNodeResult.wasOmitted && measurement) {
+            saveResultAndMeasurement(measurementNodeResult, measurement, resultHolder)
         }
     }
 
@@ -665,7 +726,7 @@ class CompletedQuestionnaireService {
     private void setSeverityOn(MeasurementNodeResult measurementNodeResult, Measurement measurement) {
         if (AboveAlertThresholdPredicate.isTrueFor(measurement)) {
             measurementNodeResult.severity = Severity.RED
-        } else if (measurementNodeResult.severity == null && AboveWarningThresholdPredicate.isTrueFor(measurement)) {
+        } else if (measurementNodeResult.severity < Severity.YELLOW && AboveWarningThresholdPredicate.isTrueFor(measurement)) {
             measurementNodeResult.severity = Severity.YELLOW
         }
     }

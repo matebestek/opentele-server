@@ -6,6 +6,7 @@ Each line contains (left to right):
 - Patient name and CPR
 - Expand/Collapse icon
 - Patient notes
+(- Disable alarm if unread msg to patient button)
 (- Remove all blue alarms button)
 - Acknowledge all green button
 */
@@ -115,7 +116,7 @@ div .patientNotes {
 
 div#acknowledgeButton {
     float: right;
-    padding: 0px 5px 0px 5px;
+    padding: 0px 3px 0px 3px;
 }
 
 div#acknowledgeButton fieldset.buttons {
@@ -125,10 +126,20 @@ div#acknowledgeButton fieldset.buttons {
 
 div#removeBlueButton {
     float: right;
-    padding: 0px 5px 0px 5px;
+    padding: 0px 3px 0px 3px;
 }
 
 div#removeBlueButton fieldset.buttons {
+    border: 0;
+    background-color: transparent;
+}
+
+div#noAlarmIfUnreadMessagesToPatient {
+    float: right;
+    padding: 0px 3px 0px 3px;
+}
+
+div#noAlarmIfUnreadMessagesToPatient fieldset.buttons {
     border: 0;
     background-color: transparent;
 }
@@ -144,6 +155,14 @@ div#removeBlueButton fieldset.buttons {
 .buttons .removeBlueAlarms, .buttons .removeBlueAlarms:active {
     width: 30px;
     background-image: url(../images/remove_blue_alarms.png);
+    background-repeat: no-repeat;
+    text-indent: 25px;
+    text-transform: capitalize;	/*Makes text-indent work for all buttons in IE7*/
+}
+
+.buttons .noAlarmIfUnreadMessagesToPatient, .buttons .noAlarmIfUnreadMessagesToPatient:active {
+    width: 30px;
+    background-image: url(../images/outboxNewIgnore.png);
     background-repeat: no-repeat;
     text-indent: 25px;
     text-transform: capitalize;	/*Makes text-indent work for all buttons in IE7*/

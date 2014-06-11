@@ -102,7 +102,7 @@ $(document).ready(function() {
         <span class="required-indicator">*</span>
 	</label>
 	<g:select name="state"
-		from="${org.opentele.server.model.types.PatientState.values()}"
+		from="${org.opentele.server.model.types.PatientState.valuesForPersisting}"
 		valueMessagePrefix="enum.patientstate" required=""
 		value="${patientInstance?.state}" />
 </div>
@@ -159,6 +159,13 @@ $(document).ready(function() {
         <g:message code="patient.email.label" />
 	</label>
 	<g:textField name="email" value="${patientInstance?.email}" />
+</div>
+
+<div class="fieldcontain noborder ${hasErrors(bean: patientInstance, field: 'noAlarmIfUnreadMessagesToPatient', 'error')}">
+    <label for="noAlarmIfUnreadMessagesToPatient">
+        <g:message code="patient.noAlarmIfUnreadMessagesToPatient.label"/>
+    </label>
+    <g:checkBox name="noAlarmIfUnreadMessagesToPatient" value="${patientInstance?.noAlarmIfUnreadMessagesToPatient}" />
 </div>
 
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'group', 'error')} required" data-tooltip="${message(code: 'tooltip.patient.create.group')}">

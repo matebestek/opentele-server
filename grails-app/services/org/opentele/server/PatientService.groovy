@@ -276,6 +276,14 @@ class PatientService {
         patientOverviewService.updateOverviewFor(patient)
     }
 
+    @Transactional
+    def noAlarmIfUnreadMessagesToPatient(Patient patient) {
+        patient.noAlarmIfUnreadMessagesToPatient = true
+        patient.save(failOnError: true)
+
+        patientOverviewService.updateOverviewFor(patient)
+    }
+
     /**
      * Filters patients the clinician is allowed to view. That is, patients that
      * are in patientGroups the clinician is associated with.

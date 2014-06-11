@@ -19,4 +19,13 @@ modules = {
     'jquery-livequery' {
         resource url: 'js/jquery.livequery.min.js'
     }
+
+    'popup' {
+        resource url: 'js/popup.js'
+        dependsOn 'jquery-popupWindow'
+    }
+
+    'jquery-popupWindow' {
+        resource url: 'js/jquery.popupWindow.js'
+    }
 }

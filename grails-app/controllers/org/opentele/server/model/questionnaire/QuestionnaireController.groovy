@@ -3,7 +3,6 @@ import grails.converters.JSON
 import grails.plugins.springsecurity.Secured
 import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.model.Clinician
-import org.opentele.server.model.Message
 import org.opentele.server.model.Patient
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.patientquestionnaire.NodeResult
@@ -24,6 +23,7 @@ class QuestionnaireController {
     def completedQuestionnaireService
     def clinicianService
     def i18nService
+    def measurementService
 
     @Secured(PermissionName.QUESTIONNAIRE_READ_ALL)
 	def index() {
@@ -109,6 +109,16 @@ class QuestionnaireController {
 
 		render results as JSON
 	}
+
+
+    @Secured(PermissionName.QUESTIONNAIRE_UPLOAD)
+    @SecurityWhiteListController
+    def lastContinuousBloodSugarRecordNumber() {
+        def user = springSecurityService.currentUser
+        def patient = Patient.findByUser(user)
+
+        render measurementService.lastContinuousBloodSugarRecordNumberForPatient(patient) as JSON
+    }
 
 	/**
 	 * Acknowledges a questionnaire. The function checks, if the user has the sufficient rights. The result is redirected back to the overview.

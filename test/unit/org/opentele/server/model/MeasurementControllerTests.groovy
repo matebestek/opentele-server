@@ -100,7 +100,7 @@ class MeasurementControllerTests {
     }
 
     private createPatient() {
-        def patient = Patient.build(cpr: '1234567890')
+        def patient = Patient.build(cpr: '1234567890', cgmGraphs: [])
         patient.save(failOnError: true)
         def patientId = patient.id
         [patient, patientId]

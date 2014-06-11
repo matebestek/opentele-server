@@ -5,9 +5,11 @@
     <meta name="layout" content="main">
     <g:set var="pageTitle" value="${message(code: 'patientMeasurements.graphs.title', args: [patientInstance.name.encodeAsHTML()])}"/>
     <title>${pageTitle}</title>
+    <g:set var="showThresholds" value="${true}" scope="request"/>
     <g:render template="graphFunctions"/>
 	<g:render template="measurementGraph" collection="${measurements}" var="measurement" model="${[patient: patientInstance, patientIdForFullScreen: params.patientId]}"/>
-    <g:render template="bloodsugar_measurementGraphs" collection="${measurements}" var="measurement" model="${[patient: patientInstance, patientIdForFullScreen: params.patientId]}"/>
+    <g:render template="bloodSugarMeasurementGraphs" collection="${measurements}" var="measurement" model="${[patient: patientInstance, patientIdForFullScreen: params.patientId]}"/>
+    <g:render template="continuousBloodSugarMeasurementGraphs" collection="${measurements}" var="measurement" model="${[patient: patientInstance, patientIdForFullScreen: params.patientId]}"/>
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'bloodsugartable.css')}" type="text/css">
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'font-awesome.min.css')}" type="text/css">
     <link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery-ui.custom.css')}" type="text/css">
@@ -115,6 +117,11 @@
                         <g:if test="${measurement.type == MeasurementTypeName.BLOODSUGAR.name()}">
                             <span class="property-value">
                                 <div id="${MeasurementTypeName.BLOODSUGAR.name() + "-average-day"}-${patientInstance.id}"></div>
+                            </span>
+                        </g:if>
+                        <g:if test="${measurement.type == MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT.name()}">
+                            <span class="property-value">
+                                <div id="${MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT.name() + "-average-day"}-${patientInstance.id}"></div>
                             </span>
                         </g:if>
                     </g:each>

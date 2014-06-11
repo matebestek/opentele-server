@@ -40,18 +40,18 @@ class ThresholdSpec extends OpenTeleSpec {
 
     }
 
-    def "I can add a Proteinindhold i urin threshold to a patientgroup"() {
+    def "I can add a Protein i urin threshold to a patientgroup"() {
         given: "Im at the threshold page"
         to ThresholdOverviewPage
 
 
         withConfirm { deleteAllThresholdsFromPatientgroup(1).click() }
 
-        when: "I add a new Proteinindhold i urin threshold"
+        when: "I add a new Protein i urin threshold"
         addThressholdToPatientgroup(1).click()
         at AddThresholdPage
 
-        form.type = "Proteinindhold i urin"
+        form.type = "Protein i urin"
 
         alertHigh = '+4'
         alertLow = 'Neg.'
@@ -59,8 +59,8 @@ class ThresholdSpec extends OpenTeleSpec {
         saveButton.click()
         at ThresholdOverviewPage
 
-        then: "the Proteinindhold i urin threshold was added"
-        thresholdType(1, 'Proteinindhold i urin')
+        then: "the Protein i urin threshold was added"
+        thresholdType(1, 'Protein i urin')
         thresholdAlertHigh(1,1) == '+4'
         thresholdAlertLow(1,1) == 'Neg.'
 

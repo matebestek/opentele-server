@@ -173,50 +173,56 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
 
     @Override
     void visitMeasurementNode(PatientQuestionnaireNode n) {
+
         switch (n.meterType.name) {
             case MeterTypeName.CTG.value():
                 patientMeasurementNodeForCtg(n)
-                break;
+                break
             case MeterTypeName.WEIGHT:
                 patientMeasurementNodeForWeight(n)
-                break;
+                break
             case MeterTypeName.TEMPERATURE:
                 patientMeasurementNodeForTemperature(n)
-                break;
+                break
             case MeterTypeName.BLOOD_PRESSURE_PULSE.value():
                 patientMeasurementNodeForBloodPressureAndPulse(n)
-                break;
+                break
             case MeterTypeName.SATURATION.value():
                 patientMeasurementNodeForSaturation(n)
-                break;
+                break
             case MeterTypeName.SATURATION_W_OUT_PULSE.value():
                 patientMeasurementNodeForSaturationWithoutPulse(n)
-                break;
+                break
             case MeterTypeName.URINE.value():
                 patientMeasurementNodeForUrine(n)
-                break;
+                break
             case MeterTypeName.URINE_GLUCOSE:
                 patientMeasurementNodeForGlucoseInUrine(n)
-                break;
+                break
             case MeterTypeName.CRP:
                 patientMeasurementNodeForCrp(n)
-                break;
+                break
             case MeterTypeName.HEMOGLOBIN:
                 patientMeasurementNodeForHemoglobin(n)
-                break;
+                break
             case MeterTypeName.BLOODSUGAR:
                 patientMeasurementNodeForBloodSugar(n)
-                break;
+                break
             case MeterTypeName.LUNG_FUNCTION:
                 patientMeasurementNodeForLungFunction(n)
-                break;
+                break
+            case MeterTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT:
+                patientMeasurementNodeForContinuousBloodSugarMeasurement(n)
+                break
             default:
                 throw new RuntimeException("Unsupported datatype ${n.meterType.name}")
         }
     }
 
-
     private def patientMeasurementNodeForCtg(n) {
+
+        def deviceIdOutputVariableName = "${n.id}.CTG#${MeasurementNode.DEVICE_ID_VAR}"
+
         outputVariables["${n.id}.CTG#${MeasurementNode.FHR_VAR}"] = DataType.FLOAT_ARRAY.value()
         outputVariables["${n.id}.CTG#${MeasurementNode.MHR_VAR}"] = DataType.FLOAT_ARRAY.value()
         outputVariables["${n.id}.CTG#${MeasurementNode.QFHR_VAR}"] = DataType.INTEGER_ARRAY.value()
@@ -228,11 +234,12 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
         outputVariables["${n.id}.CTG#${MeasurementNode.VOLTAGEEND_VAR}"] = DataType.FLOAT.value()
         outputVariables["${n.id}.CTG#${MeasurementNode.STARTTIME_VAR}"] = DataType.STRING.value()
         outputVariables["${n.id}.CTG#${MeasurementNode.ENDTIME_VAR}"] = DataType.STRING.value()
+        outputVariables[deviceIdOutputVariableName] = DataType.STRING.value()
 
         def deviceNodeContents = [
             nodeName: n.id as String,
-            next: n.defaultNext.id as String,
-            nextFail: "AN_${n.id}_CANCEL",
+            next: defaultNextSeverityNodeName(n) as String,
+            nextFail: cancelNodeName(n),
 
             fhr: [
                 name: "${n.id}.CTG#${MeasurementNode.FHR_VAR}",
@@ -277,6 +284,10 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
             endTime: [
                 name: "${n.id}.CTG#${MeasurementNode.ENDTIME_VAR}",
                 type: DataType.STRING.value()
+            ],
+            deviceId: [
+                    name: deviceIdOutputVariableName,
+                    type: DataType.STRING.value()
             ]
         ]
 
@@ -290,50 +301,60 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
 
         nodes << (n.simulate ? [MonicaTestDeviceNode: deviceNodeContents] : [MonicaDeviceNode: deviceNodeContents])
 
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.CTG##CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.CTG##CANCEL", "${n.id}.CTG##SEVERITY")
     }
 
     private def patientMeasurementNodeForWeight(n) {
+
+        def outputVariableName = "${n.id}.${MeasurementNode.WEIGHT_VAR}"
+        def deviceIdOutputVariableName = "${n.id}.${MeasurementNode.WEIGHT_VAR}#${MeasurementNode.DEVICE_ID_VAR}"
+
         if (n.mapToInputFields) {
             addIoNode(nodeName: n.id, nextNodeId: n.defaultNext.id, elements: [
                 textViewElement(text: n.text),
-                editFloatElement(variableName: "${n.id}.${MeasurementNode.WEIGHT_VAR}"),
-                buttonsToSkipInputForNode(n)
+                editFloatElement(variableName: outputVariableName),
+                buttonsToSkipInputForNode(leftNext: cancelNodeName(n), rightNext: defaultNextSeverityNodeName(n))
             ])
         } else {
-            def outputVariableName = "${n.id}.${MeasurementNode.WEIGHT_VAR}"
             outputVariables[outputVariableName] = DataType.FLOAT.value()
+            outputVariables[deviceIdOutputVariableName] = DataType.STRING.value()
             def nodeContents = [
                 nodeName: n.id as String,
-                next: n.defaultNext.id as String,
-                nextFail: "AN_${n.id}_CANCEL",
+                next: defaultNextSeverityNodeName(n) as String,
+                nextFail: cancelNodeName(n),
                 text: n.text,
                 weight: [
                     name: outputVariableName,
                     type: DataType.FLOAT.value()
+                ],
+                deviceId: [
+                        name: deviceIdOutputVariableName,
+                        type: DataType.STRING.value()
                 ]
             ]
             nodes << (n.simulate ? [WeightTestDeviceNode: nodeContents] : [WeightDeviceNode: nodeContents])
         }
-
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.${MeasurementNode.WEIGHT_VAR}#CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.${MeasurementNode.WEIGHT_VAR}#CANCEL", "${n.id}.${MeasurementNode.WEIGHT_VAR}#SEVERITY")
     }
 
     private def patientMeasurementNodeForTemperature(n) {
+
+        def outputVariableName = "${n.id}.${MeasurementNode.TEMPERATURE_VAR}"
+
         if (n.mapToInputFields) {
-            addIoNode(nodeName: n.id, nextNodeId: n.defaultNext.id, elements: [
-                textViewElement(text: n.text),
-                editFloatElement(variableName: "${n.id}.${MeasurementNode.TEMPERATURE_VAR}"),
-                buttonsToSkipInputForNode(n)
+            addIoNode(nodeName: n.id, nextNodeId: n.defaultNext.id,
+                    elements: [textViewElement(text: n.text),
+                               editFloatElement(variableName: outputVariableName),
+                               buttonsToSkipInputForNode(leftNext: cancelNodeName(n), rightNext: defaultNextSeverityNodeName(n))
             ])
         } else { // No support for simulated nodes for now.. Since all temp measurements are manual
-            def outputVariableName = "${n.id}.${MeasurementNode.TEMPERATURE_VAR}"
+
             outputVariables[outputVariableName] = DataType.FLOAT.value()
             nodes << [
                 TemperatureDeviceNode: [
                     nodeName: n.id as String,
-                    next: n.defaultNext.id as String,
-                    nextFail: "AN_${n.id}_CANCEL",
+                    next: defaultNextSeverityNodeName(n) as String,
+                    nextFail: cancelNodeName(n),
                     text: n.text,
                     temperature: [
                         name: outputVariableName,
@@ -342,29 +363,30 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
                 ]
             ]
         }
-
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.${MeasurementNode.TEMPERATURE_VAR}#CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.${MeasurementNode.TEMPERATURE_VAR}#CANCEL", "${n.id}.${MeasurementNode.TEMPERATURE_VAR}#SEVERITY")
     }
 
     def patientMeasurementNodeForBloodPressureAndPulse(n) {
+
+        def systolicOutputVariableName = "${n.id}.BP#${MeasurementNode.SYSTOLIC_VAR}"
+        def diastolicOutputVariableName = "${n.id}.BP#${MeasurementNode.DIASTOLIC_VAR}"
+        def meanArterialPressureOutputVariableName = "${n.id}.BP#${MeasurementNode.MEAN_ARTERIAL_PRESSURE_VAR}"
+        def pulseOutputVariableName = "${n.id}.BP#${MeasurementNode.PULSE_VAR}"
+        def deviceIdOutputVariableName = "${n.id}.BP#${MeasurementNode.DEVICE_ID_VAR}"
+
         if (n.mapToInputFields) {
-            addIoNode(nodeName: n.id, nextNodeId: n.defaultNext.id, elements: [
+            addIoNode(nodeName: n.id, nextNodeId: defaultNextSeverityNodeName(n), elements: [
                     textViewElement(text: n.text),
                     textViewElement(text: 'Systolisk blodtryk'),
-                    editIntegerElement(variableName: "${n.id}.BP#${MeasurementNode.SYSTOLIC_VAR}"),
+                    editIntegerElement(variableName: systolicOutputVariableName),
                     textViewElement(text: 'Diastolisk blodtryk'),
-                    editIntegerElement(variableName: "${n.id}.BP#${MeasurementNode.DIASTOLIC_VAR}"),
+                    editIntegerElement(variableName: diastolicOutputVariableName),
                     textViewElement(text: 'Puls'),
-                    editIntegerElement(variableName: "${n.id}.BP#${MeasurementNode.PULSE_VAR}"),
-                    buttonsToSkipInputForNode(n)
+                    editIntegerElement(variableName: pulseOutputVariableName),
+                    buttonsToSkipInputForNode(leftNext: cancelNodeName(n), rightNext: defaultNextSeverityNodeName(n))
                 ]
             )
         } else {
-            def systolicOutputVariableName = "${n.id}.BP#${MeasurementNode.SYSTOLIC_VAR}"
-            def diastolicOutputVariableName = "${n.id}.BP#${MeasurementNode.DIASTOLIC_VAR}"
-            def meanArterialPressureOutputVariableName = "${n.id}.BP#${MeasurementNode.MEAN_ARTERIAL_PRESSURE_VAR}"
-            def pulseOutputVariableName = "${n.id}.BP#${MeasurementNode.PULSE_VAR}"
-            def deviceIdOutputVariableName = "${n.id}.BP#${MeasurementNode.DEVICE_ID_VAR}"
 
             outputVariables[systolicOutputVariableName] = DataType.INTEGER.value()
             outputVariables[diastolicOutputVariableName] = DataType.INTEGER.value()
@@ -374,8 +396,8 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
 
             def nodeContents = [
                 nodeName: n.id as String,
-                next: n.defaultNext.id as String,
-                nextFail: "AN_${n.id}_CANCEL",
+                next: defaultNextSeverityNodeName(n),
+                nextFail: cancelNodeName(n),
                 text: n.text,
                 diastolic: [
                     name: diastolicOutputVariableName,
@@ -400,25 +422,26 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
             ]
             nodes << (n.simulate ? [BloodPressureTestDeviceNode: nodeContents] : [BloodPressureDeviceNode: nodeContents])
         }
-
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.BP##CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.BP##CANCEL", "${n.id}.BP##SEVERITY")
     }
 
     private def patientMeasurementNodeForSaturation(n) {
+
+        def saturationOutputVariableName = "${n.id}.SAT#${MeasurementNode.SATURATION_VAR}"
+        def pulseOutputVariableName = "${n.id}.SAT#${MeasurementNode.PULSE_VAR}"
+        def deviceIdOutputVariableName = "${n.id}.SAT#${MeasurementNode.DEVICE_ID_VAR}"
+
         if (n.mapToInputFields) {
             addIoNode(nodeName: n.id, nextNodeId: n.defaultNext.id, elements: [
                     textViewElement(text: n.text),
                     textViewElement(text: 'Iltmætning'),
-                    editIntegerElement(variableName: "${n.id}.SAT#${MeasurementNode.SATURATION_VAR}"),
+                    editIntegerElement(variableName: saturationOutputVariableName),
                     textViewElement(text: 'Puls'),
-                    editIntegerElement(variableName: "${n.id}.SAT#${MeasurementNode.PULSE_VAR}"),
-                    buttonsToSkipInputForNode(n)
+                    editIntegerElement(variableName: pulseOutputVariableName),
+                    buttonsToSkipInputForNode(rightNext: defaultNextSeverityNodeName(n), leftNext: cancelNodeName(n))
                ]
             )
         } else {
-            def saturationOutputVariableName = "${n.id}.SAT#${MeasurementNode.SATURATION_VAR}"
-            def pulseOutputVariableName = "${n.id}.SAT#${MeasurementNode.PULSE_VAR}"
-            def deviceIdOutputVariableName = "${n.id}.SAT#${MeasurementNode.DEVICE_ID_VAR}"
 
             outputVariables[saturationOutputVariableName] = DataType.INTEGER.value()
             outputVariables[pulseOutputVariableName] = DataType.INTEGER.value()
@@ -426,8 +449,8 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
 
             def nodeContents = [
                 nodeName: n.id as String,
-                next: n.defaultNext.id as String,
-                nextFail: "AN_${n.id}_CANCEL",
+                next: defaultNextSeverityNodeName(n) as String,
+                nextFail: cancelNodeName(n),
                 text: n.text,
                 saturation: [
                     name: saturationOutputVariableName,
@@ -445,30 +468,31 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
             nodes << (n.simulate ? [SaturationTestDeviceNode: nodeContents] : [SaturationDeviceNode: nodeContents])
         }
 
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.SAT##CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.SAT##CANCEL", "${n.id}.SAT##SEVERITY")
     }
 
-
     private def patientMeasurementNodeForSaturationWithoutPulse(n) {
+
+        def saturationOutputVariableName = "${n.id}.SAT#${MeasurementNode.SATURATION_VAR}"
+        def deviceIdOutputVariableName = "${n.id}.SAT#${MeasurementNode.DEVICE_ID_VAR}"
+
         if (n.mapToInputFields) {
             addIoNode(nodeName: n.id, nextNodeId: n.defaultNext.id, elements: [
                     textViewElement(text: n.text),
                     textViewElement(text: 'Iltmætning'),
-                    editIntegerElement(variableName: "${n.id}.SAT#${MeasurementNode.SATURATION_VAR}"),
-                    buttonsToSkipInputForNode(n)
+                    editIntegerElement(variableName: saturationOutputVariableName),
+                    buttonsToSkipInputForNode(leftNext: cancelNodeName(n), rightNext: defaultNextSeverityNodeName(n))
             ]
             )
         } else {
-            def saturationOutputVariableName = "${n.id}.SAT#${MeasurementNode.SATURATION_VAR}"
-            def deviceIdOutputVariableName = "${n.id}.SAT#${MeasurementNode.DEVICE_ID_VAR}"
 
             outputVariables[saturationOutputVariableName] = DataType.INTEGER.value()
             outputVariables[deviceIdOutputVariableName] = DataType.STRING.value()
 
             def nodeContents = [
                     nodeName: n.id as String,
-                    next: n.defaultNext.id as String,
-                    nextFail: "AN_${n.id}_CANCEL",
+                    next: defaultNextSeverityNodeName(n) as String,
+                    nextFail: cancelNodeName(n),
                     text: n.text,
                     saturation: [
                             name: saturationOutputVariableName,
@@ -481,11 +505,11 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
             ]
             nodes << (n.simulate ? [SaturationWithoutPulseTestDeviceNode: nodeContents] : [SaturationWithoutPulseDeviceNode: nodeContents])
         }
-
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.SAT##CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.SAT##CANCEL", "${n.id}.SAT##SEVERITY")
     }
 
     def patientMeasurementNodeForBloodSugar(n) {
+
         def deviceIdOutputVariableName = "${n.id}.BS#${MeasurementNode.DEVICE_ID_VAR}"
         def bloodSugarMeasurementsOutputVariableName = "${n.id}.BS#${MeasurementNode.BLOODSUGAR_VAR}"
 
@@ -494,8 +518,8 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
 
         def nodeContents = [
                 nodeName: n.id as String,
-                next: n.defaultNext.id as String,
-                nextFail: "AN_${n.id}_CANCEL",
+                next: defaultNextSeverityNodeName(n) as String,
+                nextFail: cancelNodeName(n),
                 text: n.text,
                 bloodSugarMeasurements: [
                         name: bloodSugarMeasurementsOutputVariableName,
@@ -514,11 +538,43 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
         } else {
             nodes << [BloodSugarDeviceNode: nodeContents]
         }
+        addCancelAndSeverityAssignments(n, "${n.id}.BS##CANCEL", "${n.id}.BS##SEVERITY")
+    }
 
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.BS##CANCEL", variableValue: true)
+    private def patientMeasurementNodeForContinuousBloodSugarMeasurement(n) {
+        def deviceIdOutputVariableName = "${n.id}.CGM#${MeasurementNode.DEVICE_ID_VAR}"
+        def bloodSugarMeasurementsOutputVariableName = "${n.id}.CGM#${MeasurementNode.CONTINUOUS_BLOOD_SUGAR_MEASUREMENTS_VAR}"
+
+        outputVariables[deviceIdOutputVariableName] = DataType.STRING.value()
+        outputVariables[bloodSugarMeasurementsOutputVariableName] = DataType.INTEGER.value()
+
+        def nodeContents = [
+            nodeName: n.id as String,
+            next: defaultNextSeverityNodeName(n) as String,
+            nextFail: cancelNodeName(n),
+            text: n.text,
+            bloodSugarMeasurements: [
+                name: bloodSugarMeasurementsOutputVariableName,
+                type: DataType.INTEGER.value()
+            ],
+            deviceId: [
+                name: deviceIdOutputVariableName,
+                type: DataType.STRING.value()
+            ]
+        ]
+
+        if (n.mapToInputFields) {
+            // Makes no sense at all
+        } else if (n.simulate) {
+            nodes << [ContinuousBloodSugarTestDeviceNode: nodeContents]
+        } else {
+            nodes << [ContinuousBloodSugarDeviceNode: nodeContents]
+        }
+        addCancelAndSeverityAssignments(n, "${n.id}.CGM##CANCEL", "${n.id}.CGM##SEVERITY")
     }
 
     def patientMeasurementNodeForLungFunction(n) {
+
         def deviceIdOutputVariableName = "${n.id}.LF#${MeasurementNode.DEVICE_ID_VAR}"
         def fev1OutputVariableName = "${n.id}.LF#${MeasurementNode.FEV1_VAR}"
         def fev6OutputVariableName = "${n.id}.LF#${MeasurementNode.FEV6_VAR}"
@@ -537,8 +593,8 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
 
         def nodeContents = [
                 nodeName: n.id as String,
-                next: n.defaultNext.id as String,
-                nextFail: "AN_${n.id}_CANCEL",
+                next: defaultNextSeverityNodeName(n) as String,
+                nextFail: cancelNodeName(n),
                 text: n.text,
                 fev1: [
                         name: fev1OutputVariableName,
@@ -576,19 +632,19 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
         } else {
             nodes << [LungMonitorDeviceNode: nodeContents]
         }
-
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.LF##CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.LF##CANCEL", "${n.id}.LF##SEVERITY")
     }
 
     private def patientMeasurementNodeForUrine(n) {
+
         def outputVariableName = "${n.id}.${MeasurementNode.URINE_VAR}"
         outputVariables[outputVariableName] = DataType.INTEGER.value()
 
         nodes << [
             UrineDeviceNode: [
                 nodeName: n.id as String,
-                next: n.defaultNext.id as String,
-                nextFail: "AN_${n.id}_CANCEL",
+                next: defaultNextSeverityNodeName(n) as String,
+                nextFail: cancelNodeName(n),
                 text: n.text,
                 urine : [
                     name: outputVariableName,
@@ -596,19 +652,19 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
                 ]
             ]
         ]
-
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.${MeasurementNode.URINE_VAR}#CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.${MeasurementNode.URINE_VAR}#CANCEL", "${n.id}.${MeasurementNode.URINE_VAR}#SEVERITY")
     }
 
     private def patientMeasurementNodeForGlucoseInUrine(n) {
+
         def outputVariableName = "${n.id}.${MeasurementNode.GLUCOSE_URINE_VAR}"
         outputVariables[outputVariableName] = DataType.INTEGER.value()
 
         nodes << [
                 GlucoseUrineDeviceNode: [
                         nodeName: n.id as String,
-                        next: n.defaultNext.id as String,
-                        nextFail: "AN_${n.id}_CANCEL",
+                        next: defaultNextSeverityNodeName(n) as String,
+                        nextFail: cancelNodeName(n),
                         text: n.text,
                         glucoseUrine : [
                                 name: outputVariableName,
@@ -616,13 +672,11 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
                         ]
                 ]
         ]
-
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.${MeasurementNode.GLUCOSE_URINE_VAR}#CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.${MeasurementNode.GLUCOSE_URINE_VAR}#CANCEL", "${n.id}.${MeasurementNode.GLUCOSE_URINE_VAR}#SEVERITY")
     }
 
-
-
     private def patientMeasurementNodeForCrp(n) {
+
         def outputVariableName = "${n.id}.${MeasurementNode.CRP_VAR}"
         outputVariables[outputVariableName] =  DataType.INTEGER.value()
 
@@ -630,33 +684,34 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
             CRPNode: [
                 nodeName: n.id as String,
                 text: n.text,
-                next: n.defaultNext.id as String,
-                nextFail: "AN_${n.id}_CANCEL",
+                next: defaultNextSeverityNodeName(n) as String,
+                nextFail: cancelNodeName(n),
                 CRP : [
                     name: outputVariableName,
                     type: DataType.INTEGER.value()
                 ]
             ]
         ]
-
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.${MeasurementNode.CRP_VAR}#CANCEL", variableValue: true)
+        addCancelAndSeverityAssignments(n, "${n.id}.${MeasurementNode.CRP_VAR}#CANCEL", "${n.id}.${MeasurementNode.CRP_VAR}#SEVERITY")
     }
 
     private def patientMeasurementNodeForHemoglobin(n) {
+
+        def outputVariableName = "${n.id}.${MeasurementNode.HEMOGLOBIN_VAR}"
+
         if (n.mapToInputFields) {
             addIoNode(nodeName: n.id, nextNodeId: n.defaultNext.id, elements: [
                     textViewElement(text: n.text),
-                    editFloatElement(variableName: "${n.id}.${MeasurementNode.HEMOGLOBIN_VAR}"),
-                    buttonsToSkipInputForNode(n)
+                    editFloatElement(variableName: outputVariableName),
+                    buttonsToSkipInputForNode(leftNext: cancelNodeName(n), rightNext: defaultNextSeverityNodeName(n))
             ])
-        } else { // No support for simulated nodes for now.. Since all temp measurements are manual
-            def outputVariableName = "${n.id}.${MeasurementNode.HEMOGLOBIN_VAR}"
+        } else {
             outputVariables[outputVariableName] = DataType.FLOAT.value()
             nodes << [
                     HaemoglobinDeviceNode: [
                             nodeName: n.id as String,
-                            next: n.defaultNext.id as String,
-                            nextFail: "AN_${n.id}_CANCEL",
+                            next: defaultNextSeverityNodeName(n) as String,
+                            nextFail: cancelNodeName(n),
                             text: n.text,
                             haemoglobinValue: [
                                     name: outputVariableName,
@@ -665,9 +720,26 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
                     ]
             ]
         }
+        addCancelAndSeverityAssignments(n, "${n.id}.${MeasurementNode.HEMOGLOBIN_VAR}#CANCEL", "${n.id}.${MeasurementNode.HEMOGLOBIN_VAR}#SEVERITY")
+    }
 
+    private def addCancelAndSeverityAssignments(node, cancelVariableName, severityVariableName) {
 
-        addBooleanAssignmentNode(nodeName: "AN_${n.id}_CANCEL", nextNodeId: n.nextFail.id, variableName: "${n.id}.${MeasurementNode.HEMOGLOBIN_VAR}#CANCEL", variableValue: true)
+        addBooleanAssignmentNode(nodeName: cancelNodeName(node), nextNodeId: nextFailSeverityNodeName(node), variableName: cancelVariableName, variableValue: true)
+
+        def failPathValue = node.nextFailSeverity?.value() ?: Severity.GREEN.value()
+
+        addStringAssignmentNode(nodeName: nextFailSeverityNodeName(node),
+                nextNodeId: node.nextFail.id,
+                variableName: severityVariableName,
+                variableValue: failPathValue)
+
+        def defaultPathValue = node.defaultSeverity?.value() ?: Severity.GREEN.value()
+
+        addStringAssignmentNode(nodeName: defaultNextSeverityNodeName(node),
+                nextNodeId: node.defaultNext.id,
+                variableName: severityVariableName,
+                variableValue: defaultPathValue)
     }
 
     private def patientChoiceNodeExpression(n) {
@@ -692,6 +764,18 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
         } else {
             throw new RuntimeException("Unsupported operation: ${n.operation}")
         }
+    }
+
+    private String cancelNodeName(n) {
+        "AN_${n.id}_CANCEL"
+    }
+
+    private String defaultNextSeverityNodeName(node) {
+        "ANSEV_${node.defaultNext.id}_D${node.id}"
+    }
+
+    private String nextFailSeverityNodeName(node) {
+        "ANSEV_${node.nextFail.id}_F${node.id}"
     }
 
     private String inputVariableNameForMeasurementTime(PatientMeasurementNode dn) {
@@ -812,17 +896,17 @@ class QuestionnaireOutputBuilder implements PatientQuestionnaireNodeVisitor {
         ]
     }
 
-    private def buttonsToSkipInputForNode(node) {
+    private def buttonsToSkipInputForNode(parameters) {
         [
-            TwoButtonElement: [
-                leftText: "Undlad",
-                leftNext: "AN_${node.id}_CANCEL" as String,
-                leftSkipValidation: true,
+                TwoButtonElement: [
+                        leftText: "Undlad",
+                        leftNext: parameters.leftNext as String,
+                        leftSkipValidation: true,
 
-                rightText: "Næste",
-                rightNext: node.defaultNext.id as String,
-                rightSkipValidation: false
-            ]
+                        rightText: "Næste",
+                        rightNext: parameters.rightNext as String,
+                        rightSkipValidation: false
+                ]
         ]
     }
 

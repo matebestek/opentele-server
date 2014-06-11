@@ -20,7 +20,7 @@ import spock.lang.Specification
 import spock.lang.Unroll
 
 @TestFor(MeasurementService)
-@Build([Patient, Measurement, MeasurementNodeResult, QuestionnaireHeader, CompletedQuestionnaire, MeasurementType, PatientQuestionnaire, Clinician, PatientBooleanNode, BooleanNode])
+@Build([Patient, Measurement, MeasurementNodeResult, QuestionnaireHeader, CompletedQuestionnaire, MeasurementType, PatientQuestionnaire, Clinician, PatientBooleanNode, BooleanNode, ContinuousBloodSugarMeasurement])
 @TestMixin(GrailsUnitTestMixin)
 class MeasurementServiceSpec extends Specification {
     Patient patient
@@ -30,6 +30,7 @@ class MeasurementServiceSpec extends Specification {
     MeasurementType pulseMeasurementType
     MeasurementType lungFunctionMeasurementType
     MeasurementType bloodsugarMeasurementType
+    MeasurementType continuousBloodSugarMeasurementType
 
     def setup() {
         // The encodeAsJavaScript() method is not added to String in unit tests, and it is used within MeasurementService.
@@ -44,6 +45,8 @@ class MeasurementServiceSpec extends Specification {
         pulseMeasurementType = new MeasurementTypeBuilder().ofType(MeasurementTypeName.PULSE).build()
         lungFunctionMeasurementType = new MeasurementTypeBuilder().ofType(MeasurementTypeName.LUNG_FUNCTION).build()
         bloodsugarMeasurementType = new MeasurementTypeBuilder().ofType(MeasurementTypeName.BLOODSUGAR).build()
+        continuousBloodSugarMeasurementType = new MeasurementTypeBuilder().ofType(MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT).build()
+
         patient.save()
         patient.thresholds.add(new BloodPressureThreshold(type: bloodPressureMeasurementType, systolicAlertLow: 70, systolicAlertHigh: 190, systolicWarningHigh: 180, systolicWarningLow: 80, diastolicAlertHigh: 100, diastolicWarningHigh: 90, diastolicWarningLow: 50, diastolicAlertLow: 40))
     }
@@ -443,6 +446,37 @@ class MeasurementServiceSpec extends Specification {
         then:
         bloodPressure.size() == 1
         bloodPressure*.type == ['BLOOD_PRESSURE']
+    }
+
+    void 'can give all CGM measurements as graph data'() {
+        setup:
+        def measurement = new MeasurementBuilder().ofType(MeasurementTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT).atTime(2013, Calendar.JANUARY, 10).inQuestionnaire(completedQuestionnaire).build()
+        long now = date(2013, Calendar.FEBRUARY, 2).time;
+        (0..99).each { time ->
+            measurement.addToContinuousBloodPressureMeasurements(time: new Date(now + time*1000), value: time, recordNumber: time)
+        }
+        measurement.save(failOnError: true)
+
+        when:
+        GraphData cgmData = service.dataForGraphs(patient, TimeFilter.all()).first()
+
+        then:
+        cgmData.series.size() == 1
+
+        cgmData.series[0].size() == 100
+        cgmData.series[0][0][1] == 0 // First value in series
+        cgmData.series[0][99][1] == 99 // Last value in series
+
+        cgmData.start == date(2013, Calendar.FEBRUARY, 2).time
+        cgmData.end == date(2013, Calendar.FEBRUARY, 3).time
+
+        cgmData.minY == 0
+        cgmData.maxY == 100
+        cgmData.type == 'CONTINUOUS_BLOOD_SUGAR_MEASUREMENT'
+
+        cgmData.warningValues == [] // No warning values yet
+        cgmData.alertValues == [] // No alert values yet
+        cgmData.ids == null // Not used for anything anyway
     }
 
     private TableMeasurement singleMeasurement() {

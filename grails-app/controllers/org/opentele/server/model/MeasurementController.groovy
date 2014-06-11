@@ -20,6 +20,8 @@ class MeasurementController {
             redirect(controller: 'patient', action: 'questionnaire', id: measurement.measurementNodeResult.completedQuestionnaire.id)
         } else if (measurement.conference) {
             redirect(controller: 'patient', action: 'conference', id: measurement.conference.id)
+        } else if (measurement.consultation) {
+            redirect(controller: 'patient', action: 'consultation', id: measurement.consultation.id)
         } else {
             throw new IllegalStateException("Measurement ${params.id} (${measurement}) belongs to neither a questionnaire nor a conference")
         }
@@ -46,7 +48,7 @@ class MeasurementController {
 
         def measurements = measurementService.dataForGraphs(patient, timeFilter)
 
-        [patientInstance: patient, measurements: measurements, filter: timeFilter]
+        [patientInstance: patient, measurements: measurements, filter: timeFilter, hasCgmGraphs: !patient.cgmGraphs.empty]
     }
 
     @Secured(PermissionName.MEASUREMENT_READ)

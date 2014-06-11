@@ -31,7 +31,7 @@ class QuestionnaireHeaderController {
 
     @Secured(PermissionName.QUESTIONNAIRE_CREATE)
     def save(String name) {
-        def questionnaireHeaderInstance = new QuestionnaireHeader(name: name)
+        def questionnaireHeaderInstance = new QuestionnaireHeader(name: name.trim())
         if (!questionnaireHeaderInstance.save(flush: true)) {
             render(view: "create", model: [questionnaireHeaderInstance: questionnaireHeaderInstance])
             return
@@ -42,7 +42,7 @@ class QuestionnaireHeaderController {
 
     @Secured(PermissionName.QUESTIONNAIRE_CREATE)
     def saveAndEdit(String name) {
-        def questionnaireHeaderInstance = new QuestionnaireHeader(name: name)
+        def questionnaireHeaderInstance = new QuestionnaireHeader(name: name.trim())
         if (!questionnaireHeaderInstance.save(flush: true)) {
             render(view: "create", model: [questionnaireHeaderInstance: questionnaireHeaderInstance])
             return
@@ -71,7 +71,7 @@ class QuestionnaireHeaderController {
     @Secured(PermissionName.QUESTIONNAIRE_WRITE)
     def update() {
         Long id = params.long('id')
-        String name = params.name
+        String name = params.name.trim()
         boolean requiresManualInspection = (params.requiresManualInspection != null)
 
         withInstance(id) {

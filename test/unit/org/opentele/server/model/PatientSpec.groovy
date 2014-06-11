@@ -3,6 +3,7 @@ package org.opentele.server.model
 import grails.buildtestdata.mixin.Build
 import grails.test.mixin.TestFor
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
+import org.opentele.server.model.types.PatientState
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -31,6 +32,29 @@ class PatientSpec extends Specification {
     def "test that getLatestQuestionnaireUploadDate works as expected when there is no completed questionnaires"() {
         expect:
         !patient.latestQuestionnaireUploadDate
+    }
+
+    def 'takes passive interval into account when calculating extended state'() {
+        when:
+        def startDate = new GregorianCalendar(2014, Calendar.JANUARY, 1).getTime()
+        def endDate = new Date(System.currentTimeMillis() + 1000 * 1000)
+        patient.passiveIntervals = [new PassiveInterval(intervalStartDate: startDate, intervalEndDate: endDate)]
+
+        then:
+        patient.stateWithPassiveIntervals == PatientState.PAUSED
+    }
+
+    def 'gives normal patient state if patient is not passive'() {
+        expect:
+        patient.state == patient.stateWithPassiveIntervals
+    }
+
+    def 'does not accept PAUSED as a valid state'() {
+        when:
+        patient.state = PatientState.PAUSED
+
+        then:
+        !patient.validate()
     }
 
     @Unroll

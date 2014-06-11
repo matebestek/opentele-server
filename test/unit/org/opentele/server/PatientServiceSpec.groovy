@@ -212,6 +212,25 @@ class PatientServiceSpec extends Specification {
         "20202020"  || "1777777777"
     }
 
+    @Unroll
+    def "when I search for patients with username, the patients are returned for the current clinician"() {
+        setup:
+        def user = buildDataForSearch()
+        1 * service.springSecurityService.currentUser >> user
+
+        when:
+        def patientList = service.searchPatient(new PatientSearchCommand(username: username))
+
+        then:
+        patientList.size() == 1
+        patientList.first().cpr == wantedCpr
+
+        where:
+        username     || wantedCpr
+        "tetrazzini" || "0606666655"
+        "benway"     || "0909999933"
+    }
+
     def "test that sendPassword calls to correct method on mailSenderService"() {
         setup:
         def user = User.build(password: "password2", cleartextPassword: "password1")
@@ -273,10 +292,18 @@ class PatientServiceSpec extends Specification {
         patient4.addToNextOfKinPersons(NextOfKinPerson.build(phone: "20202020", patient: patient4))
         patient4.save()
 
+        def patient5 = Patient.build(firstName: "Patient5", cpr: "0606666655", user: User.build(password: "password1", cleartextPassword: null, username: "tetrazzini"))
+        patient5.save()
+        def patient6 = Patient.build(firstName: "Patient6", cpr: "0909999933", user: User.build(password: "password1", cleartextPassword: null, username: "benway"))
+        patient6.save()
+
         Patient2PatientGroup.link(patient1, patientGroup)
         Patient2PatientGroup.link(patient2, patientGroup)
         Patient2PatientGroup.link(patient3, otherPatientGroup)
         Patient2PatientGroup.link(patient4, otherPatientGroup)
+        Patient2PatientGroup.link(patient5, patientGroup)
+        Patient2PatientGroup.link(patient6, patientGroup)
+
         return user
     }
 }

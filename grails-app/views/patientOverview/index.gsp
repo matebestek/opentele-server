@@ -1,5 +1,4 @@
 <%@ page import="org.opentele.server.constants.Constants; org.opentele.server.model.types.PermissionName; org.opentele.server.model.PatientGroup"%>
-<%@ page import="org.opentele.server.model.types.PatientState"%>
 
 <!doctype html>
 <html>
@@ -185,7 +184,11 @@
 		<g:each in="${patients}" var="patientOverview">
 			<div class="patientEntry" id="${patientOverview.patientId}">
 				<div class="questionnaireList" id="${patientOverview.patientId}">
-					<cq:renderOverviewForPatient patientOverview="${patientOverview}" patientNotes="${patientNotes[patientOverview.patientId]}" messagingEnabled="${idsOfPatientsWithMessaging.contains(patientOverview.patientId)}"/>
+					<cq:renderOverviewForPatient patientOverview="${patientOverview}"
+                                                 patientNotes="${patientNotes[patientOverview.patientId]}"
+                                                 messagingEnabled="${idsOfPatientsWithMessaging.contains(patientOverview.patientId)}"
+                                                 alarmIfUnreadMessagesToPatientDisabled="${idsOfPatientsWithAlarmIfUnreadMessagesDisabled.contains(patientOverview.patientId)}"
+                    />
 					<div class="questionnaireListInner" style="display: none;">
 					</div>
 				</div>

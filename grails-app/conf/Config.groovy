@@ -4,6 +4,8 @@ import org.apache.log4j.DailyRollingFileAppender
 
 grails.config.locations = [ "file:c:/kihdatamon/settings/datamon-config.properties", "file:${userHome}/.kih/datamon-config.properties"]
 
+grails.session.timeout.default = 30
+
 grails.project.groupId = appName
 grails.mime.file.extensions = true
 grails.mime.use.accept.header = true

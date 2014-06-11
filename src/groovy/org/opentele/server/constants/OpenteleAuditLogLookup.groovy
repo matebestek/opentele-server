@@ -106,6 +106,12 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
             'finish': 'Færdiggør målingskladder',
             'close': 'Luk målingskladde-vindue'
         ]
+
+        lookup["consultation"] = addStandardTexts("indtast måling", "indtast målinger")
+        lookup["consultation"] << [
+                "addmeasurements": "Tilføj målinger"
+        ]
+
         lookup["auditLogEntry"] = addStandardTexts("hændelseslogning", "hændelseslogninger")
         lookup["auditLogEntry"] << [
                 "ajaxGetActions": "Hent handlinger",
@@ -140,7 +146,7 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
                 "measurementTypes": "Målingstyper",
                 "overview": "Målingsoverblik",
                 "upload": "Upload målinger",
-                "bloodsugar": "Blodsukkervisning",
+                "bloodsugar": "Blodsukkervisning"
         ]
 
         lookup["measurementType"] = addStandardTexts("målingstype", "målingstyper")
@@ -181,8 +187,9 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
                 "resetPassword": "Tildeler patient midlertidig password",
                 "sendPassword": "Sender midlertidig password til patient",
                 "unlockAccount": "Fjerner lås på konto",
-                "chooseThreshold": "Vælg tærskelværdi"
-
+                "chooseThreshold": "Vælg tærskelværdi",
+                "noAlarmIfUnreadMessagesToPatient": "Ingen alarm v/ulæste beskeder til patient",
+                "consultation": "Kliniker indtastet måling"
         ]
 
         lookup["patientOverview"] = [
@@ -209,6 +216,7 @@ class OpenteleAuditLogLookup implements AuditLogLookup {
                 "acknowledgements": "Hent kvitteringer",
                 "sendAcknowledgeAutoMessage": "Send automatisk besked til patient om godkendt (grøn) måling",
                 "listing": "Spørgeskema liste",
+                "lastContinuousBloodSugarRecordNumber": "Hent recordNumber for seneste indsendte koninuerte blodsukker måling",
         ]
 
         lookup["questionnaireGroup"] = addStandardTexts("spørgeskemagruppe", "spørgeskemagrupper")

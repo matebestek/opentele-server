@@ -158,6 +158,30 @@ class PatientOverviewServiceIntegrationSpec extends IntegrationSpec {
         patientIds.contains(patient2WithMessagingEnabled.id)
     }
 
+    def 'can identify patients for which alarms triggered by unread messages *to* the patient is disabled'() {
+        setup:
+        PatientGroup patientGroupWithMessaging = PatientGroup.build(disableMessaging: false)
+        PatientGroup patientGroupWithoutMessaging = PatientGroup.build(disableMessaging: true)
+
+        Clinician clinician = Clinician.build()
+        clinician.addToClinician2PatientGroups(patientGroup: patientGroupWithMessaging)
+        clinician.addToClinician2PatientGroups(patientGroup: patientGroupWithoutMessaging)
+        clinician.save(failOnError: true)
+
+        Patient patient1WithNoAlarmIfUnreadMessages = createPatientWithMessageAndNoAlarmIfUnreadMessages(PatientState.ACTIVE, patientGroupWithoutMessaging, true)
+        Patient patient2WithNoAlarmIfUnreadMessages = createPatientWithMessageAndNoAlarmIfUnreadMessages(PatientState.ACTIVE, patientGroupWithMessaging, true)
+        Patient patient3WithNoAlarmIfUnreadMessages = createPatientWithMessageAndNoAlarmIfUnreadMessages(PatientState.ACTIVE, patientGroupWithoutMessaging, false)
+        Patient patient4WithNoAlarmIfUnreadMessages = createPatientWithMessageAndNoAlarmIfUnreadMessages(PatientState.ACTIVE, patientGroupWithMessaging, false)
+
+        when:
+        def patientIds = patientOverviewService.getIdsOfPatientsWithAlarmIfUnreadMessagesDisabled(clinician, [patient1WithNoAlarmIfUnreadMessages, patient2WithNoAlarmIfUnreadMessages, patient3WithNoAlarmIfUnreadMessages, patient4WithNoAlarmIfUnreadMessages]*.patientOverview)
+
+        then:
+        patientIds.size() == 2
+        patientIds.contains(patient1WithNoAlarmIfUnreadMessages.id)
+        patientIds.contains(patient2WithNoAlarmIfUnreadMessages.id)
+    }
+
     def 'can find all patient notes not seen by clinician for a list of patients'() {
         setup:
         PatientGroup patientGroup = PatientGroup.build()
@@ -190,7 +214,11 @@ class PatientOverviewServiceIntegrationSpec extends IntegrationSpec {
     }
 
     private Patient createPatientWithMessage(PatientState state, PatientGroup group) {
-        Patient patient = Patient.build(state: state, blueAlarmQuestionnaireIDs: [])
+        createPatientWithMessageAndNoAlarmIfUnreadMessages(state, group, false)
+    }
+
+    private Patient createPatientWithMessageAndNoAlarmIfUnreadMessages(PatientState state, PatientGroup group, boolean noAlarmIfUnreadMessages) {
+        Patient patient = Patient.build(state: state, blueAlarmQuestionnaireIDs: [], noAlarmIfUnreadMessagesToPatient: noAlarmIfUnreadMessages)
         patient.addToPatient2PatientGroups(patientGroup: group)
 
         // Create unread note, in order to make this patient important enough to show in patient overview

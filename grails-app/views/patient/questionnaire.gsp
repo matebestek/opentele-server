@@ -48,7 +48,7 @@
 				</g:if>
 				<g:else>
 					<span class="property-value" aria-labelledby="user-label">
-                        Ikke kvitteret for
+                        <g:message code="questionnaire.not.acknowledged" />
                     </span>
 				</g:else>
             </li>
@@ -111,7 +111,7 @@
                 </g:if>
                 <g:if test="${completedQuestionnaire._questionnaireIgnored}">
                     <sec:ifAnyGranted roles="${PermissionName.QUESTIONNAIRE_IGNORE}">
-                        <g:actionSubmit value="Fjern ignorering af hele skema"
+                        <g:actionSubmit value="${message(code: "patient.questionnaire.unIgnoreQuestionnaire")}"
                             class="acknowledge" action="toggleIgnoreQuestionnaire" data-tooltip="${message(code: 'tooltip.patient.questionnaire.unignoreQuestionnaire')}" />
                     </sec:ifAnyGranted>
                 </g:if>
@@ -120,11 +120,11 @@
                         <div id="ignoreReasonInput" style="display: none;">
                             <span><g:message code="questionnaire.ignoreReason.label" /></span>
                             <g:textArea name="ignoreReason"> </g:textArea>
-                            <g:actionSubmit value="Ignorer hele skema" class="cancel"
+                            <g:actionSubmit value="${message(code: "patient.questionnaire.ignoreWholeQuestionnaire")}" class="cancel"
                                 action="toggleIgnoreQuestionnaire" />
                         </div>
                         <input id="ignoreReasonButton" type="button"
-                            value="Ignorer hele skema" class="cancel"
+                            value="${message(code: "patient.questionnaire.ignoreWholeQuestionnaire")}" class="cancel"
                             onClick="showIgnoreReasonInput()" data-tooltip="${message(code: 'tooltip.patient.questionnaire.ignoreQuestionnaire')}" />
                     </sec:ifAnyGranted>
                 </g:else>

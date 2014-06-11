@@ -47,8 +47,12 @@ class UrlMappings {
         "/rest/$controller/measurementFromPatient"(parseRequest: true) {
             action = [POST:"measurementFromPatient"]
         }
+
+
         name patientMeasurementsMobile: "/rest/patient/measurements"(controller:"PatientMeasurementMobile", action:"index")
         name patientMeasurementsTypeMobile: "/rest/patient/measurements/$type"(controller:"PatientMeasurementMobile", action:"measurement")
+
+        "/rest/measurements/lastContinuousBloodSugarRecordNumber" (controller: 'Questionnaire', action:'lastContinuousBloodSugarRecordNumber')
 
         "/rest/reminder/next"(controller:"Reminder", action = [GET:"next"])
 

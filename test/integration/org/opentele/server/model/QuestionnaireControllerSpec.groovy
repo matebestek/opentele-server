@@ -139,13 +139,16 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         when:
         inQuestionnaire 'Vejning'
         withOutput('WeightDeviceNode', [
-            weight:[type:'Float', value:value]
+            weight:[type:'Float', value:value],
+            deviceId:[type:'String', value:"1234"],
+
         ])
         def weightMeasurement = newestMeasurement()
 
         then:
         controller.response.json[0][0].toString() == response
         weightMeasurement.value == value
+        weightMeasurement.deviceIdentification == "1234"
 
         where:
         value | response
@@ -250,9 +253,11 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         when:
         inQuestionnaire 'Blodsukker'
         withOutput('BloodSugarDeviceNode', [
+            deviceId:[type:'String', value: "123xab"],
             bloodSugarMeasurements:[
                 type:'BloodSugarMeasurements',
                 value:[
+                    serialNumber: "123xab",
                     measurements: [
                         [
                             timeOfMeasurement: '2013-05-24T11:30:02+02',
@@ -273,7 +278,7 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
                             isAfterMeal: true,
                             isOutOfBounds: false
                         ],
-                    ]
+                    ],
                 ]
             ]
         ])
@@ -287,12 +292,14 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
         !firstBloodSugarMeasurement.isAfterMeal
         !firstBloodSugarMeasurement.otherInformation
         firstBloodSugarMeasurement.value == 5.6
+        firstBloodSugarMeasurement.deviceIdentification == '123xab'
 
         secondBloodSugarMeasurement.time == at(2013, Calendar.MAY, 24, 13, 0, 20)
         !secondBloodSugarMeasurement.isBeforeMeal
         secondBloodSugarMeasurement.isAfterMeal
         secondBloodSugarMeasurement.otherInformation
         secondBloodSugarMeasurement.value == 6.5
+        secondBloodSugarMeasurement.deviceIdentification == '123xab'
     }
 
     def 'ignores duplicate blood sugar measurements'() {
@@ -329,6 +336,62 @@ class QuestionnaireControllerSpec extends AbstractControllerIntegrationSpec {
 
         secondBloodSugarMeasurement.time == at(2013, Calendar.MAY, 24, 13, 0, 20)
         secondBloodSugarMeasurement.value == 6.5
+    }
+
+    def 'can set severity for blood sugar measurements'() {
+        when:
+        inQuestionnaire 'Blodsukker'
+        withOutput('BloodSugarDeviceNode', [
+                bloodSugarMeasurements:[
+                        type:'BloodSugarMeasurements',
+                        value:[
+                                measurements: [
+                                        [
+                                                timeOfMeasurement: '2013-05-24T11:30:02+02',
+                                                result: firstVal,
+                                                isBeforeMeal: true,
+                                                hasTemperatureWarning: false,
+                                                isControlMeasurement: false,
+                                                isAfterMeal: false,
+                                                isOutOfBounds: false
+                                        ],
+                                        [
+                                                timeOfMeasurement: '2013-05-24T13:00:20+02',
+                                                result: secondVal,
+                                                otherInformation: true,
+                                                isBeforeMeal: false,
+                                                hasTemperatureWarning: false,
+                                                isControlMeasurement: false,
+                                                isAfterMeal: true,
+                                                isOutOfBounds: false
+                                        ],
+                                ]
+                        ]
+                ]
+        ])
+        def (firstBloodSugarMeasurement, secondBloodSugarMeasurement) = newestMeasurements(2)
+        MeasurementNodeResult measurementNodeResult = firstBloodSugarMeasurement.measurementNodeResult
+        CompletedQuestionnaire completedQuestionnaire = measurementNodeResult.completedQuestionnaire
+
+        then:
+        controller.response.json[0][0].toString() == 'success'
+        firstBloodSugarMeasurement.value == firstVal
+        secondBloodSugarMeasurement.value == secondVal
+
+        measurementNodeResult.severity == expectedSeverity
+        completedQuestionnaire.severity == expectedSeverityForCompletedQuestionnaire
+
+        // Nancy's thresholds are:
+        // alert: 20 warning: 15 warningLow: 3 alertLow: 1
+
+        where:
+        firstVal| secondVal | expectedSeverity | expectedSeverityForCompletedQuestionnaire
+        5       |         6 | null             | Severity.GREEN
+        5       |         2 | Severity.YELLOW  | Severity.YELLOW
+        2       |         5 | Severity.YELLOW  | Severity.YELLOW
+        21      |         0 | Severity.RED     | Severity.RED
+        8       |         0 | Severity.RED     | Severity.RED
+        17      |         5 | Severity.YELLOW  | Severity.YELLOW
     }
 
     def 'marks questionnaires according to thresholds'() {

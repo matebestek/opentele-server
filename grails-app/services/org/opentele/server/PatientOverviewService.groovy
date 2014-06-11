@@ -112,6 +112,24 @@ class PatientOverviewService {
         ).toSet()
     }
 
+    Set<Long> getIdsOfPatientsWithAlarmIfUnreadMessagesDisabled(Clinician clinician, Collection<PatientOverview> patientOverviews) {
+        if (patientOverviews.empty) {
+            return Collections.emptySet()
+        }
+
+        PatientOverview.executeQuery(
+                'select patient.id ' +
+                        'from Patient as patient ' +
+                        'inner join patient.patient2PatientGroups as p2pg ' +
+                        'inner join p2pg.patientGroup as pg ' +
+                        'inner join pg.clinician2PatientGroups as c2pg ' +
+                        'where c2pg.clinician = :clinician ' +
+                        '  and patient.id in :patientIds '+
+                        '  and patient.noAlarmIfUnreadMessagesToPatient = true',
+                [clinician: clinician, patientIds: patientOverviews*.patientId]
+        ).toSet()
+    }
+
     Map<Long, List<PatientNote>> fetchUnseenNotesForPatients(Clinician clinician, Collection<PatientOverview> patientOverviews) {
         if (patientOverviews.empty) {
             return [:]
@@ -150,10 +168,13 @@ class PatientOverviewService {
         List<Message> unreadMessagesFromPatient = unreadMessages.findAll { it.sentByPatient }
         Date dateOfOldestUnreadMessageFromPatient = unreadMessagesFromPatient.empty ? null : unreadMessagesFromPatient.first().sendDate
 
+
+        boolean unreadMessagesToPatientTriggersAlarm = patient.noAlarmIfUnreadMessagesToPatient ? !unreadMessagesFromPatient.empty : !unreadMessages.empty
+
         boolean important = (patient.state == PatientState.ACTIVE) && (
                 numberOfUnacknowledgedQuestionnaires > 0 ||
                 worstSeverity > Severity.NONE ||
-                !unreadMessages.empty)
+                unreadMessagesToPatientTriggersAlarm)
 
         [
             patient: patient,

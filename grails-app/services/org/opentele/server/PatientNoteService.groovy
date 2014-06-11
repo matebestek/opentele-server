@@ -2,6 +2,7 @@ package org.opentele.server
 
 import org.opentele.server.model.Clinician
 import org.opentele.server.model.PatientNote
+import org.opentele.server.model.types.NoteType
 import org.opentele.server.model.types.PatientState
 
 class PatientNoteService {
@@ -37,5 +38,17 @@ class PatientNoteService {
 
     def isNoteSeenByAnyUser(PatientNote note) {
         return !note.seenBy.empty
+    }
+
+    def countImportantWithReminder(List<PatientNote> notes) {
+        notes.count { it.type == NoteType.IMPORTANT && PatientNote.isRemindToday(it) }
+    }
+
+    def countNormalWithReminder(List<PatientNote> notes) {
+        notes.count { it.type == NoteType.NORMAL && PatientNote.isRemindToday(it) }
+    }
+
+    def countImportantWithoutDeadline(List<PatientNote> notes) {
+        notes.count { it.type == NoteType.IMPORTANT && !it.reminderDate }
     }
 }

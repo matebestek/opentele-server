@@ -1,4 +1,5 @@
 import opentele.server.ConferenceCallJob
+
 import opentele.server.ExportCTGToMilouJob
 import opentele.server.ExportMeasurementsToKihDbJob
 import org.opentele.server.model.*
@@ -24,6 +25,11 @@ class BootStrap {
     private static final String ERNA_CPR = '0101800124'
     private static final String KIRAN_CPR = '1103811376'
     private static final String NANCY_CPR = '2512484916'
+    private static final String LENE_CPR = '25126884916'
+    private static final String SVEND_CPR = '1212852635'
+
+    private static final String CARL_CPR = '1105491135'
+    private static final String JOHN_CPR = '1206322639'
 
     private static final CREATED_BY_NAME = "BootStrap"
 
@@ -31,10 +37,12 @@ class BootStrap {
     static String praeklampsi = "Præeklampsi"
     static String hjertepatient = "Hjertepatient"
     static final String PPROM = "PPROM"
+    static String lungs = "Lungemedicinsk"
 
     // Test department names
     static String afdelingBTest = "Afdeling-B Test"
     static String afdelingYTest = "Afdeling-Y Test"
+    static String afdelingDemo = "Lungemedicinsk Afdeling"
 
     // Test clinician data
     static def clinicianHelleAndersen = [
@@ -56,9 +64,63 @@ class BootStrap {
 
     // Test patient data
     static def patientNancyAnn = [
-            firstName: 'Nancy Ann', lastName: 'Berggren',
+            firstName: 'Nancy Ann', lastName: 'Berggren', cpr: NANCY_CPR,
             address: 'Åbogade 15', postalCode: '8200', city: 'Aarhus N'
     ]
+
+    static def patientLeneJensen = [
+            firstName: 'Lene', lastName: 'Jensen', cpr: LENE_CPR,
+            address: 'Åbogade 25', postalCode: '8200', city: 'Aarhus N'
+    ]
+
+    static def patientKiran = [
+            firstName: 'Kiran', lastName: 'Liaqat', cpr: KIRAN_CPR,
+            address: 'Gade 15', postalCode: '8000', city: 'Aarhus C'
+    ]
+
+    static def patientSvend = [
+            firstName: 'Svend', lastName: 'Andersson', cpr: SVEND_CPR,
+            address: 'Gade 15', postalCode: '8000', city: 'Aarhus C'
+    ]
+
+    static def patientCarl = [
+            firstName: 'Carl', lastName: 'Petersen', cpr: CARL_CPR,
+            address: 'Gadekæret 2', postalCode: '8270', city: 'Højbjerg'
+    ]
+
+    static def patientJohn = [
+            firstName: 'John', lastName: 'Hansen', cpr: JOHN_CPR,
+            address: 'Vejgade 25', postalCode: '8230', city: 'Åbyhøj'
+    ]
+
+    static String testMessageHeader = "Ondt i halsen"
+    static String testMessageText = """Kære Helle.
+                Jeg har haft ondt i halsen siden søndag, hvor jeg efter anbefaling fra min gode ven kemikaliegrossist Svend Indler begyndte at bruge "Svends Vidunderskyllemiddel", et saltsyrebaseret præparat.
+
+                Bør jeg standse med at bruge midlet eller er det noget helt andet der er fat med mig?
+
+                Venligst Erna Hansen"""
+
+    static String testMessageReplyHeader = "Sv. vedr. ondt i halsen"
+
+    static String testMessageReplyText = """Kære Erna Hansen
+
+                Saltsyre er ikke det bedste mundskyllemiddel du kan anvende og hvis koncentrationen er høj kan du faktisk komme ud i en situation, hvor der til sidst ikke er nogen mund at skylle.
+
+                Jeg vil anbefale dig at standse med midlet og i stedet skylle munden i en let saltvandsopløsning.
+
+                Mvh.
+
+                Helle Andersen"""
+
+    static String testMessagePatientReplyHeader = "Mange tak"
+
+    static String testMessagePatientReplyText = """Kære Helle
+
+                Mange tak for hjælpen! Jeg har det allerede meget bedre!
+
+                Hilsen Erna"""
+
 
     def springSecurityService
     def bootStrapService
@@ -163,15 +225,19 @@ class BootStrap {
         def kiran = Patient.findByCpr(KIRAN_CPR)
         def pErna = Patient.findByCpr(ERNA_CPR)
         def pLinda = Patient.findByCpr(LINDA_CPR)
+        def pLene = Patient.findByCpr(LENE_CPR)
 
         Department deptY = Department.findByName(afdelingYTest)
+        Department deptDemo = Department.findByName(afdelingDemo)
 
         createMessagesForTest(pErna, deptY)
-        createMonitorKitsAndMetersForTest(nancyAnn, kiran, deptY)
+        createMonitorKitsAndMetersForTest(nancyAnn, kiran, deptY, pLene, deptDemo)
         createQuestionnairesForTest(schemaCreator)
+
         // ..assign the questionnaires to patients...
-        createPatientQuestionnairesForTest(schemaCreator, nancyAnn, pLinda)
-        createConferencesForTest(schemaCreator, nancyAnn)
+        createPatientQuestionnairesForTest(schemaCreator, nancyAnn, pLinda, pLene)
+        createConferencesForTest(schemaCreator, nancyAnn, pLene)
+
     }
 
     def doBootstrapForEnglishTest() {
@@ -181,11 +247,13 @@ class BootStrap {
         BootStrapService.roleVideoConsultant = "Video consultant"
         BootStrapService.roleReadAllPatientsInSystem = "Access all patients"
 
-        praeklampsi = 'preeclampsia'
-        hjertepatient = 'heart patient'
+        praeklampsi = 'Preeclampsia'
+        hjertepatient = 'Heart Patient'
+        lungs = 'Obstructive Lung Disease Clinic'
 
         afdelingBTest = 'Department B'
         afdelingYTest = 'Department Y'
+        afdelingDemo  = 'Department of Pulmonary Medicine'
 
         clinicianHelleAndersen = [
                 firstName: 'Helen', lastName: 'Anderson',
@@ -205,9 +273,64 @@ class BootStrap {
         ]
 
         patientNancyAnn = [
-                firstName: 'Nancy Ann', lastName: 'Doe',
+                firstName: 'Nancy Ann', lastName: 'Doe', cpr: NANCY_CPR,
                 address: '150 Tremont St', postalCode: 'MA 02111', city: 'Boston, Downtown'
         ]
+
+        patientLeneJensen = [
+                firstName: 'Lisa', lastName: 'Jensen', cpr: LENE_CPR,
+                address: '21 Carter Building Washington', postalCode: 'DC 20510', city: 'Washington DC'
+        ]
+
+        patientKiran = [
+                firstName: 'Kimberly', lastName: 'Smith', cpr: KIRAN_CPR,
+                address: '24 Square Building Washington', postalCode: 'DC 20510', city: 'Washington DC'
+        ]
+
+        patientSvend = [
+                firstName: 'Sven', lastName: 'Andersson', cpr: SVEND_CPR,
+                address: '1 Broadway', postalCode: '10007', city: 'New York NY'
+        ]
+
+
+        patientCarl = [
+                firstName: 'Carl', lastName: 'Peterson', cpr: CARL_CPR,
+                address: '2 Avenue', postalCode: '10022', city: 'New York NY'
+        ]
+
+        patientJohn = [
+                firstName: 'John', lastName: 'Doe', cpr: JOHN_CPR,
+                address: '25 Lower Street', postalCode: '10022', city: 'New York NY'
+        ]
+
+
+        testMessageHeader = "Sore throat"
+        testMessageText = """Dear Sir or Madam
+                I am having problems with a sore throat.
+
+                Please contact me whenever possible.
+
+                Sincerely Lisa Jensen"""
+
+        testMessageReplyHeader = "Re: Sore throat"
+
+        testMessageReplyText = """Dear Lisa
+
+                You will be contacted by our staff as soon as possible!
+
+                Sincerely,
+
+                Helen Anderson"""
+
+        testMessagePatientReplyHeader = "Thank you!"
+
+        testMessagePatientReplyText = """Dear Helen
+
+                Thank you for helping me!
+
+                Sincerely,
+
+                Helen Lisa Jensen"""
 
         setupRolesAndTypes()
 
@@ -222,14 +345,31 @@ class BootStrap {
         def nancyAnn = Patient.findByCpr(NANCY_CPR)
         def kiran = Patient.findByCpr(KIRAN_CPR)
         def pLinda = Patient.findByCpr(LINDA_CPR)
+        def pLene = Patient.findByCpr(LENE_CPR)
+        def pErna = Patient.findByCpr(ERNA_CPR)
+        def pSvend = Patient.findByCpr(SVEND_CPR)
+        def pCarl = Patient.findByCpr(CARL_CPR)
+        def pJohn= Patient.findByCpr(JOHN_CPR)
 
         Department deptY = Department.findByName(afdelingYTest)
+        Department deptDemo = Department.findByName(afdelingDemo)
 
         createQuestionnairesForEnglishTest(schemaCreator)
-        createMonitorKitsAndMetersForTest(nancyAnn, kiran, deptY)
+        createMonitorKitsAndMetersForTest(nancyAnn, kiran, deptY, pLene, deptDemo)
         // ..assign the questionnaires to patients...
-        createPatientQuestionnairesForEnglishTest(schemaCreator, nancyAnn, pLinda)
-        createConferencesForTest(schemaCreator, nancyAnn)
+        createPatientQuestionnairesForEnglishTest(schemaCreator, nancyAnn, pLinda, pLene, pErna, pSvend, pCarl, pJohn)
+
+        createConferencesForTest(schemaCreator, nancyAnn, pLene)
+        createMessagesForTest(pLene, deptDemo)
+
+        createPatientNoteForEnglishTest(nancyAnn, "Please check if BP values are withing range", NoteType.IMPORTANT, )
+
+        createPatientNoteForEnglishTest(pSvend, "Please remember to add extra BP measurement to plan.", NoteType.IMPORTANT, null)
+
+        createPatientNoteForEnglishTest(kiran, "Please add extra BP measurement to schedule.")
+        createPatientNoteForEnglishTest(kiran, "Patient has difficulties hearing. Remember to ask if hearing aid is turned on.")
+
+        new BlueAlarmCheck(checkDate: new Date()-3).save(failOnError: true)
     }
 
     /**
@@ -269,7 +409,6 @@ class BootStrap {
     }
 
     def createRoles() {
-
         Date now = new Date()
         def role
 
@@ -290,15 +429,6 @@ class BootStrap {
 
         adminUser
     }
-
-    def createClinicianWithAccessToAllPatients(String code) {
-        def adminUser = setupUserIfNotExists('admin', code, 'admin', 'admin')
-        Role adminRole = Role.findByAuthority(BootStrapService.roleAdministrator)
-        bootStrapUtil.addUserToRoleIfNotExists(adminUser, adminRole)
-
-        adminUser
-    }
-
 
     User setupUserIfNotExists(String username, String password, String firstName, String lastName) {
         def user = User.findByUsername(username) ?: new User(
@@ -354,15 +484,19 @@ class BootStrap {
 
         Department deptB = bootStrapUtil.createDepartmentIfNotExists(afdelingBTest)
         Department deptY = bootStrapUtil.createDepartmentIfNotExists(afdelingYTest)
+        Department deptDemo = bootStrapUtil.createDepartmentIfNotExists(afdelingDemo)
 
         //Set ThresholdSet for each created patientGroup
         def preEmpStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['temperature', 'hemoglobin', 'crp'])
         def ppromStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['saturation', 'weight', 'urine'])
         def heartStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['bloodPressure', 'pulse'])
 
+        def lungStandardThresholdSet = bootStrapUtil.createStandardThresholdSetForPatientGroup(['bloodPressure', 'pulse', 'saturation'])
+
         bootStrapUtil.createPatientGroupIfNotExists(praeklampsi, deptY, now, preEmpStandardThresholdSet, true)
         bootStrapUtil.createPatientGroupIfNotExists(PPROM, deptY, now, ppromStandardThresholdSet, true)
         bootStrapUtil.createPatientGroupIfNotExists(hjertepatient, deptB,now, heartStandardThresholdSet)
+        bootStrapUtil.createPatientGroupIfNotExists(lungs, deptDemo, now, lungStandardThresholdSet)
     }
 
     def createEmptyStandardThresholdSet() {
@@ -402,10 +536,12 @@ class BootStrap {
 
         Department deptY = Department.findByName(afdelingYTest)
         Department deptB = Department.findByName(afdelingBTest)
+        Department deptDemo = Department.findByName(afdelingDemo)
 
         PatientGroup preEmp = PatientGroup.findByNameAndDepartment(praeklampsi, deptY)
         PatientGroup pprom = PatientGroup.findByNameAndDepartment(PPROM, deptY)
         PatientGroup heart = PatientGroup.findByNameAndDepartment(hjertepatient, deptB)
+        PatientGroup lungs = PatientGroup.findByNameAndDepartment(lungs, deptDemo)
 
         Patient pLinda = createPatientIfNotExists(firstName:'Linda',
                 lastName:'Hansen',
@@ -447,6 +583,7 @@ class BootStrap {
                 cleartextPassword: "abcd1234")
 
         addPatient2PatientGroupIfNotExists(pErna, preEmp)
+        addPatient2PatientGroupIfNotExists(pErna, lungs)
         addStandardThresholds2Patient(pErna)
 
         Patient p = createPatientIfNotExists(firstName:'Else',
@@ -526,32 +663,20 @@ class BootStrap {
         addPatient2PatientGroupIfNotExists(p, pprom)
         addStandardThresholds2Patient(p)
 
-        p = createPatientIfNotExists(firstName:'Svend',
-                lastName:'Andersson',
-                cpr:'1212852635',
-                sex: Sex.MALE,
-                address:'Gade 15',
-                postalCode:'8000',
-                city:'Aarhus C',
-                mobilePhone: null,
-                phone: null,
-                email: null,
-                cleartextPassword: "abcd1234")
-        addPatient2PatientGroupIfNotExists(p, heart)
-        addStandardThresholds2Patient(p)
-
-        Patient kiran = createPatientIfNotExists(firstName:'Kiran',
-                lastName:'Liaqat',
+        Patient kiran = createPatientIfNotExists(firstName: patientKiran.firstName,
+                lastName: patientKiran.lastName,
                 cpr: KIRAN_CPR,
                 sex: Sex.FEMALE,
-                address:'Gade 15',
-                postalCode:'8000',
-                city:'Aarhus C',
+                address: patientKiran.address,
+                postalCode: patientKiran.postalCode,
+                city: patientKiran.city,
                 mobilePhone: null,
                 phone: null,
                 email: null)
         addPatient2PatientGroupIfNotExists(kiran, pprom)
+        addPatient2PatientGroupIfNotExists(kiran, lungs)
         addStandardThresholds2Patient(kiran)
+
 
         def kiransPlan = MonitoringPlan.findByPatient(kiran)
         if (!kiransPlan) {
@@ -563,6 +688,35 @@ class BootStrap {
             kiransPlan.save(failOnError:true)
         }
         kiran.monitoringPlan = kiransPlan
+
+        [patientSvend, patientCarl, patientJohn].each { patientData ->
+            Patient patient = createPatientIfNotExists(firstName: patientData.firstName,
+                    lastName: patientData.lastName,
+                    cpr: patientData.cpr,
+                    sex: Sex.MALE,
+                    address: patientData.address,
+                    postalCode: patientData.postalCode,
+                    city: patientData.city,
+                    mobilePhone: null,
+                    phone: null,
+                    email: null,
+                    cleartextPassword: "abcd1234")
+            addPatient2PatientGroupIfNotExists(patient, pprom)
+            addPatient2PatientGroupIfNotExists(patient, lungs)
+            addStandardThresholds2Patient(patient)
+
+            def plan = MonitoringPlan.findByPatient(patient)
+            if (!plan) {
+
+                // Create monitoringplan
+                plan = new MonitoringPlan(createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now)
+                plan.patient = patient
+                plan.startDate = today
+                plan.save(failOnError:true)
+            }
+            patient.monitoringPlan = plan
+        }
+
 
         Patient nancyAnn = createPatientIfNotExists(firstName: patientNancyAnn.firstName,
                 lastName: patientNancyAnn.lastName,
@@ -577,6 +731,14 @@ class BootStrap {
         addPatient2PatientGroupIfNotExists(nancyAnn, heart)
         addStandardThresholds2Patient(nancyAnn)
 
+        // addBloodsugarThreshold
+
+        Threshold bloodsugarThreshold = new NumericThreshold(type: MeasurementType.findByName(MeasurementTypeName.BLOODSUGAR),
+                alertLow: 1, warningLow: 3, warningHigh: 15, alertHigh: 20)
+        bloodsugarThreshold.save(failOnError: true)
+        nancyAnn.setThreshold(bloodsugarThreshold)
+        nancyAnn.save(failOnError: true)
+
         def nancysPlan = MonitoringPlan.findByPatient(nancyAnn)
         if (!nancysPlan) {
 
@@ -587,9 +749,35 @@ class BootStrap {
             nancysPlan.save(failOnError:true)
         }
         nancyAnn.monitoringPlan = nancysPlan
+
+
+        Patient leneJensen = createPatientIfNotExists(firstName: patientLeneJensen.firstName,
+                lastName: patientLeneJensen.lastName,
+                cpr: LENE_CPR,
+                sex: Sex.FEMALE,
+                address: patientLeneJensen.address,
+                postalCode: patientLeneJensen.postalCode,
+                city: patientLeneJensen.city,
+                mobilePhone: null,
+                phone: null,
+                email: null)
+        addPatient2PatientGroupIfNotExists(leneJensen, lungs)
+        addStandardThresholds2Patient(leneJensen)
+
+        def leneJensensPlan = MonitoringPlan.findByPatient(leneJensen)
+        if (!leneJensensPlan) {
+
+            // Create monitoringplan for Mette
+            leneJensensPlan = new MonitoringPlan(createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now)
+            leneJensensPlan.patient = leneJensen
+            leneJensensPlan.startDate = today
+            leneJensensPlan.save(failOnError:true)
+        }
+        leneJensen.monitoringPlan = leneJensensPlan
+
     }
 
-    def createMonitorKitsAndMetersForTest(Patient nancyAnn, Patient kiran, Department deptY) {
+    def createMonitorKitsAndMetersForTest(Patient nancyAnn, Patient kiran, Department deptY, Patient lene, Department deptDemo) {
 
         Date now = new Date()
 
@@ -598,18 +786,33 @@ class BootStrap {
         MonitorKit kit2 = bootStrapUtil.createMonitorKit("SKJGYNA0002", deptY, nancyAnn, now)
         MonitorKit kit3 = bootStrapUtil.createMonitorKit("SKJGYNA0002", deptY, kiran, now)
 
+        MonitorKit kit4 = bootStrapUtil.createMonitorKit("KIT-004", deptDemo, lene, now)
+
         MeterType weightMeterType = MeterType.findByName(MeterTypeName.WEIGHT)
         MeterType bloodPressureMeterType = MeterType.findByName(MeterTypeName.BLOOD_PRESSURE_PULSE)
         MeterType urineMeterType = MeterType.findByName(MeterTypeName.URINE)
         MeterType ctgMeterType = MeterType.findByName(MeterTypeName.CTG)
+        MeterType lungFunctionMeterType = MeterType.findByName(MeterTypeName.LUNG_FUNCTION)
+        MeterType saturationMeterType = MeterType.findByName(MeterTypeName.SATURATION)
+        MeterType bloodSugarMeterType = MeterType.findByName(MeterTypeName.BLOODSUGAR)
+        MeterType cgmMeterType = MeterType.findByName(MeterTypeName.CONTINUOUS_BLOOD_SUGAR_MEASUREMENT)
 
         // Meters
-        bootStrapUtil.createMeter("A&D Medical UA-767PBT", "054534", kit1, nancyAnn, weightMeterType)
+        bootStrapUtil.createMeter("A&D Medical UC-321PBT-C", "054534", kit1, nancyAnn, weightMeterType)
         bootStrapUtil.createMeter("Hansen Healthcare XYZ","58354", kit1, nancyAnn, bloodPressureMeterType)
         bootStrapUtil.createMeter("Hansen Healthcare XYZ","58355", kit3, kiran, bloodPressureMeterType)
         bootStrapUtil.createMeter("Inkontinentia Healthcare", "6521", kit2, nancyAnn, urineMeterType)
-
         bootStrapUtil.createMeter("Monica Healthcare CTG", "123", kit2, nancyAnn, ctgMeterType)
+
+        // Supported meters
+        bootStrapUtil.createMeter("A&D Medical UA-767PBT", "012345", kit4, lene, bloodPressureMeterType)
+        bootStrapUtil.createMeter("A&D Medical UC-321PBT-C", "012346", kit4, lene, weightMeterType)
+        bootStrapUtil.createMeter("Vitalograph Model 4000", "012347", kit4, lene, lungFunctionMeterType)
+        bootStrapUtil.createMeter("Nonin Model 9560BT Oximeter", "012348", kit4, lene, saturationMeterType)
+        bootStrapUtil.createMeter("Monica AN24 Fetal Maternal Holter Recorder", "012349", kit4, lene, ctgMeterType)
+        bootStrapUtil.createMeter("Accu-Chek mobile", "012350", kit4, lene, bloodSugarMeterType)
+        bootStrapUtil.createMeter("Abbott FreeStyle Navigator", "012351", kit4, lene, cgmMeterType )
+        bootStrapUtil.createMeter("Nonin 3230 Bluetooth Smart", "012352", kit4, lene, saturationMeterType)
     }
 
     def createCtgMeasurementForTest(Patient patient, PatientQuestionnaire patientQuestionnaire) {
@@ -665,14 +868,17 @@ class BootStrap {
         ctgResult.setPatientQuestionnaireNode(ctgNode)
         ctgResult.save(failOnError:true)
 
-        // Duration of CTG measurement
-        InputNodeResult durationResult = new InputNodeResult(result: '5', createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now)
-        durationResult.setCompletedQuestionnaire(completedQuestionnaire)
-        durationResult.setCompletionTime(now)
-        durationResult.setSeverity(Severity.GREEN)
+        if (inputNode != null) {
 
-        durationResult.setPatientQuestionnaireNode(inputNode)
-        durationResult.save(failOnError:true)
+            // Duration of CTG measurement
+            InputNodeResult durationResult = new InputNodeResult(result: '5', createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: now, modifiedDate: now)
+            durationResult.setCompletedQuestionnaire(completedQuestionnaire)
+            durationResult.setCompletionTime(now)
+            durationResult.setSeverity(Severity.GREEN)
+
+            durationResult.setPatientQuestionnaireNode(inputNode)
+            durationResult.save(failOnError:true)
+        }
 
     }
 
@@ -706,6 +912,9 @@ class BootStrap {
         testQuestionnaireBuilder.createBloodSugarQuestionnaire(schemaCreator, true, "Blodsukker (manuel)", "0.1")
         testQuestionnaireBuilder.createBloodSugarQuestionnaire(schemaCreator, false, "Blodsukker", "0.1")
 
+        bootstrapQuestionnaireService.ensureQuestionnaireExists(schemaCreator, 'Blodtryk m/alarm', 'Test_bt_m_alarm.json')
+        bootstrapQuestionnaireService.ensureQuestionnaireExists(schemaCreator, 'Kontinuert glukosemåling (simuleret)', 'Test_kontinuert_glukosemaaling_simuleret.json')
+
         // Production questionnaires
         createQuestionnairesForRMProd(schemaCreator)
         createQuestionnairesForRNProd(schemaCreator)
@@ -719,6 +928,8 @@ class BootStrap {
         bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'Oxygen saturation', 'US_saturation.json'
         bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'Weight', 'US_weight.json'
         bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'How are you feeling', 'US_general_welfare.json'
+        bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'COPD questionnaire', 'US_copd_standard.json'
+        bootstrapQuestionnaireService.ensureQuestionnaireExists schemaCreator, 'Daily CTG', 'US_daily_CTG.json'
     }
 
     def createQuestionnaireGroup(String name, ArrayList<Questionnaire> questionnaires, boolean overrideSchedule = false) {
@@ -741,23 +952,49 @@ class BootStrap {
         bootstrapQuestionnaireService.ensureQuestionnaireExists creator, 'CTG måling', 'RM_ctg-maaling.json'
         bootstrapQuestionnaireService.ensureQuestionnaireExists creator, 'Vægt (manuel)', 'RM_vaegt_manuel.json'
 
+        bootstrapQuestionnaireService.ensureQuestionnaireVersionExists(creator, 'Overførsel af blodsukkermålinger', '2.0', 'RM_overfoersel_af_blodsukkermaalinger_v2.json')
+        bootstrapQuestionnaireService.ensureQuestionnaireVersionExists(creator, 'Vægt (manuel)', '2.0', 'RM_vaegt_manuel_v2.json')
+
+
         RMQuestionnaireBuilder rmQuestionnaireBuilder = new RMQuestionnaireBuilder(createdByName: CREATED_BY_NAME)
 
         // Cannot be created in questionnaire editor due to ChoiceNodes
-        rmQuestionnaireBuilder.createRMProdTemperatureQuestionnaire('Temperatur', '1.0')
-        rmQuestionnaireBuilder.createRMProdBloodpressureAndPulseQuestionnaire('Blodtryk og puls (PPROM, manuel)', '1.0')
-        rmQuestionnaireBuilder.createRMProdUrineQuestionnaire('Urinundersøgelse (protein)', '1.0')
-        rmQuestionnaireBuilder.createRMProdCRPQuestionnaire('CRP', '1.0')
-        rmQuestionnaireBuilder.createPPROMQuestionnaire('PPROM (primær spørgeskema, manuel)', '1.0')
-        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Præeklampsi (primær spørgeskema, manuel)', '1.2')
-        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Diabetes (primær spørgeskema, manuel)', '1.2')
+        rmQuestionnaireBuilder.createRMProdTemperatureQuestionnaire('Temperatur', '1.0', Severity.GREEN)
+        rmQuestionnaireBuilder.createRMProdBloodpressureAndPulseQuestionnaire('Blodtryk og puls (PPROM, manuel)', '1.0', Severity.GREEN)
+        rmQuestionnaireBuilder.createRMProdUrineQuestionnaire('Urinundersøgelse (protein)', '1.0', Severity.GREEN)
+        rmQuestionnaireBuilder.createRMProdCRPQuestionnaire('CRP', '1.0', Severity.GREEN)
+        rmQuestionnaireBuilder.createPPROMQuestionnaire('PPROM (primær spørgeskema, manuel)', '1.0', Severity.GREEN)
+        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Præeklampsi (primær spørgeskema, manuel)', '1.2', Severity.GREEN)
+        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Diabetes (primær spørgeskema, manuel)', '1.2', Severity.GREEN)
 
-        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Præeklampsi (primær spørgeskema, manuel)', '1.3')
-        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Diabetes (primær spørgeskema, manuel)', '1.3')
+        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Præeklampsi (primær spørgeskema, manuel)', '1.3', Severity.GREEN)
+        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Diabetes (primær spørgeskema, manuel)', '1.3', Severity.GREEN)
 
         // Cannot be created in questionnaire editor due to variables between nodes
-        rmQuestionnaireBuilder.createTimedCTGQuestionnaire('CTG måling m/tid', false, '1.0')
-        rmQuestionnaireBuilder.createTimedCTGQuestionnaire('CTG måling m/tid (simuleret)', true, '1.0')
+        rmQuestionnaireBuilder.createTimedCTGQuestionnaire('CTG måling m/tid', false, '1.0', Severity.GREEN)
+        rmQuestionnaireBuilder.createTimedCTGQuestionnaire('CTG måling m/tid (simuleret)', true, '1.0', Severity.GREEN)
+
+
+        // Create new versions of the above, with yellow severity on omitted measurementnodes
+
+        rmQuestionnaireBuilder.createRMProdBloodpressureAndPulseQuestionnaire('Blodtryk og puls (PPROM, manuel)', '2.0', Severity.YELLOW)
+        rmQuestionnaireBuilder.createRMProdUrineQuestionnaire('Urinundersøgelse (protein)', '2.0', Severity.YELLOW)
+        rmQuestionnaireBuilder.createRMProdCRPQuestionnaire('CRP', '2.0', Severity.YELLOW)
+        rmQuestionnaireBuilder.createPPROMQuestionnaire('PPROM (primær spørgeskema, manuel)', '2.0', Severity.YELLOW)
+        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Præeklampsi (primær spørgeskema, manuel)', '2.0', Severity.YELLOW)
+        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Diabetes (primær spørgeskema, manuel)', '2.0', Severity.YELLOW)
+
+        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Præeklampsi (primær spørgeskema, manuel)', '2.0', Severity.YELLOW)
+        rmQuestionnaireBuilder.createPraeeklampsiOrDiabetesQuestionnaire('Diabetes (primær spørgeskema, manuel)', '2.0', Severity.YELLOW)
+
+        // Cannot be created in questionnaire editor due to variables between nodes
+        rmQuestionnaireBuilder.createTimedCTGQuestionnaire('CTG måling m/tid', false, '2.0', Severity.YELLOW)
+        rmQuestionnaireBuilder.createTimedCTGQuestionnaire('CTG måling m/tid (simuleret)', true, '2.0', Severity.YELLOW)
+        rmQuestionnaireBuilder.createRMProdTemperatureQuestionnaire('Temperatur', '2.0', Severity.YELLOW)
+
+        // Does not exist in a v.1.0 version
+        rmQuestionnaireBuilder.createRMProdBloodpressureQuestionnaire('Blodtryk (manuel)', true, '2.0', Severity.YELLOW)
+
     }
 
     def createQuestionnairesForRNProd(Clinician creator) {
@@ -783,7 +1020,7 @@ class BootStrap {
         bootstrapQuestionnaireService.ensureQuestionnaireExists creator, 'Konsultation hos jordemoder', 'RH_konsultation-hos-jordemoder.json'
     }
 
-    def createPatientQuestionnairesForTest(Clinician schemaCreator, Patient nancyAnn, Patient linda) {
+    def createPatientQuestionnairesForTest(Clinician schemaCreator, Patient nancyAnn, Patient linda, Patient lene) {
         def weightMeter = Meter.findByMeterId("054534")
 
         def nancysPlan = MonitoringPlan.findByPatient(nancyAnn)
@@ -791,11 +1028,16 @@ class BootStrap {
 
         createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk og puls"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
 
+        createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk og puls"), lene, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+
         PatientQuestionnaire pq
 
         // JSON Test patientQuestionnaire + results
         pq = createPqAndSchedule(QuestionnaireHeader.findByName("JSON test"), nancyAnn, schemaCreator, nancysPlan, atWeekdays(new TimeOfDay(hour: 10), [Weekday.SATURDAY, Weekday.SUNDAY]))
         createResultsForJsonTest(pq, weightMeter, nancyAnn)
+
+        // BT skema med Severity.RED på undlad
+        createPqAndSchedule(QuestionnaireHeader.findByName("Blodtryk m/alarm"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
 
         //////////////
         // Simpelt Ja/Nej skema
@@ -821,7 +1063,7 @@ class BootStrap {
             date[Calendar.DATE] = date[Calendar.DATE] - 8
 
             (130..120).each {
-                createResultsForBlodtryk(pq, nancyAnn, bpMeter, new Date(date.time), it, 80, 50 + new Random().nextInt(10))
+                createResultsForBlodtryk(pq, nancyAnn, bpMeter, new Date(date.time), it, 80, 50 + new Random().nextInt(10), Severity.GREEN)
                 date[Calendar.MONTH] = date[Calendar.MONTH] - 1
             }
         }
@@ -858,7 +1100,7 @@ class BootStrap {
 
         // Skema til måling af blodsukker
         pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blodsukker"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
-        createResultsForBloodSugarTest(nancyAnn, pq)
+        createResultsForBloodSugarTest(nancyAnn, pq, null)
 
         // Manuel måling af blodsukker
         createPqAndSchedule(QuestionnaireHeader.findByName("Blodsukker (manuel)"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
@@ -866,6 +1108,9 @@ class BootStrap {
 
         createPqAndSchedule(QuestionnaireHeader.findByName("Rejse-sætte-sig test"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
         createPqAndSchedule(QuestionnaireHeader.findByName("Rejse-sætte-sig test"), linda, schemaCreator, lindasPlan, unscheduled())
+
+        // Kontinuert blodsukkermåling
+        createPqAndSchedule(QuestionnaireHeader.findByName("Kontinuert glukosemåling (simuleret)"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
 
         // Lungefunktion-skemaer
         createPqAndSchedule(QuestionnaireHeader.findByName("Lungefunktion"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
@@ -884,13 +1129,13 @@ class BootStrap {
 
     }
 
-    def createPatientQuestionnairesForEnglishTest(Clinician schemaCreator, Patient nancyAnn, Patient linda) {
+    def createPatientQuestionnairesForEnglishTest(Clinician schemaCreator, Patient nancyAnn, Patient linda, Patient lisa, Patient pErna, Patient pSvend, Patient pCarl, Patient pJohn) {
         def nancysPlan = MonitoringPlan.findByPatient(nancyAnn)
 
         PatientQuestionnaire pq
 
         //////////////
-        // Skema til måling af blodtryk
+        // Nancy: Questionnaire for measuring bloodpressure
         pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blood pressure and pulse"), nancyAnn, schemaCreator, nancysPlan, atWeekdays(new TimeOfDay(hour: 13), [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]))
         if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndPatient(pq, nancyAnn)) {
 
@@ -900,7 +1145,7 @@ class BootStrap {
             date[Calendar.DATE] = date[Calendar.DATE] - 8
 
             (130..120).each {
-                createResultsForBlodtryk(pq, nancyAnn, bpMeter, new Date(date.time), it, 80, 50 + new Random().nextInt(10))
+                createResultsForBlodtryk(pq, nancyAnn, bpMeter, new Date(date.time), it + new Random().nextInt(10), 80 + new Random().nextInt(10), 50 + new Random().nextInt(10), Severity.GREEN)
                 date[Calendar.MONTH] = date[Calendar.MONTH] - 1
             }
         }
@@ -908,37 +1153,118 @@ class BootStrap {
         createPqAndSchedule(QuestionnaireHeader.findByName("Weight"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 7)))
 
         pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blood sugar levels"), nancyAnn, schemaCreator, nancysPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
-        createResultsForBloodSugarTest(nancyAnn, pq)
+        createResultsForBloodSugarTest(nancyAnn, pq, null, 1)
 
         createPqAndSchedule(QuestionnaireHeader.findByName("Lung function"), nancyAnn, schemaCreator, nancysPlan, unscheduled())
+
+
+        def lisasPlan = MonitoringPlan.findByPatient(lisa)
+        //////////////
+        // Lisa: Questionnaire for measuring bloodpressure
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blood pressure and pulse"), lisa, schemaCreator, lisasPlan, atWeekdays(new TimeOfDay(hour: 13), [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]))
+        if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndPatient(pq, lisa)) {
+
+            def bpMeter = Meter.findByMeterId("012345")
+
+            def date = new Date().clearTime()
+            date[Calendar.DATE] = date[Calendar.DATE] - 9
+
+            (130..120).each {
+                createResultsForBlodtryk(pq, lisa, bpMeter, new Date(date.time), it + new Random().nextInt(10), 80 + new Random().nextInt(10), 50 + new Random().nextInt(10), Severity.GREEN)
+                date[Calendar.MONTH] = date[Calendar.MONTH] - 1
+            }
+
+            createResultsForBlodtryk(pq, lisa, bpMeter, new Date(), 141, 89, 56, Severity.RED)
+        }
+
+        createPqAndSchedule(QuestionnaireHeader.findByName("Weight"), lisa, schemaCreator, lisasPlan, everyWeekdayAt(new TimeOfDay(hour: 7)))
+
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blood sugar levels"), lisa, schemaCreator, lisasPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+        createResultsForBloodSugarTest(lisa, pq, Meter.findByMeterId("012350"), 1)
+
+        createPqAndSchedule(QuestionnaireHeader.findByName("Lung function"), lisa, schemaCreator, lisasPlan, unscheduled())
+        createPqAndSchedule(QuestionnaireHeader.findByName("COPD questionnaire"), lisa, schemaCreator, lisasPlan, unscheduled())
+
+        // Svend
+        def svendPlan = MonitoringPlan.findByPatient(pSvend)
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Blood pressure and pulse"), pSvend, schemaCreator, svendPlan, atWeekdays(new TimeOfDay(hour: 13), [Weekday.MONDAY, Weekday.WEDNESDAY, Weekday.FRIDAY]))
+        if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndPatient(pq, pSvend)) {
+
+            createResultsForBlodtryk(pq, pSvend, null, new Date()-1, 139, 88, 77, Severity.YELLOW)
+        }
+        createPqAndSchedule(QuestionnaireHeader.findByName("Weight"), pSvend, schemaCreator, svendPlan, everyWeekdayAt(new TimeOfDay(hour: 7)))
+
+        // Linda
+        def lindasPlan = MonitoringPlan.findByPatient(linda)
+
+        pq = createPqAndSchedule(QuestionnaireHeader.findByName("Daily CTG"), linda, schemaCreator, lindasPlan, everyWeekdayAt(new TimeOfDay(hour: 12)))
+        if (pq && !CompletedQuestionnaire.findByPatientQuestionnaireAndPatient(pq, linda)) {
+            createCtgMeasurementForTest(linda, pq)
+        }
+
+
+        // Erna, Carl and John
+
+        [pErna, pCarl, pJohn].each { patient ->
+            def plan = MonitoringPlan.findByPatient(patient)
+            if (!plan) {
+
+                // Create monitoringplan for Erna
+                plan = new MonitoringPlan(createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: new Date(), modifiedDate: new Date())
+                plan.patient = patient
+                plan.startDate = new Date()-3
+                plan.save(failOnError:true)
+
+                patient.monitoringPlan = plan
+            }
+
+            def pq1 = createPqAndSchedule(QuestionnaireHeader.findByName("Oxygen saturation"), patient, schemaCreator, plan, specificDate(new Date(), new TimeOfDay(hour: 1)))
+            def pq2 = createPqAndSchedule(QuestionnaireHeader.findByName("Lung Function"), patient, schemaCreator, plan, everyWeekdayAt(new TimeOfDay(hour: 8)))
+
+            patient.blueAlarmQuestionnaireIDs.addAll([pq1, pq2]*.id)
+        }
     }
 
-    def createConferencesForTest(Clinician schemaCreator, Patient nancyAnn) {
-        if (Conference.findAllByClinicianAndPatient(schemaCreator, nancyAnn).empty) {
-            def conference = new Conference(clinician: schemaCreator, patient: nancyAnn)
-            def lungFunctionMeasurementDraft = new ConferenceLungFunctionMeasurementDraft(fev1: 3.67, included: true)
-            def saturationMeasurementDraft = new ConferenceSaturationMeasurementDraft(saturation: 97, pulse: 67, included: false)
-            def weightMeasurementDraft = new ConferenceWeightMeasurementDraft(weight: 87.3, included: true)
-            def bloodPressureMeasurementDraft = new ConferenceBloodPressureMeasurementDraft(systolic: 130, diastolic: 65, pulse: 65, included: true)
+    def createPatientNoteForEnglishTest(Patient patient, String text, def noteType=NoteType.NORMAL, def reminderDate=new Date()-1) {
 
-            conference.addToMeasurementDrafts(lungFunctionMeasurementDraft)
-            conference.addToMeasurementDrafts(saturationMeasurementDraft)
-            conference.addToMeasurementDrafts(weightMeasurementDraft)
-            conference.addToMeasurementDrafts(bloodPressureMeasurementDraft)
+        if (PatientNote.findAllByPatient(patient).empty) {
 
-            [conference, lungFunctionMeasurementDraft, saturationMeasurementDraft, weightMeasurementDraft, bloodPressureMeasurementDraft]*.save(failOnError: true)
+            def patientNote = new PatientNote(patient: patient)
 
+            patientNote.note = text
+            patientNote.type = noteType
+            patientNote.reminderDate = reminderDate
+            patientNote.save(failOnError: true)
+        }
+    }
 
+    def createConferencesForTest(Clinician schemaCreator, Patient... patients) {
+        patients.each { patient ->
 
-            //Create finished conference
-            def finishedConference = new Conference(clinician: schemaCreator, patient: nancyAnn, completed: true)
+            if (Conference.findAllByClinicianAndPatient(schemaCreator, patient).empty) {
+                def conference = new Conference(clinician: schemaCreator, patient: patient)
+                def lungFunctionMeasurementDraft = new ConferenceLungFunctionMeasurementDraft(fev1: 3.67, included: true)
+                def saturationMeasurementDraft = new ConferenceSaturationMeasurementDraft(saturation: 97, pulse: 67, included: false)
+                def weightMeasurementDraft = new ConferenceWeightMeasurementDraft(weight: 87.3, included: true)
+                def bloodPressureMeasurementDraft = new ConferenceBloodPressureMeasurementDraft(systolic: 130, diastolic: 65, pulse: 65, included: true)
 
-            Meter meter = Meter.findByMeterId("58354")
-            MeasurementType bloodPressureMeterType = MeasurementType.findByName(MeasurementTypeName.BLOOD_PRESSURE)
-            Measurement bloodPressureMeasurement = new Measurement(meter:meter, measurementType:bloodPressureMeterType, patient:nancyAnn, systolic:130, diastolic:65,unit: Unit.MMHG, time:new Date(), unread:true, createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: new Date(), modifiedDate: new Date())
-            finishedConference.addToMeasurements(bloodPressureMeasurement)
+                conference.addToMeasurementDrafts(lungFunctionMeasurementDraft)
+                conference.addToMeasurementDrafts(saturationMeasurementDraft)
+                conference.addToMeasurementDrafts(weightMeasurementDraft)
+                conference.addToMeasurementDrafts(bloodPressureMeasurementDraft)
 
-            [finishedConference, bloodPressureMeasurement]*.save(failOnError: true)
+                [conference, lungFunctionMeasurementDraft, saturationMeasurementDraft, weightMeasurementDraft, bloodPressureMeasurementDraft]*.save(failOnError: true)
+
+                //Create finished conference
+                def finishedConference = new Conference(clinician: schemaCreator, patient: patient, completed: true)
+
+                Meter meter = Meter.findByMeterId("58354")
+                MeasurementType bloodPressureMeterType = MeasurementType.findByName(MeasurementTypeName.BLOOD_PRESSURE)
+                Measurement bloodPressureMeasurement = new Measurement(meter:meter, measurementType:bloodPressureMeterType, patient:patient, systolic:130, diastolic:65,unit: Unit.MMHG, time:new Date(), unread:true, createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: new Date(), modifiedDate: new Date())
+                finishedConference.addToMeasurements(bloodPressureMeasurement)
+
+                [finishedConference, bloodPressureMeasurement]*.save(failOnError: true)
+            }
         }
     }
 
@@ -972,10 +1298,12 @@ class BootStrap {
 
         Department deptY = Department.findByName(afdelingYTest)
         Department deptB = Department.findByName(afdelingBTest)
+        Department deptDemo = Department.findByName(afdelingDemo)
 
         PatientGroup preEmp = PatientGroup.findByNameAndDepartment(praeklampsi, deptY)
         PatientGroup pprom = PatientGroup.findByNameAndDepartment(PPROM, deptY)
         PatientGroup heart = PatientGroup.findByNameAndDepartment(hjertepatient, deptB)
+        PatientGroup lung = PatientGroup.findByNameAndDepartment(lungs, deptDemo)
 
         // Helle Andersen
         Clinician clHelle = createClinicianIfNotExists(firstName: clinicianHelleAndersen.firstName, lastName:clinicianHelleAndersen.lastName, email:clinicianHelleAndersen.email, mobile:'12345678', videoUser:'HelleAndersen', videoPassword:'HelleAndersen1')
@@ -986,6 +1314,7 @@ class BootStrap {
 
         addClinician2PatientGroupIfNotExists(clHelle, preEmp)
         addClinician2PatientGroupIfNotExists(clHelle, heart)
+        addClinician2PatientGroupIfNotExists(clHelle, lung)
 
         // Jens Hansen
         Clinician clJens = createClinicianIfNotExists(firstName: clinicianJensHansen.firstName, lastName:clinicianJensHansen.lastName, email:clinicianJensHansen.email, mobile:'12345678')
@@ -1125,7 +1454,7 @@ class BootStrap {
         ref
     }
 
-    def createResultsForBloodSugarTest(Patient patient, PatientQuestionnaire pq) {
+    def createResultsForBloodSugarTest(Patient patient, PatientQuestionnaire pq, Meter meter, def yearsBack=2) {
 
         if (pq && !CompletedQuestionnaire.findByPatientAndPatientQuestionnaire(patient, pq)) {
             def startDate = Calendar.getInstance()
@@ -1135,7 +1464,7 @@ class BootStrap {
             startDate.set(Calendar.MILLISECOND, 0)
             startDate.add(Calendar.DATE, -8)
 
-            def measurements = generateTestBloodSugarData()
+            def measurements = generateTestBloodSugarData(yearsBack)
             for (def measurement: measurements) {
                 def day = measurement[0]
                 def hour = measurement[1]
@@ -1151,12 +1480,12 @@ class BootStrap {
                 def isAfterMeal = measurement[5]
                 def isControlMeasurement = measurement[6]
                 def otherInformation = measurement[7]
-                createBloodSugarMeasurement(patient, pq, calendar.getTime(), value, isBeforeMeal, isAfterMeal, isControlMeasurement, otherInformation)
+                createBloodSugarMeasurement(patient, pq, calendar.getTime(), value, isBeforeMeal, isAfterMeal, isControlMeasurement, otherInformation, meter)
             }
         }
     }
 
-    private def generateTestBloodSugarData() {
+    private def generateTestBloodSugarData(def yearsBack) {
         // Field order: day, hour, minute, value, isBeforeMeal, isAfterField
 
         // Add a few measurements at various times over the last few days.
@@ -1185,14 +1514,14 @@ class BootStrap {
         }
 
         // Add one measurement per day for about 2 years.
-        for (month in 1..24) {
+        for (month in 1..(yearsBack*12 - 3)) {
             bloodSugarTestData << [month * 30, 15, 10, 8.0, false, false, false, false]
         }
 
         return bloodSugarTestData
     }
 
-    private void createBloodSugarMeasurement(Patient patient, PatientQuestionnaire pq, Date date, float value, boolean isBeforeMeal, boolean isAfterMeal, boolean isControlMeasurement, boolean otherInformation) {
+    private void createBloodSugarMeasurement(Patient patient, PatientQuestionnaire pq, Date date, float value, boolean isBeforeMeal, boolean isAfterMeal, boolean isControlMeasurement, boolean otherInformation, Meter meter) {
 
         CompletedQuestionnaire completedQuestionnaire = new CompletedQuestionnaire(
                 questionnaireHeader: pq.getTemplateQuestionnaire().getQuestionnaireHeader(),
@@ -1232,7 +1561,7 @@ class BootStrap {
                 modifiedDate: date)
 
         Measurement measurement = new Measurement(
-                meter: null,
+                meter: meter,
                 measurementType: measurementType,
                 patient: patient,
                 value: value,
@@ -1474,7 +1803,7 @@ class BootStrap {
         }
     }
 
-    def createResultsForBlodtryk(PatientQuestionnaire pqBlodtryk, Patient patient, Meter m2, Date when, int bp_sys, int bp_dia, int bp_pulse) {
+    def createResultsForBlodtryk(PatientQuestionnaire pqBlodtryk, Patient patient, Meter m2, Date when, int bp_sys, int bp_dia, int bp_pulse, Severity worstSeverity) {
 
         if (pqBlodtryk) {
 
@@ -1485,7 +1814,7 @@ class BootStrap {
             cqBlodtryk.setPatient(patient)
             cqBlodtryk.setUploadDate(when)
             cqBlodtryk.setReceivedDate(when)
-            cqBlodtryk.setSeverity(Severity.GREEN)
+            cqBlodtryk.setSeverity(worstSeverity)
 
             cqBlodtryk.save(failOnError:true)
 
@@ -1508,7 +1837,7 @@ class BootStrap {
             bpResult.setWasOmitted(false)
             bpResult.setAcknowledgedDate(null)
             bpResult.setAcknowledgedBy(null)
-            bpResult.setSeverity(Severity.GREEN)
+            bpResult.setSeverity(worstSeverity)
 
             Measurement bpm = new Measurement(meter:m2, measurementType:bloodPressure, patient:patient, systolic:bp_sys, diastolic:bp_dia,unit: Unit.MMHG, time:when, unread:true, createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: when, modifiedDate: when)
             bpm.save(failOnError:true)
@@ -1525,46 +1854,45 @@ class BootStrap {
         }
     }
 
-    def createMessagesForTest(Patient pErna, Department deptY) {
+    def createMessagesForTest(Patient patient, Department department) {
 
-        if (!Message.findByTitleAndPatient("Ondt i halsen", pErna)) {
+        if (!Message.findByTitleAndPatient(testMessageHeader, patient)) {
 
             // Message
-            Message message = new Message(title:"Ondt i halsen", createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: new Date(), modifiedDate: new Date())
-            message.setPatient(pErna)
-            message.setDepartment(deptY)
+            Message message = new Message(title:testMessageHeader, createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: new Date(), modifiedDate: new Date())
+            message.setPatient(patient)
+            message.setDepartment(department)
             message.setSendDate(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse("2012-01-15 17:04"))
             message.setReadDate(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse("2012-01-16 10:54"))
             message.setIsRead(true)
             message.setSentByPatient(true)
-            message.setText("""Kære Helle.
-                Jeg har haft ondt i halsen siden søndag, hvor jeg efter anbefaling fra min gode ven kemikaliegrossist Svend Indler begyndte at bruge "Svends Vidunderskyllemiddel", et saltsyrebaseret præparat.
-
-                Bør jeg standse med at bruge midlet eller er det noget helt andet der er fat med mig?
-
-                Venligst Erna Hansen""")
+            message.setText(testMessageText)
 
             message.save(failOnError:true)
         }
-
-        if (!Message.findByTitleAndPatient("Sv. vedr. ondt i halsen", pErna)) {
+        if (!Message.findByTitleAndPatient(testMessageReplyHeader, patient)) {
 
             // Message
-            Message message = new Message(title:"Sv. vedr. ondt i halsen", createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: new Date(), modifiedDate: new Date())
+            Message message = new Message(title:testMessageReplyHeader, createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: new Date(), modifiedDate: new Date())
 
-            message.setPatient(pErna)
-            message.setDepartment(deptY)
-
+            message.setPatient(patient)
+            message.setDepartment(department)
+            message.setIsRead(true)
             message.setSendDate(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse("2012-01-16 10:59"))
-            message.setText("""Kære Erna Hansen
+            message.setText(testMessageReplyText)
 
-                Saltsyre er ikke det bedste mundskyllemiddel du kan anvende og hvis koncentrationen er høj kan du faktisk komme ud i en situation, hvor der til sidst ikke er nogen mund at skylle.
+            message.save(failOnError:true)
+        }
+        if (!Message.findByTitleAndPatient(testMessagePatientReplyHeader, patient)) {
 
-                Jeg vil anbefale dig at standse med midlet og i stedet skylle munden i en let saltvandsopløsning.
+            // Message
+            Message message = new Message(title:testMessagePatientReplyHeader, createdBy: CREATED_BY_NAME, modifiedBy: CREATED_BY_NAME, createdDate: new Date(), modifiedDate: new Date())
 
-                Mvh.
-
-                Helle Andersen""")
+            message.setPatient(patient)
+            message.setDepartment(department)
+            message.setSentByPatient(true)
+            message.setSendDate(new SimpleDateFormat("yyyy-MM-dd hh:mm").parse("2012-01-17 12:04"))
+            message.setText(testMessagePatientReplyText)
 
             message.save(failOnError:true)
         }
@@ -1573,7 +1901,7 @@ class BootStrap {
     @SuppressWarnings("GroovyUnusedDeclaration")
     def destroy = {
     }
-    
+
     static QuestionnaireSchedule everyWeekdayAt(TimeOfDay timeOfDay) {
         atWeekdays(timeOfDay, new ArrayList((Collection<Weekday>) Weekday.values()))
     }
@@ -1582,6 +1910,15 @@ class BootStrap {
         def schedule = new QuestionnaireSchedule()
         schedule.type = Schedule.ScheduleType.WEEKDAYS
         schedule.weekdays = weekdays
+        schedule.timesOfDay = [timeOfDay]
+
+        schedule
+    }
+
+    static QuestionnaireSchedule specificDate(Date specificDate, TimeOfDay timeOfDay) {
+        def schedule = new QuestionnaireSchedule()
+        schedule.type = Schedule.ScheduleType.SPECIFIC_DATE
+        schedule.specificDate = specificDate
         schedule.timesOfDay = [timeOfDay]
 
         schedule

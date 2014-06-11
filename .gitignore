@@ -21,3 +21,4 @@ lib/jtds-1.2.6.jar
 /devDb.lock.db
 /devDb.trace.db
 /web-app/applets
+/*.png
