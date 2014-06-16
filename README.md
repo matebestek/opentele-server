@@ -51,3 +51,7 @@ OpenTele Server includes the following 3rd-party software:
 * [Modernizr](http://modernizr.com/), [MIT License](licenses/modernizr-license.txt)
 * [Underscore](http://underscorejs.org/), [MIT License](licenses/underscore-license.txt)
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/), [MIT License](http://opensource.org/licenses/mit-license.html)
+
+Please note
+----------------------
+This repository is maintained exclusively by Silverbullet. The official version maintained by 4S can be found [here]/https://bitbucket.org/4s/opentele-server).
