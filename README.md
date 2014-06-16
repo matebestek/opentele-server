@@ -54,4 +54,4 @@ OpenTele Server includes the following 3rd-party software:
 
 Please note
 ----------------------
-This repository is maintained exclusively by Silverbullet. The official version maintained by 4S can be found [here]/https://bitbucket.org/4s/opentele-server).
+This repository is maintained exclusively by Silverbullet. The official version maintained by 4S can be found [here](https://bitbucket.org/4s/opentele-server).
