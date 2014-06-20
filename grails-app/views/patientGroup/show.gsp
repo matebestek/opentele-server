@@ -4,7 +4,7 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<title><g:message code="default.show.label" args="['patientgruppe']" /></title>
+		<title><g:message code="default.show.label" args="[g.message(code:'patientGroup.label')]" /></title>
 	</head>
 	<body>
 	

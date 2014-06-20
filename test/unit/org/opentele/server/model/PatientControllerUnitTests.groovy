@@ -7,6 +7,7 @@ import groovy.mock.interceptor.MockFor
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.junit.Test
 import org.opentele.builders.PatientBuilder
+import org.opentele.server.MessageService
 import org.opentele.server.PatientOverviewService
 import org.opentele.server.PatientService
 import org.opentele.server.SessionService
@@ -19,7 +20,7 @@ import org.opentele.server.model.types.MeasurementTypeName
 @TestMixin(DomainClassUnitTestMixin)
 class PatientControllerUnitTests {
 
-    // NB: Patients are created using a webflow, whichs has its own tests
+    // NB: Patients are created using a webflow, with its own tests
 
     // create, save, delete, filterLists, search, overview, questionnaires, doRemoveNextOfKin, messages, savePrefs
     // are tested in integration tests.
@@ -33,12 +34,29 @@ class PatientControllerUnitTests {
         }
     }
 
+    def mockServices = { patient ->
+
+        def mockSpringSecurityService = mockFor(grails.plugins.springsecurity.SpringSecurityService)
+        mockSpringSecurityService.metaClass.getCurrentUser = { ->
+            patient.getUser()
+        }
+        controller.springSecurityService = mockSpringSecurityService
+
+        def mockMessageService = mockFor(MessageService)
+        mockMessageService.metaClass.clinicianCanSendMessagesToPatient = { x, y ->
+            null
+        }
+        controller.messageService = mockMessageService
+    }
+
     @Test
     void patientShowReturnsPatient() {
 
         //Setup
         Patient patient = new PatientBuilder().build()
         patient.save()
+
+        mockServices(patient)
 
         //Execute
         params.id = patient.id
@@ -90,6 +108,8 @@ class PatientControllerUnitTests {
         //Setup
         Patient patient = new PatientBuilder().build()
         patient.save()
+
+        mockServices(patient)
 
         //Execute
         params.id = patient.id
@@ -341,6 +361,7 @@ class PatientControllerUnitTests {
         assert patient != null
         mockDomain(MeasurementType, [[name: MeasurementTypeName.BLOOD_PRESSURE]])
         mockDomain(BloodPressureThreshold)
+        mockServices(patient)
         //Execute
 
         controller.params.id = patient.id
@@ -359,6 +380,7 @@ class PatientControllerUnitTests {
         assert patient != null
         mockDomain(MeasurementType, [[name: MeasurementTypeName.URINE]])
         mockDomain(UrineThreshold)
+        mockServices(patient)
 
         //Execute
 
@@ -378,6 +400,8 @@ class PatientControllerUnitTests {
         assert patient != null
         mockDomain(MeasurementType, [[name: MeasurementTypeName.WEIGHT]])
         mockDomain(NumericThreshold)
+        mockServices(patient)
+
         //Execute
 
         controller.params.id = patient.id

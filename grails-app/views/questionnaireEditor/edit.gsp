@@ -35,6 +35,7 @@
 
 <g:javascript src="jquery-1.9.1.min.js"/>
 <g:javascript src="jquery-ui/jquery-ui-1.10.1.min.js"/>
+<g:javascript src="jquery-ui/jquery.ui.datepicker-da.js"/>
 <g:javascript src="jquery.openteleDatePicker.js"/>
 <link rel="stylesheet" href="${resource(dir: 'css', file: 'jquery.optenteleDatePicker.css')}" type="text/css">
 <g:javascript src="underscore-min.js"/>

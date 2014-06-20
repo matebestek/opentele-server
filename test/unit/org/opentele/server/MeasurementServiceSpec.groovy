@@ -470,7 +470,7 @@ class MeasurementServiceSpec extends Specification {
         cgmData.start == date(2013, Calendar.FEBRUARY, 2).time
         cgmData.end == date(2013, Calendar.FEBRUARY, 3).time
 
-        cgmData.minY == 0
+        cgmData.minY == -1
         cgmData.maxY == 100
         cgmData.type == 'CONTINUOUS_BLOOD_SUGAR_MEASUREMENT'
 

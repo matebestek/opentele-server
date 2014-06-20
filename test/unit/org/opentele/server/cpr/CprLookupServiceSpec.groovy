@@ -115,44 +115,4 @@ class CprLookupServiceSpec extends Specification{
         !person.hasErrors
     }
 
-    @spock.lang.Ignore('Connects directly to the CPR service, which is often down')
-    def "Call CPR service with valid CPR"() {
-        when:
-        def person = service.getPersonDetails(TEST_CPR)
-
-        then:
-        person.civilRegistrationNumber != null
-        person.firstName != null
-        person.lastName != null
-        person.address != null
-        person.postalCode != null
-        person.city != null
-        person.sex != null
-    }
-
-    @spock.lang.Ignore('Connects directly to the CPR service, which is often down')
-    def "Call CPR service with invalid CPR"() {
-        when:
-        def person = service.getPersonDetails("1111")
-
-        then:
-        person.hasErrors == true
-        person.errorMessage.isEmpty() == false
-    }
-
-    @spock.lang.Ignore('Connects directly to the CPR service, which is often down')
-    def "Call CPR service with valid CPR but not used cpr"() {
-        when:
-        def person = service.getPersonDetails("1212123434")
-
-        then:
-        person.hasErrors == false
-        person.civilRegistrationNumber == null
-        person.firstName == null
-        person.lastName == null
-        person.address == null
-        person.postalCode == null
-        person.city == null
-        person.sex == null
-    }
 }

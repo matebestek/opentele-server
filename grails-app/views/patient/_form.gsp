@@ -161,12 +161,15 @@ $(document).ready(function() {
 	<g:textField name="email" value="${patientInstance?.email}" />
 </div>
 
-<div class="fieldcontain noborder ${hasErrors(bean: patientInstance, field: 'noAlarmIfUnreadMessagesToPatient', 'error')}">
-    <label for="noAlarmIfUnreadMessagesToPatient">
-        <g:message code="patient.noAlarmIfUnreadMessagesToPatient.label"/>
-    </label>
-    <g:checkBox name="noAlarmIfUnreadMessagesToPatient" value="${patientInstance?.noAlarmIfUnreadMessagesToPatient}" />
-</div>
+<g:if test="${messagingEnabled}">
+    <div class="fieldcontain noborder ${hasErrors(bean: patientInstance, field: 'noAlarmIfUnreadMessagesToPatient', 'error')}">
+        <label for="noAlarmIfUnreadMessagesToPatient">
+            <g:message code="patient.noAlarmIfUnreadMessagesToPatient.label"/>
+        </label>
+        <g:checkBox name="noAlarmIfUnreadMessagesToPatient" value="${patientInstance?.noAlarmIfUnreadMessagesToPatient}" />
+    </div>
+</g:if>
+
 
 <div class="fieldcontain ${hasErrors(bean: patientInstance, field: 'group', 'error')} required" data-tooltip="${message(code: 'tooltip.patient.create.group')}">
 	<label for="groupid">

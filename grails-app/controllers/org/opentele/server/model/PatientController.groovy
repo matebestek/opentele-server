@@ -299,10 +299,7 @@ class PatientController {
 
         sessionService.setPatient(session, patientInstance)
 
-        def showDueDate = patientInstance.shouldShowGestationalAge
-
-        ArrayList groups = PatientGroup.list(sort:"name")
-        [patientInstance: patientInstance, groups: groups, showDueDate: showDueDate]
+        createEditModel(patientInstance)
     }
 
 	private def getPatientGroups(def patientInstance) {
@@ -353,7 +350,8 @@ class PatientController {
                 sessionService.setPatient(session, patientInstance)
                 render(view: "show", model: createShowModel(patientInstance))
             } else {
-                render(view: "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
+
+                render(view: "edit", model: createEditModel(patientInstance))
             }
 
 		} catch (PatientNotFoundException e) {
@@ -362,7 +360,7 @@ class PatientController {
 		} catch (OptimisticLockingException e) {
             patientInstance = Patient.findById(params.id)
             patientInstance.errors.reject("default.optimistic.locking.failure", [message(code:"patientNote.label")] as Object[] , "i18n error")
-            render(view: "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
+            render(view: "edit", model: createEditModel(patientInstance))
         } catch (Exception e) {
             //Transaction has rolledback
             log.warn("patientUpdate failed with exception: "+e)
@@ -370,12 +368,22 @@ class PatientController {
             patientInstance = Patient.findById(params.id)
             patientInstance.setErrors(errors)
 
-            render(view: "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
+            render(view: "edit", model: createEditModel(patientInstance))
         }
 	}
 
     private def createShowModel(Patient patientInstance) {
-        [patientInstance: patientInstance, groups:getPatientGroups(patientInstance), nextOfKin: getNextOfKin(patientInstance)]
+
+        boolean messagingEnabled = messageService.clinicianCanSendMessagesToPatient(Clinician.findByUser(springSecurityService.currentUser), patientInstance)
+        [patientInstance: patientInstance, groups:getPatientGroups(patientInstance), nextOfKin: getNextOfKin(patientInstance), messagingEnabled: messagingEnabled]
+    }
+
+    private def createEditModel(Patient patientInstance) {
+
+        [patientInstance: patientInstance,
+                groups: PatientGroup.list(sort:"name"),
+                messagingEnabled: messageService.clinicianCanSendMessagesToPatient(Clinician.findByUser(springSecurityService.currentUser), patientInstance),
+                showDueDate: patientInstance.shouldShowGestationalAge]
     }
 
     private void clearDataFromInactivePatient(Patient patient) {
@@ -774,11 +782,12 @@ class PatientController {
         //If the threshold is OK, then update the patient
         if (threshold.validate()) {
             patientInstance.addToThresholds(threshold)
+
             if(!patientInstance.validate()) {
-                render(view: "edit", model:  [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
+                render(view: "edit", model:  createEditModel(patientInstance))
             } else {
                 patientInstance.save(flush: true)
-                render(view:  "edit", model: [patientInstance: patientInstance, groups: PatientGroup.list(sort:"name")])
+                render(view:  "edit", model: createEditModel(patientInstance))
             }
         } else {
             render(view: "addThreshold",

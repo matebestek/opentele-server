@@ -19,7 +19,7 @@
 </td>
 
 <td>
-    ${rowInstance.questionnaireGroup2Header.questionnaireHeader}
+    ${rowInstance.questionnaireGroup2Header.questionnaireHeader.encodeAsHTML()}
 </td>
 <td>
     <questionnaireHeader:status tooltipPrefix="monitoringPlan"

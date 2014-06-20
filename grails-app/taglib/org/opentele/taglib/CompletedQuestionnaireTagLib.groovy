@@ -490,7 +490,7 @@ class CompletedQuestionnaireTagLib {
             }
 
             // IF has grey alarm caused by unread messages from clinician
-            if (!alarmIfUnreadMessagesToPatientDisabled && patientOverview.numberOfUnreadMessagesToPatient > 0) {
+            if (messagingEnabled && !alarmIfUnreadMessagesToPatientDisabled && patientOverview.numberOfUnreadMessagesToPatient > 0) {
                 writeNoAlarmIfUnreadMessagesToPatientButton(builder, patientOverview.patientId)
             }
             // First entry item: Patient status
@@ -694,12 +694,16 @@ class CompletedQuestionnaireTagLib {
                         before: "return confirm('${message(code: 'patientOverview.acknowledgeAllForAll.confirm')}')", acknowledgeAllIcon)
 
                def withAutoMessageIcon = getAutoMessageAllIcon(messagingEnabled)
-               out << g.remoteLink(controller: 'patientOverview',
-                        action: 'acknowledgeAll',
-                        onComplete: 'location.reload(true);',
-                        id: patientOverview.patientId,
-                        params:[ids:idsOfGreenQuestionnaires, withAutoMessage: 'true'],
-                        before: "return confirm('${message(code: 'patientOverview.acknowledgeAllForAllWithMessage.confirm')}')", withAutoMessageIcon)
+               if (messagingEnabled) {
+                    out << g.remoteLink(controller: 'patientOverview',
+                            action: 'acknowledgeAll',
+                            onComplete: 'location.reload(true);',
+                            id: patientOverview.patientId,
+                            params:[ids:idsOfGreenQuestionnaires, withAutoMessage: 'true'],
+                            before: "return confirm('${message(code: 'patientOverview.acknowledgeAllForAllWithMessage.confirm')}')", withAutoMessageIcon)
+               } else {
+                   out << "<a>${withAutoMessageIcon}</a>"
+               }
             }
 
             if (createDivWrapper) {

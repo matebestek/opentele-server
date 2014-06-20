@@ -3,11 +3,13 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<title><g:message code="default.edit" args="['patientgruppe']" /></title>
-	</head>
+        <g:set var="entityName"
+               value="${message(code: 'patientGroup.label', default: 'Patient group')}" />
+        <title><g:message code="default.edit" args="[entityName]"/></title>
+    </head>
 	<body>
 		<div id="edit-patientGroup" class="content scaffold-edit" role="main">
-			<h1><g:message code="default.edit" args="['patientgruppe']" /></h1>
+			<h1><g:message code="default.edit" args="[entityName]" /></h1>
 			<g:if test="${flash.message}">
 			<div class="message" role="status">${flash.message}</div>
 			</g:if>

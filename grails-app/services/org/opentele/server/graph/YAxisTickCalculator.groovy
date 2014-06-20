@@ -114,7 +114,10 @@ class YAxisTickCalculator implements MeasurementTypeNameVisitor {
 
     @Override
     void visitBloodSugar() {
-        createTicksFor(0, 20, 2, SINGLE_DIGIT_FORMATTER)
+        def tickSize = 1
+        minimum -= tickSize
+        maximum += tickSize
+        createTicksFor(5, 5, tickSize, SINGLE_DIGIT_FORMATTER)
     }
 
     @Override
@@ -124,7 +127,10 @@ class YAxisTickCalculator implements MeasurementTypeNameVisitor {
 
     @Override
     void visitContinuousBloodSugarMeasurement() {
-        createTicksFor(0, 20, 2, SINGLE_DIGIT_FORMATTER)
+        def tickSize = 1
+        minimum -= tickSize
+        maximum += tickSize
+        createTicksFor(5, 5, tickSize, SINGLE_DIGIT_FORMATTER)
     }
 
     private void createTicksFor(double rangeStart, double rangeEnd, double stepSize, ThreadLocal<NumberFormat> formatter) {

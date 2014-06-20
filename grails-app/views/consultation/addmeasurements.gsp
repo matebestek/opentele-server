@@ -58,6 +58,33 @@
             if (data.success) {
                 $('#confirmOK').show();
                 $('#confirmOK').html(data.message);
+
+                $("#trBLOOD_PRESSURE").toggle(false);
+                $("#showBLOOD_PRESSURE").val(null);
+                $("#systolic").val('');
+                $("#diastolic").val('');
+                $("#pulse").val('');
+
+                $("#trLUNG_FUNCTION").toggle(false);
+                $("#showLUNG_FUNCTION").val(null);
+                $("#lungfunction").val('');
+
+                $("#trURINE_COMBI").toggle(false);
+                $("#showURINE_COMBI").val(null);
+                $("#urine").val('');
+                $("#urine_glucose").val('');
+
+                $("#trSATURATION").toggle(false);
+                $("#showSATURATION").val(null);
+                $("#saturation").val('');
+                $("#saturationPuls").val('');
+
+                $("#trWEIGHT").toggle(false);
+                $("#showWEIGHT").val(null);
+                $("#weight").val('');
+
+                myFunction();
+
             } else {
                 var errorList = $('<ul>');
                 for (var i = 0; i < data.errors.length; i++) {

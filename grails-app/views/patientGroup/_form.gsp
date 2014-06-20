@@ -2,10 +2,9 @@
 
 <div class="fieldcontain ${hasErrors(bean: patientGroupInstance, field: 'name', 'error')} ">
 	<label for="name">
-		<g:message code="patientGroup.name.label" default="Name" /><span class="required-indicator">*</span>
+		<g:message code="patientGroup.name.label" default="Name" /> <span class="required-indicator">*</span>
 	</label>
 	<g:textField name="name" value="${patientGroupInstance?.name}"/>
-
 </div>
 
 <div class="fieldcontain ${hasErrors(bean: patientGroupInstance, field: 'department', 'error')} required">

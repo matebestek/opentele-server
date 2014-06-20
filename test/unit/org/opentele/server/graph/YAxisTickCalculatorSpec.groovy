@@ -190,9 +190,9 @@ class YAxisTickCalculatorSpec extends Specification {
 
         where:
         minimum | maximum | expectedTicks
-              0 |      20 | [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
-              5 |      10 | [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
-              2 |      30 | [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30]
+              0 |      20 | -1.0..21.0
+              5 |      10 |  4.0..11.0
+              2 |      30 |  1.0..31.0
     }
 
     private def systolicTicks(double minimum, double maximum) {

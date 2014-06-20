@@ -3,11 +3,11 @@
 <html>
 	<head>
 		<meta name="layout" content="main">
-		<title><g:message code="default.create.label" args="['patientgruppe']" /></title>
+        <title><g:message code="default.create.label" args="[g.message(code:'patientGroup.label')]" /></title>
 	</head>
 	<body>
 		<div id="create-patientGroup" class="content scaffold-create" role="main">
-			<h1><g:message code="default.create.label" args="['patientgruppe']" /></h1>
+			<h1><g:message code="default.create.label" args="[g.message(code:'patientGroup.label')]" /></h1>
 			<g:if test="${flash.message}">
 			<div class="message" role="status">${flash.message}</div>
 			</g:if>
