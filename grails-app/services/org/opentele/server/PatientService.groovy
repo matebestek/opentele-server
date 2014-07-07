@@ -301,4 +301,8 @@ class PatientService {
             }.unique()
         }
     }
+
+    public boolean patientCanDoRealtimeCTGs(Patient patient) {
+        return patient.patient2PatientGroups?.patientGroup.any {it.showRunningCtgMessaging}
+    }
 }

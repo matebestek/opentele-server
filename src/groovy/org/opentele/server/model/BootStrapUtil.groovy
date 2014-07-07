@@ -51,10 +51,11 @@ class BootStrapUtil {
 		return dept
 	}
 
-	def createPatientGroupIfNotExists(String name, Department dep, Date date, StandardThresholdSet standardThresholdSet, boolean supportsGestationalAge=false) {
+	def createPatientGroupIfNotExists(String name, Department dep, Date date, StandardThresholdSet standardThresholdSet, boolean supportsGestationalAge=false, boolean supportsRunningCtgMessaging = false) {
         PatientGroup retVal = PatientGroup.findByNameAndDepartment(name, dep)
         if (!retVal) {
     		retVal = new PatientGroup(name: name, department: dep, createdBy: "System", showGestationalAge: supportsGestationalAge,
+                    showRunningCtgMessaging: supportsRunningCtgMessaging,
                     modifiedBy: "System", createdDate: date, modifiedDate: date, standardThresholdSet: standardThresholdSet)
             retVal.standardThresholdSet = standardThresholdSet
             retVal.save(failOnError:true)

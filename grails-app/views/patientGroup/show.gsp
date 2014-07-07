@@ -51,6 +51,17 @@
                         <g:checkBox name="showGestationalAge" value="${patientGroupInstance?.showGestationalAge}" disabled="true" />
                     </span>
                 </li>
+                <g:if test="${grailsApplication.config.running.ctg.messaging.enabled}">
+                    <li class="fieldcontain">
+                        <span id="patientGroup.show_running_ctg_messaging.label" class="property-label">
+                            <g:message code="patientGroup.showRunningCtgMessaging.label"/>
+                        </span>
+
+                        <span class="property-value" aria-labelledby="patientGroup.show_running_c_t_gmessaging.label">
+                            <g:checkBox name="showRunningCtgMessaging" value="${patientGroupInstance?.showRunningCtgMessaging}" disabled="true" />
+                        </span>
+                    </li>
+                </g:if>
 			</ol>
 			<g:form>
 				<fieldset class="buttons">

@@ -11,6 +11,7 @@ class Constants {
     public static final String SESSION_PATIENT_ID = "patientId"
     public static final String SESSION_PHONE = "phone"
     public static final String SESSION_GESTATIONAL_AGE = "gestationalAge"
+    public static final String SESSION_RUNNING_CTG_MESSAGING = "runningCtgMessaging"
     public static final String SESSION_MOBILE_PHONE = "mobilePhone"
     public static final String SESSION_EMAIL = "email"
     public static final String SESSION_FIRST_RELEATIVE = "firstRelative"

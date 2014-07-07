@@ -3,7 +3,6 @@ package org.opentele.builders
 import org.opentele.server.model.Clinician
 import org.opentele.server.model.Patient
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
-import org.opentele.server.model.patientquestionnaire.PatientQuestionnaire
 import org.opentele.server.model.types.Severity
 
 class CompletedQuestionnaireBuilder {
@@ -47,7 +46,7 @@ class CompletedQuestionnaireBuilder {
         }
         this.questionnaireHeader = questionnaireHeaderBuilder.build()
 
-        def result = new CompletedQuestionnaire(patient:patient, questionnaireHeader: questionnaireHeader,
+        def result = new CompletedQuestionnaire(patient: patient, questionnaireHeader: questionnaireHeader,
                 patientQuestionnaire: patientQuestionnaire, uploadDate: uploadDate, receivedDate: receivedDate, severity: severity, createdDate: createdDate)
         if (acknowledged) {
             Clinician clinician = Clinician.build()

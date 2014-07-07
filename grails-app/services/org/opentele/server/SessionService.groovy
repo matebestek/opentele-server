@@ -13,6 +13,7 @@ class SessionService {
         session[Constants.SESSION_CPR] = patient.cpr[0..5]+"-"+patient.cpr[6..9]
         session[Constants.SESSION_PATIENT_ID] = patient.id
         session[Constants.SESSION_GESTATIONAL_AGE] = patient.shouldShowGestationalAge ? patient.getGestationalAge(new Date()) : null
+        session[Constants.SESSION_RUNNING_CTG_MESSAGING] = patient.shouldShowRunningCtgMessaging
         session[Constants.SESSION_PHONE] = patient.phone
         session[Constants.SESSION_MOBILE_PHONE] = patient.mobilePhone
         session[Constants.SESSION_EMAIL] = patient.email

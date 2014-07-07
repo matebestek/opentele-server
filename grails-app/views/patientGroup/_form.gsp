@@ -27,5 +27,13 @@
         <g:message code="patientGroup.showGestationalAge.label"/>
     </label>
     <g:checkBox name="showGestationalAge" value="${patientGroupInstance?.showGestationalAge}" />
-
 </div>
+
+<g:if test="${grailsApplication.config.running.ctg.messaging.enabled}">
+    <div class="fieldcontain noborder ${hasErrors(bean: patientGroupInstance, field: 'showRunningCtgMessaging', 'error')}">
+        <label for="showRunningCtgMessaging">
+            <g:message code="patientGroup.showRunningCtgMessaging.label"/>
+        </label>
+        <g:checkBox name="showRunningCtgMessaging" value="${patientGroupInstance?.showRunningCtgMessaging}" />
+    </div>
+</g:if>

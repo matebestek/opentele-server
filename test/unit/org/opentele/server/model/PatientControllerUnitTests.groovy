@@ -1,4 +1,5 @@
 package org.opentele.server.model
+
 import grails.buildtestdata.mixin.Build
 import grails.test.mixin.TestFor
 import grails.test.mixin.TestMixin
@@ -13,10 +14,11 @@ import org.opentele.server.PatientService
 import org.opentele.server.SessionService
 import org.opentele.server.ThresholdService
 import org.opentele.server.model.types.MeasurementTypeName
+import org.opentele.server.exception.OptimisticLockingException
 
 @SuppressWarnings("GroovyAccessibility")
 @TestFor(PatientController)
-@Build([Patient, Clinician, PatientGroup,Patient2PatientGroup,User, Role, UserRole, NextOfKinPerson, MonitoringPlan, Message, User])
+@Build([Patient, Clinician, PatientGroup, Patient2PatientGroup, User, Role, UserRole, NextOfKinPerson, MonitoringPlan, Message, User])
 @TestMixin(DomainClassUnitTestMixin)
 class PatientControllerUnitTests {
 
@@ -63,7 +65,7 @@ class PatientControllerUnitTests {
         def model = controller.show()
 
         //Check
-        assert response.redirectedUrl ==  null
+        assert response.redirectedUrl == null
         assert model.patientInstance != null
         assert model.patientInstance.id == patient.id
 
@@ -116,7 +118,7 @@ class PatientControllerUnitTests {
         def model = controller.edit()
 
         //Check
-        assert response.redirectedUrl ==  null
+        assert response.redirectedUrl == null
         assert model.patientInstance != null
         assert model.patientInstance.id == patient.id
 
@@ -184,7 +186,7 @@ class PatientControllerUnitTests {
         PatientGroup.build(name: 'badGroup2')
         PatientGroup.build(name: 'badGroup3')
         PatientGroup pg = PatientGroup.build(name: 'goodGroup')
-        PatientGroup pg2 = PatientGroup.build(name:  'goodGroup2')
+        PatientGroup pg2 = PatientGroup.build(name: 'goodGroup2')
         Patient2PatientGroup.link(patient, pg)
         Patient2PatientGroup.link(patient, pg2)
         patient.save(flush: true)
@@ -265,7 +267,7 @@ class PatientControllerUnitTests {
         controller.removeNextOfKin()
 
         //Check
-        assert response.redirectedUrl == "/patient/edit/"+patient.id
+        assert response.redirectedUrl == "/patient/edit/" + patient.id
     }
 
     @Test
@@ -323,7 +325,7 @@ class PatientControllerUnitTests {
         controller.updateDataResponsible()
 
         //Check
-        assert response.redirectedUrl == "/patient/edit/"+patient.id
+        assert response.redirectedUrl == "/patient/edit/" + patient.id
     }
 
     @Test
@@ -343,10 +345,11 @@ class PatientControllerUnitTests {
         controller.login()
         def responseJson = new JSONObject(response.text)
 
-        assert responseJson.keys().size() == 4
+        assert responseJson.keys().size() == 5
         assert responseJson.firstName
         assert responseJson.lastName
         assert responseJson.id
+        assert responseJson.showRealtimeCTG == false
 
         assert responseJson.user.keys().size() == 2
         assert responseJson.user.id

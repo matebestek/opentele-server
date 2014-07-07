@@ -81,7 +81,9 @@ class PatientOverviewServiceSpec extends Specification {
         def unacknowledgedQuestionnaire1 = new CompletedQuestionnaireBuilder().forPatient(patient).ofSeverity(Severity.ORANGE).build()
         def unacknowledgedQuestionnaire2 = new CompletedQuestionnaireBuilder().forPatient(patient).build()
         new CompletedQuestionnaireBuilder().forPatient(patient).acknowledged().build()
-        service.questionnaireService.worstSeverityOfUnacknowledgedQuestionnaires(patient, { it.size() == 2 && it.contains(unacknowledgedQuestionnaire1) && it.contains(unacknowledgedQuestionnaire2)}) >> Severity.ORANGE
+        service.questionnaireService.worstSeverityOfUnacknowledgedQuestionnaires(patient, {
+            it.size() == 2 && it.contains(unacknowledgedQuestionnaire1) && it.contains(unacknowledgedQuestionnaire2)
+        }) >> Severity.ORANGE
 
         when:
         service.createOverviewFor(patient)
@@ -113,13 +115,13 @@ class PatientOverviewServiceSpec extends Specification {
 
         where:
         questionnaires                                                                                                        | worstSeverity   | expectedQuestionnaireName | expectedQuestionnaireDate | important
-        []                                                                                                                    | Severity.NONE   |                      null |                      null |     false
-        [['Q1', Severity.GREEN, '2012-05-13']]                                                                                | Severity.GREEN  |                      'Q1' |              '2012-05-13' |      true
-        [['Q1', Severity.RED,   '2013-08-11']]                                                                                | Severity.RED    |                      'Q1' |              '2013-08-11' |      true
-        [['Q1', Severity.ORANGE, '2012-05-13'], ['Q2', Severity.ORANGE, '2013-03-14'], ['Q3', Severity.ORANGE, '2013-02-12']] | Severity.ORANGE |                      'Q2' |              '2013-03-14' |      true
-        [['Q1', Severity.RED, '2012-05-13'], ['Q2', Severity.ORANGE, '2013-03-14'], ['Q3', Severity.ORANGE, '2013-02-12']]    | Severity.RED    |                      'Q1' |              '2012-05-13' |      true
-        [['Q1', Severity.ORANGE, '2012-05-13'], ['Q2', Severity.ORANGE, '2013-03-14']]                                        | Severity.BLUE   |                      null |                      null |      true
-        [['Q1', Severity.ORANGE, '2012-05-13'], ['Q2', Severity.YELLOW, '2013-03-14']]                                        | Severity.YELLOW |                      'Q2' |              '2013-03-14' |      true
+        []                                                                                                                    | Severity.NONE   | null                      | null                      | false
+        [['Q1', Severity.GREEN, '2012-05-13']]                                                                                | Severity.GREEN  | 'Q1'                      | '2012-05-13'              | true
+        [['Q1', Severity.RED, '2013-08-11']]                                                                                  | Severity.RED    | 'Q1'                      | '2013-08-11'              | true
+        [['Q1', Severity.ORANGE, '2012-05-13'], ['Q2', Severity.ORANGE, '2013-03-14'], ['Q3', Severity.ORANGE, '2013-02-12']] | Severity.ORANGE | 'Q2'                      | '2013-03-14'              | true
+        [['Q1', Severity.RED, '2012-05-13'], ['Q2', Severity.ORANGE, '2013-03-14'], ['Q3', Severity.ORANGE, '2013-02-12']]    | Severity.RED    | 'Q1'                      | '2012-05-13'              | true
+        [['Q1', Severity.ORANGE, '2012-05-13'], ['Q2', Severity.ORANGE, '2013-03-14']]                                        | Severity.BLUE   | null                      | null                      | true
+        [['Q1', Severity.ORANGE, '2012-05-13'], ['Q2', Severity.YELLOW, '2013-03-14']]                                        | Severity.YELLOW | 'Q2'                      | '2013-03-14'              | true
     }
 
     @Unroll
@@ -129,7 +131,9 @@ class PatientOverviewServiceSpec extends Specification {
         patientQuestionnaires['Q1'] = PatientQuestionnaire.build(templateQuestionnaire: Questionnaire.build(questionnaireHeader: new QuestionnaireHeaderBuilder().forName('Q1').build()))
         patientQuestionnaires['Q2'] = PatientQuestionnaire.build(templateQuestionnaire: Questionnaire.build(questionnaireHeader: new QuestionnaireHeaderBuilder().forName('Q2').build()))
 
-        patient.blueAlarmQuestionnaireIDs = new HashSet(blueAlarmQuestionnaires.collect { patientQuestionnaires[it].id })
+        patient.blueAlarmQuestionnaireIDs = new HashSet(blueAlarmQuestionnaires.collect {
+            patientQuestionnaires[it].id
+        })
 
         CompletedQuestionnaire completedQuestionnaire = new CompletedQuestionnaireBuilder().forPatient(patient).build()
         service.questionnaireService.worstSeverityOfUnacknowledgedQuestionnaires(patient, [completedQuestionnaire]) >> worstSeverity
@@ -143,10 +147,10 @@ class PatientOverviewServiceSpec extends Specification {
 
         where:
         worstSeverity  | blueAlarmQuestionnaires | expectedBlueAlarmText
-        Severity.GREEN |                      [] |                  null
-        Severity.RED   |            ['Q1', 'Q2'] |              'Q1\nQ2'
-        Severity.BLUE  |                  ['Q1'] |                  'Q1'
-        Severity.BLUE  |            ['Q1', 'Q2'] |              'Q1\nQ2'
+        Severity.GREEN | []                      | null
+        Severity.RED   | ['Q1', 'Q2']            | 'Q1\nQ2'
+        Severity.BLUE  | ['Q1']                  | 'Q1'
+        Severity.BLUE  | ['Q1', 'Q2']            | 'Q1\nQ2'
     }
 
     @Unroll
@@ -164,7 +168,11 @@ class PatientOverviewServiceSpec extends Specification {
         }
 
         def questionnaireIdsFromString = { idsAsString -> idsAsString == null ? null : idsAsString.split(',').toList().toSet() }
-        def questionnaireIdsFromNames = { names -> names == null ? null : names.collect { questionnaires[it].id.toString() }.toSet() }
+        def questionnaireIdsFromNames = { names ->
+            names == null ? null : names.collect {
+                questionnaires[it].id.toString()
+            }.toSet()
+        }
 
         service.questionnaireService.worstSeverityOfUnacknowledgedQuestionnaires(patient, _) >> Severity.NONE
 
@@ -177,13 +185,13 @@ class PatientOverviewServiceSpec extends Specification {
 
         where:
         acknowledgedQuestionnaires | unacknowledgedQuestionnaires                      | expectedQuestionnaireNames | important
-        []                         | []                                                | null                       |     false
-        ['Q1', 'Q2']               | []                                                | null                       |     false
-        []                         | [['Q1', Severity.GREEN], ['Q2', Severity.GREEN]]  | ['Q1', 'Q2']               |      true
-        ['Q1']                     | [['Q2', Severity.GREEN]]                          | ['Q2']                     |      true
-        ['Q1']                     | [['Q2', Severity.GREEN], ['Q3', Severity.RED]]    | ['Q2']                     |      true
-        ['Q1']                     | [['Q2', Severity.GREEN], ['Q3', Severity.YELLOW]] | ['Q2']                     |      true
-        ['Q1']                     | [['Q2', Severity.RED], ['Q3', Severity.YELLOW]]   | null                       |      true
+        []                         | []                                                | null                       | false
+        ['Q1', 'Q2']               | []                                                | null                       | false
+        []                         | [['Q1', Severity.GREEN], ['Q2', Severity.GREEN]]  | ['Q1', 'Q2']               | true
+        ['Q1']                     | [['Q2', Severity.GREEN]]                          | ['Q2']                     | true
+        ['Q1']                     | [['Q2', Severity.GREEN], ['Q3', Severity.RED]]    | ['Q2']                     | true
+        ['Q1']                     | [['Q2', Severity.GREEN], ['Q3', Severity.YELLOW]] | ['Q2']                     | true
+        ['Q1']                     | [['Q2', Severity.RED], ['Q3', Severity.YELLOW]]   | null                       | true
     }
 
     def 'calculates number of unread messages to patient, along with date of oldest unread'() {

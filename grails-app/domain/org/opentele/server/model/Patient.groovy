@@ -204,6 +204,11 @@ class Patient extends AbstractObject {
         patientGroups.any { it.showGestationalAge }
     }
 
+    boolean isShouldShowRunningCtgMessaging() {
+        def patientGroups = patient2PatientGroups*.patientGroup
+        patientGroups.any { it.showRunningCtgMessaging }
+    }
+
     String getGestationalAge(Date now) {
         if (dueDate != null && now != null) {
             Date dueDateTruncated = DateUtils.truncate(dueDate, Calendar.DAY_OF_MONTH)

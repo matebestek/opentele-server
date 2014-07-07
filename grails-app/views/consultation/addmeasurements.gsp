@@ -14,7 +14,7 @@
             $("input[type=submit]").removeAttr("disabled");
         });
 
-        function myFunction() {
+        function clearSelected() {
             if ($("#showSATURATION").val() == '' && $("#showWEIGHT").val() == '' && $("#showBLOOD_PRESSURE").val() == '' && $("#showURINE_COMBI").val() == '' && $("#showLUNG_FUNCTION").val() == '')
                 $("input[type=submit]").attr("disabled", "disabled");
             return this;
@@ -23,27 +23,27 @@
         $('#removeSATURATION').click(function () {
             $("#trSATURATION").toggle(false);
             $("#showSATURATION").val(null);
-            myFunction()
+            clearSelected()
         });
         $('#removeWEIGHT').click(function () {
             $("#trWEIGHT").toggle(false);
             $("#showWEIGHT").val(null);
-            myFunction()
+            clearSelected()
         });
         $('#removeBLOOD_PRESSURE').click(function () {
             $("#trBLOOD_PRESSURE").toggle(false);
             $("#showBLOOD_PRESSURE").val(null);
-            myFunction()
+            clearSelected()
         });
         $('#removeLUNG_FUNCTION').click(function () {
             $("#trLUNG_FUNCTION").toggle(false);
             $("#showLUNG_FUNCTION").val(null);
-            myFunction()
+            clearSelected()
         });
         $('#removeURINE_COMBI').click(function () {
             $("#trURINE_COMBI").toggle(false);
             $("#showURINE_COMBI").val(null);
-            myFunction()
+            clearSelected()
         });
 
         $(document).ready(function () {
@@ -83,7 +83,7 @@
                 $("#showWEIGHT").val(null);
                 $("#weight").val('');
 
-                myFunction();
+                clearSelected();
 
             } else {
                 var errorList = $('<ul>');

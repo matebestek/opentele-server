@@ -1,4 +1,5 @@
 package org.opentele.server.model
+
 import grails.validation.Validateable
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.opentele.server.model.types.GlucoseInUrineValue
@@ -8,7 +9,8 @@ import org.opentele.server.model.types.Sex
 import org.opentele.server.util.NumberFormatUtil
 import org.opentele.server.util.PasswordUtil
 
-@Validateable //Provides hasErrors and validate()
+@Validateable
+//Provides hasErrors and validate()
 class CreatePatientCommand extends AbstractObject {
 
     //Attributes from basicInfo params
@@ -46,8 +48,8 @@ class CreatePatientCommand extends AbstractObject {
         email = params.email
 
         //Fix CPR if needed
-        cpr = cpr?.replaceAll(" ","")
-        cpr = cpr?.replaceAll("-","")
+        cpr = cpr?.replaceAll(" ", "")
+        cpr = cpr?.replaceAll("-", "")
     }
 
     def setAuthentication(def username, def cleartextPassword) {
@@ -63,12 +65,14 @@ class CreatePatientCommand extends AbstractObject {
 
         //Find the standard thresholds belonging to all (1-n) patient groups
 
-        List<Threshold> standardThresholds  = PatientGroup.findAll().grep{ this.groupIds.contains(it.id as String) }.collectMany {pgs -> pgs.standardThresholdSet.thresholds}
+        List<Threshold> standardThresholds = PatientGroup.findAll().grep {
+            this.groupIds.contains(it.id as String)
+        }.collectMany { pgs -> pgs.standardThresholdSet.thresholds }
 
         def initialNumberOfStandardThresholds = standardThresholds.size()
 
         //Initialize patient thresholds from standardThresholdSets
-        standardThresholds.unique({a, b -> a.type.toString() <=> b.type.toString()}).each { threshold ->
+        standardThresholds.unique({ a, b -> a.type.toString() <=> b.type.toString() }).each { threshold ->
             this.thresholds << threshold.duplicate()
         }
 
@@ -78,7 +82,7 @@ class CreatePatientCommand extends AbstractObject {
     def updateThresholds(GrailsParameterMap params) {
         //It is not possible to add more thresholds to the patient during the flow
         //thus we can assume only the thresholds in this.thresholds need to be updated
-        this.thresholds.each {Threshold threshold ->
+        this.thresholds.each { Threshold threshold ->
             switch (threshold.type.name) {
                 case MeasurementTypeName.BLOOD_PRESSURE:
                     def newThreshold = params[MeasurementTypeName.BLOOD_PRESSURE.toString()]
@@ -127,7 +131,7 @@ class CreatePatientCommand extends AbstractObject {
         postalCode(blank: false)
         city(blank: false)
 
-        cpr(validator: {val, obj ->
+        cpr(validator: { val, obj ->
             def similarPatient = Patient.findAllByCpr(val)
             if (similarPatient && similarPatient.size() > 0) {
                 ["validate.patient.cpr.exists"]
@@ -141,15 +145,15 @@ class CreatePatientCommand extends AbstractObject {
         })
 
         //Step 2
-        username nullable: false, blank: false, maxSize:  128, validator: { value ->
-            if(User.findByUsername(value)) {
+        username nullable: false, blank: false, maxSize: 128, validator: { value ->
+            if (User.findByUsername(value)) {
                 return "not.unique"
             }
         }
         cleartextPassword(blank: false, validator: PasswordUtil.passwordValidator)
 
         //Step 3
-        groupIds(validator: {val, obj ->
+        groupIds(validator: { val, obj ->
             if (!val || val.size() < 1) {
                 ["validate.patient.nogroupselected"]
             }
@@ -183,7 +187,7 @@ class CreatePatientCommand extends AbstractObject {
     }
 
     public Threshold getThreshold(MeasurementTypeName typeName) {
-        return thresholds.find {it.type.name.equals(typeName)}
+        return thresholds.find { it.type.name.equals(typeName) }
     }
 
 

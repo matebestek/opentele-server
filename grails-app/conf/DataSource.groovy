@@ -37,6 +37,7 @@ environments {
             // url = "jdbc:h2:mem:devDb;MVCC=TRUE;IGNORECASE=TRUE"
         }
     }
+
     test {
         dataSource {
 //            dbCreate = "create-drop"
@@ -45,6 +46,6 @@ environments {
             driverClassName = "org.h2.Driver"
             dialect = "org.opentele.server.util.H2Dialect"
             url = "jdbc:h2:mem:testDb;MVCC=TRUE;IGNORECASE=TRUE"
-        }
+           }
     }
 }

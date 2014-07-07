@@ -1,5 +1,4 @@
 package org.opentele.server.model
-
 import grails.converters.JSON
 import grails.plugins.springsecurity.Secured
 import grails.util.Environment
@@ -9,12 +8,10 @@ import org.opentele.server.annotations.SecurityWhiteListController
 import org.opentele.server.constants.Constants
 import org.opentele.server.cpr.CPRPerson
 import org.opentele.server.exception.OptimisticLockingException
-
 import org.opentele.server.exception.PatientException
 import org.opentele.server.exception.PatientNotFoundException
 import org.opentele.server.model.patientquestionnaire.CompletedQuestionnaire
 import org.opentele.server.model.questionnaire.QuestionnaireNode
-import org.opentele.server.model.types.MeasurementTypeName
 import org.opentele.server.model.types.PatientState
 import org.opentele.server.model.types.PermissionName
 import org.springframework.validation.Errors
@@ -74,7 +71,8 @@ class PatientController {
         if (versionChecksOut) {
             //Everything seems to be in order
             boolean changePassword = patient.user.cleartextPassword
-            def result = [id: patient.id, firstName: patient.firstName, lastName: patient.lastName, user: [id: patient.user.id, changePassword: changePassword]]
+            boolean showRealtimeCTGMenu = patientService.patientCanDoRealtimeCTGs(patient)
+            def result = [id: patient.id, firstName: patient.firstName, lastName: patient.lastName, user: [id: patient.user.id, changePassword: changePassword], showRealtimeCTG: showRealtimeCTGMenu]
             render result as JSON
         } else {
             log.warn("User: ${user?.username}, Patient: ${patient}, client version too old. Was ${actualClientVersion} should be ${requiredClientVersion}.")
@@ -383,7 +381,7 @@ class PatientController {
         [patientInstance: patientInstance,
                 groups: PatientGroup.list(sort:"name"),
                 messagingEnabled: messageService.clinicianCanSendMessagesToPatient(Clinician.findByUser(springSecurityService.currentUser), patientInstance),
-                showDueDate: patientInstance.shouldShowGestationalAge]
+                showDueDate: patientInstance.shouldShowGestationalAge, showRunningCtgMessaging: patientInstance.shouldShowRunningCtgMessaging]
     }
 
     private void clearDataFromInactivePatient(Patient patient) {

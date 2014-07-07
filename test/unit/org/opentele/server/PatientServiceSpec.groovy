@@ -1,5 +1,4 @@
 package org.opentele.server
-
 import grails.buildtestdata.mixin.Build
 import grails.plugins.springsecurity.SpringSecurityService
 import grails.test.mixin.TestFor
@@ -8,10 +7,8 @@ import org.opentele.server.constants.Constants
 import org.opentele.server.exception.PatientException
 import org.opentele.server.model.*
 import org.opentele.server.model.types.PatientState
-import org.opentele.server.model.types.PermissionName
 import org.opentele.server.model.types.Sex
 import org.opentele.server.service.MailSenderService
-import org.springframework.validation.FieldError
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -247,6 +244,30 @@ class PatientServiceSpec extends Specification {
                 clinician: "Doktor Hansen",
                 password: "password1"
         ])
+    }
+
+
+    def "can tell if patient may do realtime CTGs"() {
+
+
+        when:
+        def firstPatientGroup = PatientGroup.build(showRunningCtgMessaging: firstPatientGroupAllowsCTG)
+        def secondPatientGroup = PatientGroup.build(showRunningCtgMessaging: secondPatientGroupAllowsCTG)
+        def patient = Patient.build()
+
+        Patient2PatientGroup.link(patient, firstPatientGroup)
+        Patient2PatientGroup.link(patient, secondPatientGroup)
+
+        def replyFromService = service.patientCanDoRealtimeCTGs(patient)
+
+        then:
+        replyFromService == mayDoRealtimeCTGs
+
+        where:
+        firstPatientGroupAllowsCTG || secondPatientGroupAllowsCTG   || mayDoRealtimeCTGs
+        true || false || true
+        true || true || true
+        false || false || false
     }
 
 

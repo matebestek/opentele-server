@@ -38,5 +38,4 @@ class PatientControllerSpec extends Specification {
         flash.message == 'default.not.found.message'
         response.redirectedUrl == "/patient/list"
     }
-
 }
