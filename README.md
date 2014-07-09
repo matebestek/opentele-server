@@ -2,6 +2,11 @@ OpenTele Server
 ===============
 [Grails](http://grails.org/)-based server which provides the back-end for the client and a clinical GUI.
 
+Please note
+----------------------
+This repository is maintained exclusively by Silverbullet. The official version maintained by 4S can be found [here](https://bitbucket.org/4s/opentele-server).
+
+
 How to build and run
 --------------------
 Make sure you have JDK 1.6 and Grails 2.1 installed and in your path.
@@ -51,7 +56,3 @@ OpenTele Server includes the following 3rd-party software:
 * [Modernizr](http://modernizr.com/), [MIT License](licenses/modernizr-license.txt)
 * [Underscore](http://underscorejs.org/), [MIT License](licenses/underscore-license.txt)
 * [Font Awesome](http://fortawesome.github.io/Font-Awesome/), [MIT License](http://opensource.org/licenses/mit-license.html)
-
-Please note
-----------------------
-This repository is maintained exclusively by Silverbullet. The official version maintained by 4S can be found [here](https://bitbucket.org/4s/opentele-server).
